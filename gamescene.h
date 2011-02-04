@@ -15,15 +15,19 @@ public:
     enum GameState{GameRunning, GamePaused, GameMenu};
     int currentTime;
     int lastFrameTime;
-    float dt; // time difference in seconds
+    QImage negativeImage;
+    QImage positiveImage;
+    float dt(); // time difference in seconds, should never fall below 20fps
 signals:
 
 public slots:
     void advance();
 
 private:
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
     int level;
     int gameState;
+    float _dt; // time difference in seconds
 
     void startLevel(int level);
 
