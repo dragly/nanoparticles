@@ -15,21 +15,17 @@ Particle::Particle()
 {
     scale = 5.0;
     setSize(QRectF(0,0,2,2));
-    gameScene = (GameScene*)scene();
-
-    // TODO: These should not be loaded here!
-    positiveImage = QImage(":/images/particle-positive.svg");
-    negativeImage = QImage(":/images/particle-negative.svg");
-    neutralImage = QImage(":/images/particle-neutral.svg");
 }
 
 void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+    GameScene* gameScene;
+    gameScene = (GameScene*)scene();
     if(charge > 0) {
-        painter->drawImage(realsize(),positiveImage);
+        painter->drawImage(realsize(),gameScene->positiveImage);
     } else if (charge < 0) {
-        painter->drawImage(realsize(),negativeImage);
+        painter->drawImage(realsize(),gameScene->negativeImage);
     } else {
-        painter->drawImage(realsize(),neutralImage);
+        painter->drawImage(realsize(),gameScene->neutralImage);
     }
 }
 
@@ -49,15 +45,13 @@ void Particle::advance(int step) {
         if(Particle* particle = (Particle*)item) {
             double particleDistances = size().width() / 2.0 + particle->size().width() / 2.0;
             QVector2D r = QVector2D(this->position() - particle->position());
-            double lengthSquared = pow(r.x(), 2) + pow(r.y(), 2);
-            double length = sqrt(lengthSquared);
-            if(length != 0) {
-                QVector2D rn = r / length;
+            if(r.length() != 0) {
+                QVector2D rn = r.normalized();
                 double q1q2 = this->charge * particle->charge;
-                QVector2D F_e = rn * (q1q2/(length));
+                QVector2D F_e = rn * (q1q2/(r.length()));
                 QVector2D F_r;
-                if(length < particleDistances) {
-                    F_r = -rn * 50*(length - particleDistances);
+                if(r.length() < particleDistances) {
+                    F_r = -rn * 50*(r.length() - particleDistances);
 
                     // Decharging
                     double chargediff = fabs(charge - particle->charge);

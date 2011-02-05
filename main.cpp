@@ -1,8 +1,18 @@
 #include <QtGui>
-#include <QtOpenGL/qgl.h>
+#ifndef Q_OS_SYMBIAN
+#include <QGLWidget>
+#endif
 #include <QDebug>
 #include "gamescene.h"
 #include "gameview.h"
+
+// Needed Symbian specific headers
+#ifdef Q_OS_SYMBIAN
+#include <eikenv.h>
+#include <eikappui.h>
+#include <aknenv.h>
+#include <aknappui.h>
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -22,7 +32,19 @@ int main(int argc, char *argv[])
     view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 //    view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view.setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Reaktor"));
+#ifndef Q_OS_SYMBIAN
     view.setViewport(new QGLWidget()); // IMPORTANT: Disabling this makes animations with images sluggish. Disable only if enteriely necessary, and try to find another option to draw smooth animations first.
+#endif
+    // Symbian specific code
+#ifdef Q_OS_SYMBIAN
+    CAknAppUi* appUi = dynamic_cast<CAknAppUi*> (CEikonEnv::Static()->AppUi());
+    TRAPD(error,
+          if (appUi) {
+        // Lock application orientation into landscape
+        appUi->SetOrientationL(CAknAppUi::EAppUiOrientationLandscape);
+    }
+    );
+#endif
 
     //view.resize(400, 300);
 #if defined(Q_WS_S60)

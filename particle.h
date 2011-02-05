@@ -33,7 +33,6 @@ private:
     double charge;
     QVector2D _velocity;
     QVector2D _position;
-    GameScene* gameScene;
     QImage negativeImage;
     QImage positiveImage;
     QImage neutralImage;

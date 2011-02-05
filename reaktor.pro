@@ -5,8 +5,9 @@
 #-------------------------------------------------
 
 QT       += core gui
-QT += opengl
-
+!symbian{
+    QT += opengl
+}
 TARGET = reaktor
 TEMPLATE = app
 
@@ -31,6 +32,8 @@ symbian {
     # TARGET.CAPABILITY += 
     TARGET.EPOCSTACKSIZE = 0x14000
     TARGET.EPOCHEAPSIZE = 0x020000 0x800000
+    # cone.lib, eikcore.lib and avkon.lib Symbian libraries
+    LIBS += -lcone -leikcore -lavkon
 }
 
 RESOURCES += \
