@@ -12,8 +12,9 @@ GameScene::GameScene(QObject *parent) :
     firstStep = true;
 
     // load images
-    positiveImage = QImage(":/images/particle-positive.png");
-    negativeImage = QImage(":/images/particle-negative.png");
+    positiveImage = QImage(":/images/particle-positive.svg");
+    negativeImage = QImage(":/images/particle-negative.svg");
+    neutralImage = QImage(":/images/particle-neutral.svg");
 
     setSceneRect(0, 0, 400, 300); // just for init
     setItemIndexMethod(QGraphicsScene::NoIndex);

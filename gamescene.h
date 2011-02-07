@@ -17,6 +17,7 @@ public:
     int lastFrameTime;
     QImage negativeImage;
     QImage positiveImage;
+    QImage neutralImage;
     float dt(); // time difference in seconds, should never fall below 20fps
 signals:
 
