@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
-!symbian{
+unix {
     QT += opengl
 }
 TARGET = reaktor
