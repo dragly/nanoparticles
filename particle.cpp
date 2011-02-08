@@ -18,8 +18,7 @@ Particle::Particle()
 }
 
 void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
-    GameScene* gameScene;
-    gameScene = (GameScene*)scene();
+    GameScene* gameScene = (GameScene*)scene();
     if(charge > 0) {
         painter->drawImage(realsize(),gameScene->positiveImage);
     } else if (charge < 0) {
@@ -30,7 +29,9 @@ void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 }
 
 QRectF Particle::boundingRect() const {
-    return QRectF(-5,-5,10,10);
+    double width = (QRectF(0,0,2,2).width()) / 100 * scene()->width();
+    double height = (QRectF(0,0,2,2).height()) / 100 * scene()->width();
+    return QRectF(-width / 2.0, -height / 2.0, width, height);
 }
 
 void Particle::advance(int step) {
