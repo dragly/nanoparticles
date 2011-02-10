@@ -2,6 +2,14 @@
 #include "particle.h"
 #include <QDebug>
 
+/* TODO
+    - Create svgs for player and dangerous particles.
+    - Create special particles for player and dangerous particles (particle type).
+    - Make dangerous particles sticky (at least some of them).
+    - Create a system for levels.
+    - Add license text.
+*/
+
 GameScene::GameScene(QObject *parent) :
         QGraphicsScene(parent)
 {
