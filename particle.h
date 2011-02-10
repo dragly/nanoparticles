@@ -29,7 +29,6 @@ protected:
     void advance(int step);
 
 private:
-    double scale;
     double charge;
     QVector2D _velocity;
     QVector2D _position;
@@ -38,6 +37,7 @@ private:
     QImage neutralImage;
     QRectF _size;
     double blah;
+    GameScene *gameScene() {return (GameScene*)scene();}
 
 };
 
