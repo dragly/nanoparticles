@@ -1,8 +1,5 @@
 // all
 #include <QtGui>
-#ifndef Q_OS_SYMBIAN
-#include <QGLWidget>
-#endif
 #include <QDebug>
 // Symbian
 #ifdef Q_WS_S60
@@ -12,8 +9,8 @@
 #include <aknappui.h>
 #endif
 // not Symbian
-#if defined(Q_WS_MAEMO_5)
-#include <QtOpenGL/qgl.h>
+#if defined(Q_WS_MAEMO_5) || defined(Q_OS_LINUX)
+#include <QGLWidget>
 #endif
 // internal (all)
 #include "gamescene.h"
@@ -50,7 +47,8 @@ int main(int argc, char *argv[])
     }
     );
 #endif
-#ifdef defined(Q_WS_MAEMO_5)
+
+#if defined(Q_WS_MAEMO_5) || defined(Q_OS_LINUX)
     view.setViewport(new QGLWidget()); // IMPORTANT: Disabling this makes animations with images sluggish. Disable only if enteriely necessary, and try to find another option to draw smooth animations first.
 #endif
 

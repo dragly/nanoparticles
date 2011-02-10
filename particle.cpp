@@ -13,18 +13,16 @@ const double dechargeRate = 0.01;
 
 Particle::Particle()
 {
-    scale = 5.0;
     setSize(QRectF(0,0,2,2));
 }
 
 void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
-    GameScene* gameScene = (GameScene*)scene();
     if(charge > 0) {
-        painter->drawImage(realsize(),gameScene->positiveImage);
+        painter->drawImage(realsize(),gameScene()->positiveImage);
     } else if (charge < 0) {
-        painter->drawImage(realsize(),gameScene->negativeImage);
+        painter->drawImage(realsize(),gameScene()->negativeImage);
     } else {
-        painter->drawImage(realsize(),gameScene->neutralImage);
+        painter->drawImage(realsize(),gameScene()->neutralImage);
     }
 }
 
@@ -35,16 +33,16 @@ QRectF Particle::boundingRect() const {
 }
 
 void Particle::advance(int step) {
-    float dt = ((GameScene*)scene())->dt();
+    float dt = ((GameScene*)gameScene())->dt();
 
-    QList<QGraphicsItem *> items= scene()->items();
+    QList<QGraphicsItem *> items= gameScene()->items();
 
     QVector2D F;
     foreach(QGraphicsItem* item, items) {
         if (item == this)
             continue;
         if(Particle* particle = (Particle*)item) {
-            double particleDistances = size().width() / 2.0 + particle->size().width() / 2.0;
+            double particleDistances = scale() * size().width() / 2.0 + scale() * particle->size().width() / 2.0;
             QVector2D r = QVector2D(this->position() - particle->position());
             if(r.length() != 0) {
                 QVector2D rn = r.normalized();
@@ -81,20 +79,24 @@ void Particle::advance(int step) {
     setPosition(position() + velocity() * dt);
 
     // restrain edges
-    if(position().x() < 0 + size().width()) {
-        setPosition(QVector2D(0 + size().width(),position().y()));
+    double minx = gameScene()->gameRectF().left() + size().width() * scale() / 2;
+    if(position().x() < minx) {
+        setPosition(QVector2D(minx,position().y()));
         _velocity.setX(-_velocity.x());
     }
-    if(position().y() < 0 + size().width()) {
-        setPosition(QVector2D(position().x(),0 + size().width()));
+    double miny = gameScene()->gameRectF().top() + size().width() * scale() / 2;
+    if(position().y() < miny) {
+        setPosition(QVector2D(position().x(),miny));
         _velocity.setY(-_velocity.y());
     }
-    if(position().x() > 100 - size().width()) {
-        setPosition(QVector2D(100 - size().width(),position().y()));
+    double maxx = gameScene()->gameRectF().right() - size().width() * scale() / 2;
+    if(position().x() > maxx) {
+        setPosition(QVector2D(maxx,position().y()));
         _velocity.setX(-_velocity.x());
     }
-    if(position().y() > scene()->height() / scene()->width() * 100 - size().width()) {
-        setPosition(QVector2D(position().x(),scene()->height() / scene()->width() * 100 - size().width()));
+    double maxy = gameScene()->height() / gameScene()->width() * gameScene()->gameRectF().bottom() - size().width() * scale() / 2;
+    if(position().y() > maxy) {
+        setPosition(QVector2D(position().x(),maxy));
         _velocity.setY(-_velocity.y());
     }
 }
@@ -105,11 +107,11 @@ QRectF Particle::realsize() {
 }
 
 double Particle::toFp(double number) {
-    return number / 100 * scene()->width();
+    return number / 100 * gameScene()->width();
 }
 
 double Particle::fromFp(double number) {
-    return number * 100 / scene()->width();
+    return number * 100 / gameScene()->width();
 }
 
 void Particle::setPosition(QVector2D position) {
