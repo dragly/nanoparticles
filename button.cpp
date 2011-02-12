@@ -12,9 +12,17 @@ void Button::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
     Q_UNUSED(option)
     Q_UNUSED(widget)
     if(_buttonType == ButtonPositive) {
-        painter->drawImage(realsize(),gameScene()->positiveImage);
+        if(gameScene()->remainingPositiveCharges > 0) {
+            painter->drawImage(realsize(),gameScene()->positiveImage);
+        } else {
+            painter->drawImage(realsize(),gameScene()->neutralImage);
+        }
     } else {
-        painter->drawImage(realsize(),gameScene()->negativeImage);
+        if(gameScene()->remainingNegativeCharges > 0) {
+            painter->drawImage(realsize(),gameScene()->negativeImage);
+        } else {
+            painter->drawImage(realsize(),gameScene()->neutralImage);
+        }
     }
 }
 
