@@ -1,5 +1,7 @@
 #include "gamescene.h"
 #include "particle.h"
+#include "button.h"
+
 #include <QDebug>
 
 /* TODO
@@ -30,21 +32,22 @@ GameScene::GameScene(QObject *parent) :
 
     startLevel(1);
     // Add buttons
-    positiveButton = new QPushButton();
-    positiveButton->setGeometry(width()-40,10,30,30);
-    positiveButton->setStyleSheet("QPushButton {background: transparent; border-image: url(:/images/particle-positive.svg);}");;
-    addWidget(positiveButton);
-    negativeButton = new QPushButton();
-    negativeButton->setGeometry(width()-40,50,30,30);
-    negativeButton->setStyleSheet("background: transparent; border-image: url(:/images/particle-negative.svg);");;
-    addWidget(negativeButton);
+    positiveButton = new Button();
+    addItem(positiveButton);
+    positiveButton->setPosition(QVector2D(90,5));
+    positiveButton->setScale(7);
+    positiveButton->setButtonType(Button::ButtonPositive);
+    negativeButton = new Button();
+    addItem(negativeButton);
+    negativeButton->setScale(7);
+    negativeButton->setPosition(QVector2D(90,15));
+    negativeButton->setButtonType(Button::ButtonNegative);
     // end add buttons
 
-    QObject::connect(positiveButton, SIGNAL(clicked()), this, SLOT(clickedPositiveButton()));
-    QObject::connect(negativeButton, SIGNAL(clicked()), this, SLOT(clickedNegativeButton()));
+    QObject::connect(positiveButton, SIGNAL(clicked()), SLOT(clickedPositiveButton()));
+    QObject::connect(negativeButton, SIGNAL(clicked()), SLOT(clickedNegativeButton()));
 
-
-    QObject::connect(&timer, SIGNAL(timeout()), this, SLOT(advance()));
+    QObject::connect(&timer, SIGNAL(timeout()), SLOT(advance()));
     timer.start(10);
     time.start();
 }
@@ -57,25 +60,33 @@ void GameScene::clickedNegativeButton() {
     selectedParticleType = ParticleNegative;
 }
 
+void GameScene::resized() {
+    foreach(QGraphicsItem* item, items()) {
+        if(Button* button = (Button*)item) {
+            button->setPosition(button->position());
+        }
+    }
+}
+
 void GameScene::startLevel(int level) {
     this->level = level;
     items().clear();
-    for(int i=0; i<level; i++) {
-        for(int j=0; j<0; j++) {
-            Particle *particle = new Particle();
-            particle->setPos(((double)qrand()/(double)RAND_MAX)*50,((double)qrand()/(double)RAND_MAX)*40);
+//    for(int i=0; i<level; i++) {
+//        for(int j=0; j<0; j++) {
+//            Particle *particle = new Particle();
+//            particle->setPos(((double)qrand()/(double)RAND_MAX)*50,((double)qrand()/(double)RAND_MAX)*40);
 
-            int fortegn;
-            if(qrand() % 2) {
-                fortegn = 1;
-            } else {
-                fortegn = -1;
-            }
-            particle->setCharge(fortegn * ((double)qrand()/(double)RAND_MAX) * 4.0);
-            addItem(particle);
+//            int fortegn;
+//            if(qrand() % 2) {
+//                fortegn = 1;
+//            } else {
+//                fortegn = -1;
+//            }
+//            particle->setCharge(fortegn * ((double)qrand()/(double)RAND_MAX) * 4.0);
+//            addItem(particle);
 
-        }
-    }
+//        }
+//    }
 }
 
 void GameScene::advance() {
@@ -106,10 +117,10 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         }
         Particle *particle = new Particle();
         addItem(particle);
-        QVector2D position = QVector2D(particle->fromFp(event->scenePos().x()),particle->fromFp(event->scenePos().y()));
+        QVector2D position = QVector2D(fromFp(event->scenePos().x()),fromFp(event->scenePos().y()));
         particle->setPosition(position);
         particle->setCharge(fortegn * 3.5);
-        particle->setScale(2);
+        particle->setScale(5);
     } else {
         QGraphicsScene::mousePressEvent(event);
     }
@@ -126,7 +137,19 @@ QRectF GameScene::gameRectF() {
     QRectF gameRect;
     gameRect.setLeft(0);
     gameRect.setTop(0);
-    gameRect.setRight(80);
-    gameRect.setBottom(100);
+    double right = 80;
+    double bottom = height() / width() * 100;
+    gameRect.setRight(right);
+    gameRect.setBottom(bottom);
     return gameRect;
+}
+
+
+
+double GameScene::toFp(double number) {
+    return number / 100 * width();
+}
+
+double GameScene::fromFp(double number) {
+    return number * 100 / width();
 }

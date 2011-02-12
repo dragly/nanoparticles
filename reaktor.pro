@@ -15,12 +15,16 @@ TEMPLATE = app
 SOURCES += main.cpp \
     particle.cpp \
     gamescene.cpp \
-    gameview.cpp
+    gameview.cpp \
+    button.cpp \
+    gameobject.cpp
 
 HEADERS  += \
     particle.h \
     gamescene.h \
-    gameview.h
+    gameview.h \
+    button.h \
+    gameobject.h
 
 FORMS    +=
 

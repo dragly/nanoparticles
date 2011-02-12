@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 
     GameScene scene;
 
-    GameView view(0);
+    GameView view;
     view.setScene(&scene);
     view.setRenderHint(QPainter::Antialiasing,true);
     view.setRenderHint(QPainter::SmoothPixmapTransform,true);

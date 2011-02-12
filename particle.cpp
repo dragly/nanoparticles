@@ -11,12 +11,16 @@
 
 const double dechargeRate = 0.01;
 
-Particle::Particle()
+Particle::Particle() :
+        GameObject() , charge(0), _velocity(0,0)
 {
-    setSize(QRectF(0,0,2,2));
+//    setSize(QRectF(0,0,2,2));
+
 }
 
 void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+    Q_UNUSED(option)
+    Q_UNUSED(widget)
     if(charge > 0) {
         painter->drawImage(realsize(),gameScene()->positiveImage);
     } else if (charge < 0) {
@@ -26,13 +30,8 @@ void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     }
 }
 
-QRectF Particle::boundingRect() const {
-    double width = (QRectF(0,0,2,2).width()) / 100 * scene()->width();
-    double height = (QRectF(0,0,2,2).height()) / 100 * scene()->width();
-    return QRectF(-width / 2.0, -height / 2.0, width, height);
-}
-
 void Particle::advance(int step) {
+    Q_UNUSED(step)
     float dt = ((GameScene*)gameScene())->dt();
 
     QList<QGraphicsItem *> items= gameScene()->items();
@@ -41,7 +40,7 @@ void Particle::advance(int step) {
     foreach(QGraphicsItem* item, items) {
         if (item == this)
             continue;
-        if(Particle* particle = (Particle*)item) {
+        if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
             double particleDistances = scale() * size().width() / 2.0 + scale() * particle->size().width() / 2.0;
             QVector2D r = QVector2D(this->position() - particle->position());
             if(r.length() != 0) {
@@ -94,27 +93,9 @@ void Particle::advance(int step) {
         setPosition(QVector2D(maxx,position().y()));
         _velocity.setX(-_velocity.x());
     }
-    double maxy = gameScene()->height() / gameScene()->width() * gameScene()->gameRectF().bottom() - size().width() * scale() / 2;
+    double maxy = gameScene()->gameRectF().bottom() - size().width() * scale() / 2;
     if(position().y() > maxy) {
         setPosition(QVector2D(position().x(),maxy));
         _velocity.setY(-_velocity.y());
     }
-}
-QRectF Particle::realsize() {
-    double width = toFp(_size.width());
-    double height = toFp(_size.height());
-    return QRectF(-width / 2.0, -height / 2.0, width, height);
-}
-
-double Particle::toFp(double number) {
-    return number / 100 * gameScene()->width();
-}
-
-double Particle::fromFp(double number) {
-    return number * 100 / gameScene()->width();
-}
-
-void Particle::setPosition(QVector2D position) {
-     this->_position = position;
-     setPos(toFp(position.x()),toFp(position.y()));
 }

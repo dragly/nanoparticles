@@ -2,28 +2,27 @@
 #define PARTICLE_H
 #include <QGraphicsItem>
 #include <QVector2D>
+#include "gameobject.h"
 #include "gamescene.h"
 
-class Particle : public QGraphicsItem
+class Particle : public GameObject
 {
 public:
     Particle();
 
+    enum { Type = UserType + 1 };
+
+    int type() const
+    {
+        // Enable the use of qgraphicsitem_cast with this item.
+        return Type;
+    }
+
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                     QWidget *widget);
-
-    QRectF boundingRect() const;
     void setCharge(float charge) {this->charge = charge;}
     void setVelocity(QVector2D velocity) {this->_velocity = velocity;}
     QVector2D velocity() {return _velocity;}
-    void setPosition(QVector2D position);
-    QVector2D position() {return _position;}
-    QRectF size() {return _size;}
-    QRectF realsize();
-    void setSize(QRectF size) {this->_size = size;}
-
-    double fromFp(double number);
-    double toFp(double number);
 
 protected:
     void advance(int step);
@@ -31,13 +30,9 @@ protected:
 private:
     double charge;
     QVector2D _velocity;
-    QVector2D _position;
     QImage negativeImage;
     QImage positiveImage;
     QImage neutralImage;
-    QRectF _size;
-    double blah;
-    GameScene *gameScene() {return (GameScene*)scene();}
 
 };
 

@@ -7,6 +7,8 @@
 #include <QTimer>
 #include <QTime>
 
+class Button;
+
 class GameScene : public QGraphicsScene
 {
     Q_OBJECT
@@ -23,6 +25,9 @@ public:
     QImage neutralImage;
     float dt(); // time difference in seconds, should never fall below 20fps
     QRectF gameRectF();
+    double toFp(double number);
+    double fromFp(double number);
+    void resized();
 
 signals:
 
@@ -44,8 +49,8 @@ private:
     QTime time;
 
     bool firstStep;
-    QPushButton* positiveButton;
-    QPushButton* negativeButton;
+    Button* positiveButton;
+    Button* negativeButton;
 
 };
 
