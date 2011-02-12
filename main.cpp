@@ -24,19 +24,13 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
-    GameScene scene;
-
     GameView view;
-    view.setScene(&scene);
-    view.setRenderHint(QPainter::Antialiasing,true);
-    view.setRenderHint(QPainter::SmoothPixmapTransform,true);
-    view.setBackgroundBrush(QImage(":/images/background.png"));
-    view.setCacheMode(QGraphicsView::CacheBackground);
-    view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-//    view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-    view.setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Reaktor"));
+    // Font loading
+    QFontDatabase database;
+    if(!database.addApplicationFont(":/fonts/novasquare/NovaSquare.ttf")) {
+        qWarning() << "Could not load Nova font!";
+    }
+
     // Symbian specific code
 #ifdef Q_OS_SYMBIAN
     CAknAppUi* appUi = dynamic_cast<CAknAppUi*> (CEikonEnv::Static()->AppUi());

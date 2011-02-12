@@ -6,23 +6,26 @@
 Button::Button() :
         GameObject(), _buttonType(ButtonPositive)
 {
+    setButtonType(StandardButton);
 }
 
 void Button::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     Q_UNUSED(option)
     Q_UNUSED(widget)
-    if(_buttonType == ButtonPositive) {
+    if(buttonType() == ButtonPositive) {
         if(gameScene()->remainingPositiveCharges > 0) {
             painter->drawImage(realsize(),gameScene()->positiveImage);
         } else {
             painter->drawImage(realsize(),gameScene()->neutralImage);
         }
-    } else {
+    } else if(buttonType() == ButtonNegative) {
         if(gameScene()->remainingNegativeCharges > 0) {
             painter->drawImage(realsize(),gameScene()->negativeImage);
         } else {
             painter->drawImage(realsize(),gameScene()->neutralImage);
         }
+    } else {
+        painter->drawImage(realsize(),buttonImage);
     }
 }
 

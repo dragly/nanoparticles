@@ -15,7 +15,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.0 r9654"
-   sodipodi:docname="particle-player.svg">
+   sodipodi:docname="particle-positive.svg">
   <defs
      id="defs4">
     <linearGradient
@@ -219,6 +219,14 @@
          stdDeviation="3.8582002"
          id="feGaussianBlur3942" />
     </filter>
+    <filter
+       inkscape:collect="always"
+       id="filter5618">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="1.2"
+         id="feGaussianBlur5620" />
+    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -227,9 +235,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.7"
-     inkscape:cx="-359.26489"
-     inkscape:cy="70.12012"
+     inkscape:zoom="3.2125"
+     inkscape:cx="49.41294"
+     inkscape:cy="42.648845"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -237,10 +245,10 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="1600"
-     inkscape:window-height="1089"
-     inkscape:window-x="0"
-     inkscape:window-y="24"
+     inkscape:window-width="1680"
+     inkscape:window-height="1022"
+     inkscape:window-x="1600"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true" />
@@ -252,7 +260,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -263,13 +271,14 @@
      transform="translate(-188.57143,-372.36218)">
     <path
        sodipodi:type="arc"
-       style="fill:url(#radialGradient3766);fill-opacity:1;stroke:none;opacity:0.81115879999999985;"
+       style="opacity:0.81115877999999986;fill:url(#radialGradient3766);fill-opacity:1;stroke:none;filter:url(#filter5618)"
        id="path2985"
        sodipodi:cx="248.57143"
        sodipodi:cy="432.36218"
        sodipodi:rx="60"
        sodipodi:ry="60"
-       d="m 308.57143,432.36218 c 0,33.13709 -26.86292,60 -60,60 -33.13709,0 -60,-26.86291 -60,-60 0,-33.13708 26.86291,-60 60,-60 33.13708,0 60,26.86292 60,60 z" />
+       d="m 308.57143,432.36218 a 60,60 0 1 1 -120,0 60,60 0 1 1 120,0 z"
+       transform="matrix(0.95,0,0,0.95,12.428571,21.618109)" />
     <path
        transform="translate(188.57143,372.36218)"
        style="fill:url(#radialGradient3781);fill-opacity:1;stroke:none;filter:url(#filter3940)"
