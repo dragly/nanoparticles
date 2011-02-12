@@ -42,3 +42,6 @@ symbian {
 
 RESOURCES += \
     resources.qrc
+
+OTHER_FILES += \
+    LICENSE-font-NovaSquare.txt

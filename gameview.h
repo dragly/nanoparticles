@@ -2,6 +2,7 @@
 #define GAMEVIEW_H
 
 #include <QGraphicsView>
+#include "gamescene.h"
 
 class GameView : public QGraphicsView
 {
@@ -15,6 +16,9 @@ public slots:
 
 protected:
     void resizeEvent(QResizeEvent *event);
+
+private:
+    GameScene gameScene;
 
 };
 

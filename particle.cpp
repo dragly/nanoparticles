@@ -72,7 +72,7 @@ void Particle::advance(int step) {
                         F_r = -rn * springConstant * (r.length() - particleDistances);
                         if((particle->particleType() == ParticleEnemy && particleType() == ParticlePlayer) ||
                            (particle->particleType() == ParticlePlayer && particleType() == ParticleEnemy)) { // Player-enemy crash - Game Over
-                            // GAME OVER
+                            gameScene()->gameOver();
                         }
                         // Charge exchange
                         double chargediff = fabs(charge - particle->charge); // charge difference

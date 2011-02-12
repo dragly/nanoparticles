@@ -1,7 +1,7 @@
 #include "gameobject.h"
 
 GameObject::GameObject() :
-    QGraphicsObject(), _position(0,0), _size(-1,-1,1,1)
+    QGraphicsObject(), _size(-1,-1,1,1), _position(0,0)
 {
 }
 

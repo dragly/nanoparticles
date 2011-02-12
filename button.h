@@ -15,7 +15,7 @@ public:
 
     enum { Type = UserType + 2 };
 
-    enum { ButtonNegative, ButtonPositive };
+    enum { StandardButton, ButtonNegative, ButtonPositive };
 
     int type() const
     {
@@ -28,6 +28,9 @@ public:
 
     int buttonType() { return _buttonType; }
     void setButtonType(int type) { _buttonType = type; }
+    void setImage(QString filename) {
+        buttonImage = QImage(filename);
+    }
 
 signals:
     void clicked();
@@ -39,6 +42,7 @@ private:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
     int _buttonType;
+    QImage buttonImage;
 };
 
 #endif // BUTTON_H
