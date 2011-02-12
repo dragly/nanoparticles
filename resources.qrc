@@ -2,10 +2,11 @@
     <qresource prefix="/">
         <file>images/particle-negative.svg</file>
         <file>images/particle-positive.svg</file>
-        <file>images/particle-negative.png</file>
-        <file>images/particle-positive.png</file>
         <file>images/background.png</file>
         <file>images/particle-neutral.svg</file>
         <file>images/particle-neutral.png</file>
+        <file>images/particle-enemy.svg</file>
+        <file>images/particle-player.svg</file>
+        <file>images/particle-player-overcharged.svg</file>
     </qresource>
 </RCC>

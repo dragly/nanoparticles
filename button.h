@@ -26,12 +26,8 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                     QWidget *widget);
 
-    int buttonType() {
-        return _buttonType;
-    }
-    void setButtonType(int type) {
-        _buttonType = type;
-    }
+    int buttonType() { return _buttonType; }
+    void setButtonType(int type) { _buttonType = type; }
 
 signals:
     void clicked();

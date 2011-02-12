@@ -15,7 +15,7 @@ class GameScene : public QGraphicsScene
 public:
     explicit GameScene(QObject *parent = 0);
 
-    enum GameState{GameRunning, GamePaused, GameMenu};
+    enum GameState{GameRunning, GamePaused};
     enum ParticleType{ParticleNegative, ParticlePositive};
 
     int currentTime;
@@ -23,11 +23,20 @@ public:
     QImage negativeImage;
     QImage positiveImage;
     QImage neutralImage;
+    QImage enemyImage;
+    QImage playerImage;
+    QImage playerOverchargedImage;
     float dt(); // time difference in seconds, should never fall below 20fps
     QRectF gameRectF();
     double toFp(double number);
     double fromFp(double number);
     void resized();
+
+    void showGameMenu();
+
+    int remainingNegativeCharges;
+    int remainingPositiveCharges;
+    QTime time;
 
 signals:
 
@@ -46,11 +55,12 @@ private:
     void startLevel(int level);
 
     QTimer timer;
-    QTime time;
 
     bool firstStep;
     Button* positiveButton;
     Button* negativeButton;
+
+    QGraphicsRectItem *menuBackgroundRect;
 
 };
 

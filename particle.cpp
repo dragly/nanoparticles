@@ -9,65 +9,104 @@
 
 #include <math.h>
 
-const double dechargeRate = 0.01;
+const qreal dechargeRate = 1.0;
+const qreal springConstant = 65;
+const qreal minimumCharge = 1.0;
 
 Particle::Particle() :
-        GameObject() , charge(0), _velocity(0,0)
+        GameObject() , charge(0), _velocity(0,0), _sticky(false), _particleType(ParticleSimple)
 {
-//    setSize(QRectF(0,0,2,2));
-
 }
 
 void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     Q_UNUSED(option)
     Q_UNUSED(widget)
-    if(charge > 0) {
-        painter->drawImage(realsize(),gameScene()->positiveImage);
-    } else if (charge < 0) {
-        painter->drawImage(realsize(),gameScene()->negativeImage);
-    } else {
-        painter->drawImage(realsize(),gameScene()->neutralImage);
+    if(particleType() == ParticleSimple) {
+        qreal opacity = 1 - (fabs(charge) - minimumCharge)/(fabs(originalCharge)  - minimumCharge);
+        if(charge > 0) {
+            painter->drawImage(realsize(),gameScene()->positiveImage);
+            painter->setOpacity(opacity);
+            painter->drawImage(realsize(),gameScene()->neutralImage);
+        } else if (charge < 0) {
+            painter->drawImage(realsize(),gameScene()->negativeImage);
+            painter->setOpacity(opacity);
+            painter->drawImage(realsize(),gameScene()->neutralImage);
+        } else {
+            painter->drawImage(realsize(),gameScene()->neutralImage);
+        }
+    } else if(particleType() == ParticlePlayer) {
+        qreal opacity = (fabs(charge)-fabs(originalCharge))/fabs(originalCharge);
+        if(opacity > 1.0) {
+            opacity = 1.0;
+        } else if(opacity < 0.0) {
+            opacity = 0.0;
+        }
+//        painter->setOpacity(pacity);
+        painter->drawImage(realsize(),gameScene()->playerImage);
+        painter->setOpacity(opacity);
+        painter->drawImage(realsize(),gameScene()->playerOverchargedImage);
+
+    } else if(particleType() == ParticleEnemy) {
+        painter->drawImage(realsize(),gameScene()->enemyImage);
     }
 }
 
 void Particle::advance(int step) {
     Q_UNUSED(step)
-    float dt = ((GameScene*)gameScene())->dt();
-
-    QList<QGraphicsItem *> items= gameScene()->items();
-
+    float dt = gameScene()->dt();
     QVector2D F;
-    foreach(QGraphicsItem* item, items) {
-        if (item == this)
-            continue;
-        if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
-            double particleDistances = scale() * size().width() / 2.0 + scale() * particle->size().width() / 2.0;
-            QVector2D r = QVector2D(this->position() - particle->position());
-            if(r.length() != 0) {
-                QVector2D rn = r.normalized();
-                double q1q2 = this->charge * particle->charge;
-                QVector2D F_e = rn * (q1q2/(r.length()));
-                QVector2D F_r;
-                if(r.length() < particleDistances) {
-                    F_r = -rn * 50*(r.length() - particleDistances);
-
-                    // Decharging
-                    double chargediff = fabs(charge - particle->charge);
-                    if(charge > particle->charge) {
-                        charge -= chargediff * dt * dechargeRate;
-                        particle->charge += chargediff * dt * dechargeRate;
-                    } else if(charge < particle->charge) {
-                        charge += chargediff* dt * dechargeRate;
-                        particle->charge -= chargediff * dt * dechargeRate;
+    if(!sticky()) { // only calculate forces if the particle is sticky
+        QList<QGraphicsItem *> items= gameScene()->items();
+        foreach(QGraphicsItem* item, items) {
+            if (item == this)
+                continue;
+            if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
+                double particleDistances = scale() * size().width() / 2.0 + particle->scale() * particle->size().width() / 2.0;
+                QVector2D r = QVector2D(this->position() - particle->position());
+                if(r.length() != 0) {
+                    QVector2D rn = r.normalized();
+                    double q1q2 = this->charge * particle->charge;
+                    QVector2D F_e = rn * (q1q2/(r.length()));
+                    QVector2D F_r;
+                    if(r.length() < particleDistances) {
+                        F_r = -rn * springConstant * (r.length() - particleDistances);
+                        if((particle->particleType() == ParticleEnemy && particleType() == ParticlePlayer) ||
+                           (particle->particleType() == ParticlePlayer && particleType() == ParticleEnemy)) { // Player-enemy crash - Game Over
+                            // GAME OVER
+                        }
+                        // Charge exchange
+                        double chargediff = fabs(charge - particle->charge); // charge difference
+                        qreal dechargeRateTotal = fabs(r.length() - particleDistances) * dechargeRate;
+                        if(particleType() != ParticleEnemy && particle->particleType() != ParticleEnemy) { // do not decharge enemies
+                            if(particleType() == ParticlePlayer) { // if either particles are the player
+                                charge += fabs(particle->charge) * dt * dechargeRateTotal; // it gets some of the other's charge
+                                particle->charge -= particle->charge * dt * dechargeRateTotal; // that the  other particle loses
+                                qDebug() << "Player:" << charge;
+                                qDebug() << particle->charge;
+                            } else if(particle->particleType() == ParticlePlayer) { // if either particles are the player
+                                particle->charge += fabs(charge) * dt * dechargeRateTotal; // it gets some of the other's charge
+                                charge -= charge * dt * dechargeRateTotal; // that the other particle loses
+                                qDebug() << "Player:" << particle->charge;
+                                qDebug() << charge;
+                            } else {
+                                if(charge > particle->charge) { // the one with most charge loses charge, the other gains
+                                    charge -= chargediff * dt * dechargeRateTotal;
+                                    particle->charge += chargediff * dt * dechargeRateTotal;
+                                } else if(charge < particle->charge) {
+                                    charge += chargediff* dt * dechargeRateTotal;
+                                    particle->charge -= chargediff * dt * dechargeRateTotal;
+                                }
+                            }
+                        }
+                        if(fabs(charge) < minimumCharge) {
+                            charge = 0.0;
+                        }
+                        if(fabs(particle->charge) < minimumCharge) {
+                            particle->charge = 0.0;
+                        }
                     }
-                    if(fabs(charge) < 1.0) {
-                        charge = 0.0;
-                    }
-                    if(fabs(particle->charge) < 1.0) {
-                        particle->charge = 0.0;
-                    }
+                    F += F_e + F_r;
                 }
-                F += F_e + F_r;
             }
         }
     }
