@@ -7,7 +7,7 @@ class GameView : public QGraphicsView
 {
     Q_OBJECT
 public:
-    explicit GameView(int bah = 0);
+    explicit GameView();
 
 signals:
 
