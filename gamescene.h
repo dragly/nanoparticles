@@ -89,9 +89,7 @@ private:
     QGraphicsBlurEffect menuBackgroundBlur;
 
     QGraphicsTextItem *timerText;
-    QGraphicsTextItem *gameOverText;
-
-
+    QGraphicsTextItem *menuTitleText;
 
 };
 

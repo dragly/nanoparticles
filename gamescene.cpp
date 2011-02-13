@@ -18,11 +18,19 @@
     - Test with Meego SDK
     - Test with Android NDK
 */
-
+// gui
 const qreal globalScale = 3;
-const qreal enemyCharge = -6;
-const qreal playerCharge = 6;
-const qreal simpleCharge = 3;
+// charges
+const qreal enemyCharge = -4;
+const qreal playerCharge = 4;
+const qreal simpleCharge = 2.5;
+
+const int incrementChargeNum = 1;
+const int baseChargeNum = 3;
+// time
+const int baseTime = 10;
+const int timeIncrement = 2;
+
 
 GameScene::GameScene(QObject *parent) :
         QGraphicsScene(parent)
@@ -65,13 +73,13 @@ GameScene::GameScene(QObject *parent) :
     QFont font;
     font.setFamily("NovaSquare");
     font.setPixelSize(20);
-    timerText = addText("x",font);
+    timerText = addText("",font);
     timerText->setDefaultTextColor(QColor(250,250,250,220));
     // end add in-game menu
 
     // Add menu
     menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
-    menuBackgroundRect->setVisible(true);
+    menuBackgroundRect->show();
     menuBackgroundRect->setOpacity(0.9);
     menuBackgroundRect->setZValue(98);
     menuBackgroundBlur.setBlurRadius(toFp(2));
@@ -79,39 +87,43 @@ GameScene::GameScene(QObject *parent) :
 
     continueGameButton = new Button();
     prepareButton(continueGameButton);
-    continueGameButton->setPosition(QVector2D(20,20));
+    continueGameButton->setScale(15);
+    continueGameButton->setPosition(QVector2D(50,35));
     continueGameButton->setImage(":/images/button-continue.png");
 
     retryGameButton = new Button();
     prepareButton(retryGameButton);
-    retryGameButton->setPosition(QVector2D(30,20));
+    retryGameButton->setPosition(QVector2D(65,35));
+    retryGameButton->setScale(8);
     retryGameButton->hide();
     retryGameButton->setImage(":/images/button-retry.png");
 
     exitGameButton = new Button();
     prepareButton(exitGameButton);
-    exitGameButton->setPosition(QVector2D(40,20));
+    exitGameButton->setPosition(QVector2D(92,7));
     exitGameButton->setImage(":/images/button-exit.png");
     // next/prev level
     prevLevelGameButton = new Button();
     prepareButton(prevLevelGameButton);
-    prevLevelGameButton->setPosition(QVector2D(20,30));
+    prevLevelGameButton->setPosition(QVector2D(60,50));
     prevLevelGameButton->setImage(":/images/button-leveldown.png");
 
     nextLevelButton = new Button();
     prepareButton(nextLevelButton);
-    nextLevelButton->setPosition(QVector2D(30,30));
+    nextLevelButton->setPosition(QVector2D(40,50));
     nextLevelButton->setImage(":/images/button-levelup.png");
 
     // menu text
     QFont menuFont;
-    QColor menuColor(250,250,250,220);
+    QColor menuFontColor(250,250,250,245);
     menuFont.setFamily("NovaSquare");
     menuFont.setPixelSize(30);
-    gameOverText = addText("Game Over!", menuFont);
-    gameOverText->hide();
-    gameOverText->setZValue(99);
-    gameOverText->setDefaultTextColor(menuColor);
+    // menu title text
+    menuTitleText = addText("Reaktor", menuFont);
+    menuTitleText->setHtml("<center>Reaktor</center>");
+    menuTitleText->setZValue(99);
+    menuTitleText->setDefaultTextColor(menuFontColor);
+    menuTitleText->setTextWidth(toFp(100));
     // end add menu
 
     // set up timer
@@ -146,7 +158,7 @@ GameScene::GameScene(QObject *parent) :
 
 void GameScene::prepareButton(Button *button) {
     addItem(button);
-    button->setScale(7);
+    button->setScale(10);
     button->setZValue(99);
     button->setButtonType(Button::StandardButton);
 }
@@ -157,12 +169,16 @@ void GameScene::resized() {
             button->setPosition(button->position());
         }
     }
-    menuBackgroundRect->setRect(toFp(5),
-                                toFp(5),
-                                toFp(95),
-                                toFp(height()/width() * 95));
+    menuBackgroundRect->setRect(toFp(10),
+                                toFp(10),
+                                toFp(75),
+                                toFp(height()/width() * 75));
     timerText->setPos(toFp(87),toFp(height()/width() * 45));
-    gameOverText->setPos(toFp(5),toFp(5));
+    menuTitleText->setPos(0,toFp(10));
+    menuTitleText->setTextWidth(toFp(100));
+    QFont menuFont = menuTitleText->font();
+    menuFont.setPointSize((int)toFp(10));
+    menuTitleText->setFont(menuFont);
     pauseGameButton->setPosition(QVector2D(90,height()/width() * 80));
 }
 
@@ -172,6 +188,8 @@ void GameScene::updateTime() {
     qDebug() << levelTime;
     if(levelTime < 1) {
         pauseGame();
+        menuTitleText->setHtml("<center>Level up!</center>");
+        menuTitleText->show();
         startLevel(level + 1);
     }
 }
@@ -182,6 +200,11 @@ void GameScene::continueGame() {
         startLevel(level);
     }
     setGameState(GameRunning);
+    // show pause button
+    pauseGameButton->show();
+    negativeButton->show();
+    positiveButton->show();
+    timerText->show();
     // hide main menu
     menuBackgroundRect->hide();
     continueGameButton->hide();
@@ -190,7 +213,7 @@ void GameScene::continueGame() {
     nextLevelButton->hide();
     prevLevelGameButton->hide();
     // hide main menu text
-    gameOverText->hide();
+    menuTitleText->hide();
 
     // start timer
     levelTimer->start();
@@ -200,6 +223,8 @@ void GameScene::continueGame() {
 void GameScene::pauseGame() {
     if(gameState() == GameRunning) {
         setGameState(GamePaused);
+        menuTitleText->setHtml("<center>Paused</center>");
+        menuTitleText->show();
     }
     if(gameState() != GameStarted) {
         retryGameButton->show();
@@ -208,6 +233,11 @@ void GameScene::pauseGame() {
         continueGameButton->show();
     }
     menuBackgroundRect->show();
+    // hide pause button
+    pauseGameButton->hide();
+    negativeButton->hide();
+    positiveButton->hide();
+    timerText->hide();
     // show main menu
     nextLevelButton->show();
     prevLevelGameButton->show();
@@ -220,7 +250,8 @@ void GameScene::pauseGame() {
 void GameScene::gameOver() {
     setGameState(GameOver);
     menuBackgroundRect->show();
-    gameOverText->show();
+    menuTitleText->setHtml("<center>Level Failed!</center>");
+    menuTitleText->show();
     pauseGame();
 
     qDebug() << "Game over";
@@ -261,7 +292,7 @@ void GameScene::setGameState(int gameState) {
 void GameScene::startLevel(int level) {
 
     // reset time
-    levelTime = 5 + 2*level;
+    levelTime = baseTime + timeIncrement * level;
 
     this->level = level;
 
@@ -276,8 +307,8 @@ void GameScene::startLevel(int level) {
     negativeButton->setEnabled(true);
 
     // set number of charges to use
-    remainingPositiveCharges = 2 + 1 * level;
-    remainingNegativeCharges = 2 + 1 * level;
+    remainingPositiveCharges = baseChargeNum + incrementChargeNum * level;
+    remainingNegativeCharges = baseChargeNum + incrementChargeNum * level;
 
     // add player
     Particle *player = new Particle();

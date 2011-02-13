@@ -55,7 +55,7 @@ void Particle::advance(int step) {
     Q_UNUSED(step)
     float dt = gameScene()->dt();
     QVector2D F;
-    if(!sticky()) { // only calculate forces if the particle is sticky
+    if(!sticky()) { // only calculate forces if the particle isn't sticky
         QList<QGraphicsItem *> items= gameScene()->items();
         foreach(QGraphicsItem* item, items) {
             if (item == this)

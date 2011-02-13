@@ -6,7 +6,9 @@
 
 QT       += core gui
 unix {
-    QT += opengl
+    !symbian {
+        QT += opengl
+    }
 }
 TARGET = reaktor
 TEMPLATE = app
