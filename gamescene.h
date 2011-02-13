@@ -28,8 +28,8 @@ public:
     QImage playerOverchargedImage;
     float dt(); // time difference in seconds, should never fall below 20fps
     QRectF gameRectF();
-    double toFp(double number);
-    double fromFp(double number);
+    double toFp(double number, bool useSmallest = false) const;
+    double fromFp(double number, bool useSmallest = false) const;
     void resized();
     void setGameState(int gameState);
     int gameState() {return _gameState;}
@@ -78,11 +78,11 @@ private:
     Button* pauseGameButton;
 
     // menu buttons
-    Button* continueGameButton;
-    Button* retryGameButton;
-    Button* exitGameButton;
+    Button* continueButton;
+    Button* retryButton;
+    Button* exitButton;
     Button* nextLevelButton;
-    Button* prevLevelGameButton;
+    Button* prevLevelButton;
 
     // menu background and effect
     QGraphicsRectItem *menuBackgroundRect;
@@ -90,6 +90,9 @@ private:
 
     QGraphicsTextItem *timerText;
     QGraphicsTextItem *menuTitleText;
+
+    void removeNegativeCharge();
+    void removePositiveCharge();
 
 };
 

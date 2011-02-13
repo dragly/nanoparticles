@@ -10,9 +10,9 @@ unix {
         QT += opengl
     }
 }
-TARGET = reaktor
+TARGET = Reaktor
+VERSION = 0.2.0
 TEMPLATE = app
-
 
 SOURCES += main.cpp \
     particle.cpp \
@@ -34,6 +34,8 @@ CONFIG += mobility
 MOBILITY = 
 
 symbian {
+    ICON = images/particle-positive.svg
+
     TARGET.UID3 = 0xe273c3f6
     # TARGET.CAPABILITY += 
     TARGET.EPOCSTACKSIZE = 0x14000

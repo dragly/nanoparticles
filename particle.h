@@ -33,6 +33,8 @@ public:
         this->_sticky = sticky;
     }
 
+    QRectF boundingRect() const;
+
 protected:
     void advance(int step);
 

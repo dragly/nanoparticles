@@ -138,3 +138,8 @@ void Particle::advance(int step) {
         _velocity.setY(-_velocity.y());
     }
 }
+
+
+QRectF Particle::boundingRect() const {
+    return realsize(false);
+}
