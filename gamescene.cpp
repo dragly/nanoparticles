@@ -5,13 +5,19 @@
 #include <QDebug>
 
 /* TODO
+    - Lower the decharge rate.
+    - Draw using FullViewPortUpdate to avoid movement calculations on Symbian (slow)
     - Create a system for levels.
     - Create level menu (and figure out how to format this).
     - Save highest achieved level, and make this the highest possible level to select in the level menu.
     - (The above could be level up/down, with up disabled at the highest level).
     - Create a timer to show how much longer the player needs to survive.
     - Create a countdown timer before the game starts - this gives the player a chance to make a strategy.
-    - Make it possible to place particles that are sticky after level 5
+    - Remove the background rectangle (or set opacity to 0.5).
+    - Add instructions.
+    - Make the first levels a bit easier.
+    - Add copyright/version window.
+    - Make it possible to place particles that are sticky after level 15
     - Add license text.
     - Test on Maemo and Symbian
     - Publish to Ovi Store
@@ -379,7 +385,7 @@ void GameScene::removeNegativeCharge() {
 void GameScene::removePositiveCharge() {
     remainingPositiveCharges--;
     if(remainingPositiveCharges < 1) {
-        positive->update();
+        positiveButton->update();
     }
 }
 
