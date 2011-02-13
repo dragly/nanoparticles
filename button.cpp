@@ -14,22 +14,27 @@ void Button::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
     Q_UNUSED(widget)
     if(buttonType() == ButtonPositive) {
         if(gameScene()->remainingPositiveCharges > 0) {
-            painter->drawImage(realsize(),gameScene()->positiveImage);
+            painter->drawImage(realsize(true),gameScene()->positiveImage);
         } else {
-            painter->drawImage(realsize(),gameScene()->neutralImage);
+            painter->drawImage(realsize(true),gameScene()->neutralImage);
         }
     } else if(buttonType() == ButtonNegative) {
         if(gameScene()->remainingNegativeCharges > 0) {
-            painter->drawImage(realsize(),gameScene()->negativeImage);
+            painter->drawImage(realsize(true),gameScene()->negativeImage);
         } else {
-            painter->drawImage(realsize(),gameScene()->neutralImage);
+            painter->drawImage(realsize(true),gameScene()->neutralImage);
         }
     } else {
-        painter->drawImage(realsize(),buttonImage);
+        painter->drawImage(realsize(true),buttonImage);
     }
 }
 
 void Button::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     Q_UNUSED(event)
     emit clicked();
+}
+
+
+QRectF Button::boundingRect() const {
+    return realsize(true);
 }

@@ -9,13 +9,11 @@ class GameObject : public QGraphicsObject
     Q_OBJECT
 public:
     explicit GameObject();
-    QRectF realsize();
+    QRectF realsize(bool useSmallest = false) const;
     GameScene *gameScene();
     QRectF size() const {return _size;}
     void setPosition(QVector2D position);
     QVector2D position() {return _position;}
-
-    QRectF boundingRect() const;
 
 signals:
 

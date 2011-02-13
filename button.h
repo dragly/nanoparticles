@@ -32,10 +32,13 @@ public:
         buttonImage = QImage(filename);
     }
 
+    QRectF boundingRect() const;
+
 signals:
     void clicked();
 public slots:
 
+protected:
 private:
     GameScene *gameScene() {return (GameScene*)scene();}
 

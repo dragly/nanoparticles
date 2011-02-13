@@ -56,23 +56,23 @@ GameScene::GameScene(QObject *parent) :
     // Add in-game menu
     positiveButton = new Button();
     addItem(positiveButton);
-    positiveButton->setPosition(QVector2D(90,5));
-    positiveButton->setScale(7);
+    positiveButton->setPosition(QVector2D(92,30));
+    positiveButton->setScale(12);
     positiveButton->setButtonType(Button::ButtonPositive);
 
     negativeButton = new Button();
     addItem(negativeButton);
-    negativeButton->setScale(7);
-    negativeButton->setPosition(QVector2D(90,15));
+    negativeButton->setScale(12);
+    negativeButton->setPosition(QVector2D(92,45));
     negativeButton->setButtonType(Button::ButtonNegative);
 
     pauseGameButton = new Button();
     prepareButton(pauseGameButton);
-    pauseGameButton->setScale(7);
+    pauseGameButton->setPosition(QVector2D(92,10));
     pauseGameButton->setImage(":/images/button-pause.png");
     QFont font;
     font.setFamily("NovaSquare");
-    font.setPixelSize(20);
+    font.setPixelSize(toFp(5));
     timerText = addText("",font);
     timerText->setDefaultTextColor(QColor(250,250,250,220));
     // end add in-game menu
@@ -85,45 +85,43 @@ GameScene::GameScene(QObject *parent) :
     menuBackgroundBlur.setBlurRadius(toFp(2));
     menuBackgroundRect->setGraphicsEffect(&menuBackgroundBlur);
 
-    continueGameButton = new Button();
-    prepareButton(continueGameButton);
-    continueGameButton->setScale(15);
-    continueGameButton->setPosition(QVector2D(50,35));
-    continueGameButton->setImage(":/images/button-continue.png");
+    continueButton = new Button();
+    prepareButton(continueButton);
+    continueButton->setScale(30);
+    continueButton->setPosition(QVector2D(50,50));
+    continueButton->setImage(":/images/button-continue.png");
 
-    retryGameButton = new Button();
-    prepareButton(retryGameButton);
-    retryGameButton->setPosition(QVector2D(65,35));
-    retryGameButton->setScale(8);
-    retryGameButton->hide();
-    retryGameButton->setImage(":/images/button-retry.png");
+    retryButton = new Button();
+    prepareButton(retryButton);
+    retryButton->setPosition(QVector2D(70,50));
+    retryButton->setScale(10);
+    retryButton->hide();
+    retryButton->setImage(":/images/button-retry.png");
 
-    exitGameButton = new Button();
-    prepareButton(exitGameButton);
-    exitGameButton->setPosition(QVector2D(92,7));
-    exitGameButton->setImage(":/images/button-exit.png");
+    exitButton = new Button();
+    prepareButton(exitButton);
+    exitButton->setPosition(QVector2D(92,10));
+    exitButton->setImage(":/images/button-exit.png");
     // next/prev level
-    prevLevelGameButton = new Button();
-    prepareButton(prevLevelGameButton);
-    prevLevelGameButton->setPosition(QVector2D(60,50));
-    prevLevelGameButton->setImage(":/images/button-leveldown.png");
+    prevLevelButton = new Button();
+    prepareButton(prevLevelButton);
+    prevLevelButton->setPosition(QVector2D(60,75));
+    prevLevelButton->setImage(":/images/button-leveldown.png");
 
     nextLevelButton = new Button();
     prepareButton(nextLevelButton);
-    nextLevelButton->setPosition(QVector2D(40,50));
+    nextLevelButton->setPosition(QVector2D(40,75));
     nextLevelButton->setImage(":/images/button-levelup.png");
 
     // menu text
     QFont menuFont;
     QColor menuFontColor(250,250,250,245);
     menuFont.setFamily("NovaSquare");
-    menuFont.setPixelSize(30);
     // menu title text
     menuTitleText = addText("Reaktor", menuFont);
     menuTitleText->setHtml("<center>Reaktor</center>");
     menuTitleText->setZValue(99);
     menuTitleText->setDefaultTextColor(menuFontColor);
-    menuTitleText->setTextWidth(toFp(100));
     // end add menu
 
     // set up timer
@@ -137,13 +135,13 @@ GameScene::GameScene(QObject *parent) :
     // add button signal connections
     connect(positiveButton, SIGNAL(clicked()), SLOT(clickedPositiveButton()));
     connect(negativeButton, SIGNAL(clicked()), SLOT(clickedNegativeButton()));
-    connect(continueGameButton, SIGNAL(clicked()), SLOT(continueGame()));
+    connect(continueButton, SIGNAL(clicked()), SLOT(continueGame()));
     connect(pauseGameButton, SIGNAL(clicked()), SLOT(pauseGame()));
-    connect(retryGameButton, SIGNAL(clicked()), SLOT(retryGame()));
-    connect(exitGameButton, SIGNAL(clicked()), SLOT(exitGame()));
+    connect(retryButton, SIGNAL(clicked()), SLOT(retryGame()));
+    connect(exitButton, SIGNAL(clicked()), SLOT(exitGame()));
     // next/prev level
     connect(nextLevelButton, SIGNAL(clicked()), SLOT(clickedNextLevelButton()));
-    connect(prevLevelGameButton, SIGNAL(clicked()), SLOT(clickedPrevLevelButton()));
+    connect(prevLevelButton, SIGNAL(clicked()), SLOT(clickedPrevLevelButton()));
 
     // just init all in the resize() function
     resized();
@@ -158,7 +156,7 @@ GameScene::GameScene(QObject *parent) :
 
 void GameScene::prepareButton(Button *button) {
     addItem(button);
-    button->setScale(10);
+    button->setScale(16);
     button->setZValue(99);
     button->setButtonType(Button::StandardButton);
 }
@@ -166,20 +164,23 @@ void GameScene::prepareButton(Button *button) {
 void GameScene::resized() {
     foreach(QGraphicsItem* item, items()) {
         if(GameObject* button = (GameObject*)item) {
-            button->setPosition(button->position());
+            if(button == negativeButton || button == positiveButton || button == pauseGameButton || button == exitButton) {
+                button->setPos(toFp(button->position().x(),false),toFp(button->position().y(),true));
+            } else {
+                button->setPos(toFp(button->position().x()),toFp(button->position().y(),true));
+            }
         }
     }
-    menuBackgroundRect->setRect(toFp(10),
-                                toFp(10),
-                                toFp(75),
-                                toFp(height()/width() * 75));
-    timerText->setPos(toFp(87),toFp(height()/width() * 45));
-    menuTitleText->setPos(0,toFp(10));
+    menuBackgroundRect->setRect(toFp(0),
+                                toFp(0),
+                                toFp(100),
+                                toFp(100));
+    timerText->setPos(toFp(90,false),toFp(55,true));
+    menuTitleText->setPos(0,toFp(15,true));
     menuTitleText->setTextWidth(toFp(100));
     QFont menuFont = menuTitleText->font();
-    menuFont.setPointSize((int)toFp(10));
+    menuFont.setPixelSize((int)toFp(10,true));
     menuTitleText->setFont(menuFont);
-    pauseGameButton->setPosition(QVector2D(90,height()/width() * 80));
 }
 
 void GameScene::updateTime() {
@@ -207,11 +208,11 @@ void GameScene::continueGame() {
     timerText->show();
     // hide main menu
     menuBackgroundRect->hide();
-    continueGameButton->hide();
-    retryGameButton->hide();
-    exitGameButton->hide();
+    continueButton->hide();
+    retryButton->hide();
+    exitButton->hide();
     nextLevelButton->hide();
-    prevLevelGameButton->hide();
+    prevLevelButton->hide();
     // hide main menu text
     menuTitleText->hide();
 
@@ -227,10 +228,10 @@ void GameScene::pauseGame() {
         menuTitleText->show();
     }
     if(gameState() != GameStarted) {
-        retryGameButton->show();
+        retryButton->show();
     }
     if(gameState() != GameOver) {
-        continueGameButton->show();
+        continueButton->show();
     }
     menuBackgroundRect->show();
     // hide pause button
@@ -240,8 +241,8 @@ void GameScene::pauseGame() {
     timerText->hide();
     // show main menu
     nextLevelButton->show();
-    prevLevelGameButton->show();
-    exitGameButton->show();
+    prevLevelButton->show();
+    exitButton->show();
     // pause timer
     levelTimer->stop();
     qDebug() << "Game paused";
@@ -325,21 +326,22 @@ void GameScene::startLevel(int level) {
         // should the particle spawn at the topleft, topright, bottomleft or bottomright?
         int left = 1;
         int top = 1;
-        while(left == 1 && top == 1) {
-            left = qrand() % 3;
-            top = qrand() % 3;
+        while((left == 1 && top == 1) || (left == 1 && top == 2) || (left == 2 && top == 1) || (left == 2 && top == 2)) {
+            left = qrand() % 4;
+            top = qrand() % 4;
         }
         // make sure that no enemies spawn in the middle region (close to the player)
         /*
-         Game regions. The x marks the player.
-          _ _ _
-         |_|_|_|
-         |_|x|_|
-         |_|_|_|
+         Available regions. The player starts in the center, and all the "touching" regions are not allowed for enemies. Only the edges are available to the enemies.
+          _ _ _ _
+         |_|_|_|_|
+         |_|_|_|_|
+         |_|_|_|_|
+         |_|_|_|_|
 
          */
-        qDebug() << gameRectF() << gameRectF().left() + gameRectF().width()/3.0 * left << gameRectF().width()/3.0 << left;
-        QRectF spawnRect(gameRectF().left() + gameRectF().width()/3.0 * left, gameRectF().top() + gameRectF().height()/3.0 * top, gameRectF().width()/3.0, gameRectF().height()/3.0);
+        qDebug() << gameRectF() << gameRectF().left() + gameRectF().width()/4.0 * left << gameRectF().width()/4.0 << left;
+        QRectF spawnRect(gameRectF().left() + gameRectF().width()/4.0 * left, gameRectF().top() + gameRectF().height()/4.0 * top, gameRectF().width()/4.0, gameRectF().height()/4.0);
         qDebug() << "spawnRect" << spawnRect;
         // now, let's find a random position within this region
         qreal xrand = (qreal)qrand()/(qreal)RAND_MAX;
@@ -367,11 +369,25 @@ void GameScene::advance() {
     }
 }
 
+void GameScene::removeNegativeCharge() {
+    remainingNegativeCharges--;
+    if(remainingNegativeCharges < 1) {
+        negativeButton->update();
+    }
+}
+
+void GameScene::removePositiveCharge() {
+    remainingPositiveCharges--;
+    if(remainingPositiveCharges < 1) {
+        positive->update();
+    }
+}
+
 void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     //Create particles
-    qDebug() << event->scenePos().x() << gameRectF().right() * width() / 100;
+    qDebug() << fromFp(event->scenePos().x()) << gameRectF().right();
     if(_gameState == GameRunning){
-        if(event->scenePos().x() < gameRectF().right() * width() / 100) {
+        if(fromFp(event->scenePos().x()) < gameRectF().right()) {
             int fortegn = -1;
             if(event->button() == Qt::LeftButton) {
                 if(event->modifiers() & Qt::ShiftModifier || selectedParticleType == ParticleNegative) {
@@ -390,9 +406,9 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             }
             if(okayInsert) {
                 if(fortegn == -1) {
-                    remainingNegativeCharges--;
+                    removeNegativeCharge();
                 } else {
-                    remainingPositiveCharges--;
+                    removePositiveCharge();
                 }
                 Particle *particle = new Particle();
                 addItem(particle);
@@ -427,12 +443,19 @@ QRectF GameScene::gameRectF() {
     return gameRect;
 }
 
-
-
-double GameScene::toFp(double number) {
-    return number / 100 * width();
+// convert from 0-100 scale to size of screen
+double GameScene::toFp(double number, bool useSmallest) const {
+    if(!useSmallest || width() < height()) {
+        return number / 100 * width();
+    } else {
+        return number / 100 * height();
+    }
 }
 
-double GameScene::fromFp(double number) {
-    return number * 100 / width();
+double GameScene::fromFp(double number, bool useSmallest) const {
+    if(!useSmallest || width() < height()) {
+        return number * 100 / width();
+    } else {
+        return number * 100 / height();
+    }
 }
