@@ -87,6 +87,7 @@ private:
     // menu background and effect
     QGraphicsRectItem *menuBackgroundRect;
     QGraphicsBlurEffect menuBackgroundBlur;
+    QGraphicsRectItem *gameMenuBackgroundRect;
 
     QGraphicsTextItem *timerText;
     QGraphicsTextItem *menuTitleText;

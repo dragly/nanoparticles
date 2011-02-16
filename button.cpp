@@ -12,6 +12,10 @@ Button::Button() :
 void Button::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     Q_UNUSED(option)
     Q_UNUSED(widget)
+    if(!gameScene()) {
+        qWarning() << " Button::paint(): Cannot paint without gameScene";
+        return;
+    }
     if(buttonType() == ButtonPositive) {
         if(gameScene()->remainingPositiveCharges > 0) {
             painter->drawImage(realsize(true),gameScene()->positiveImage);

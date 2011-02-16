@@ -9,7 +9,7 @@
 
 #include <math.h>
 
-const qreal dechargeRate = 1.0;
+const qreal dechargeRate = 0.4;
 const qreal springConstant = 65;
 const qreal minimumCharge = 1.0;
 
@@ -21,6 +21,10 @@ Particle::Particle() :
 void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     Q_UNUSED(option)
     Q_UNUSED(widget)
+    if(!gameScene()) {
+        qWarning() << "Particle::paint(): Cannot paint without gameScene";
+        return;
+    }
     if(particleType() == ParticleSimple) {
         qreal opacity = 1 - (fabs(charge) - minimumCharge)/(fabs(originalCharge)  - minimumCharge);
         if(charge > 0) {
@@ -53,6 +57,10 @@ void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 
 void Particle::advance(int step) {
     Q_UNUSED(step)
+    if(!gameScene()) {
+        qWarning() << "Particle::advance(): Cannot advance without gameScene";
+        return;
+    }
     float dt = gameScene()->dt();
     QVector2D F;
     if(!sticky()) { // only calculate forces if the particle isn't sticky
@@ -81,13 +89,9 @@ void Particle::advance(int step) {
                             if(particleType() == ParticlePlayer) { // if either particles are the player
                                 charge += fabs(particle->charge) * dt * dechargeRateTotal; // it gets some of the other's charge
                                 particle->charge -= particle->charge * dt * dechargeRateTotal; // that the  other particle loses
-                                qDebug() << "Player:" << charge;
-                                qDebug() << particle->charge;
                             } else if(particle->particleType() == ParticlePlayer) { // if either particles are the player
                                 particle->charge += fabs(charge) * dt * dechargeRateTotal; // it gets some of the other's charge
                                 charge -= charge * dt * dechargeRateTotal; // that the other particle loses
-                                qDebug() << "Player:" << particle->charge;
-                                qDebug() << charge;
                             } else {
                                 if(charge > particle->charge) { // the one with most charge loses charge, the other gains
                                     charge -= chargediff * dt * dechargeRateTotal;
