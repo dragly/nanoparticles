@@ -9,8 +9,8 @@
 
 #include <math.h>
 
-const qreal dechargeRate = 0.4;
-const qreal springConstant = 65;
+const qreal dechargeRate = 0.2;
+const qreal springConstant = 40;
 const qreal minimumCharge = 1.0;
 
 Particle::Particle() :

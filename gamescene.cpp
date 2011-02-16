@@ -27,17 +27,17 @@
     - Make it possible to place particles that are sticky after level 15 (or something)
 */
 // gui
-const qreal globalScale = 3;
+const qreal globalScale = 2.5;
 // charges
-const qreal enemyCharge = -4;
-const qreal playerCharge = 4;
+const qreal enemyCharge = -3.5;
+const qreal playerCharge = 3.5;
 const qreal simpleCharge = 2.5;
 
 // game area
-const qreal gameWidth = 82;
+const qreal gameWidth = 84;
 
 const int incrementChargeNum = 1;
-const int baseChargeNum = 3;
+const int baseChargeNum = 6;
 // time
 const int baseTime = 10;
 const int timeIncrement = 2;
@@ -345,7 +345,7 @@ void GameScene::startLevel(int level) {
     player->setCharge(playerCharge);
     player->setParticleType(Particle::ParticlePlayer);
     player->setPosition(QVector2D(gameRectF().width() / 2,gameRectF().height() / 2));
-    player->setScale(1.2 * globalScale);
+    player->setScale(1.3 * globalScale);
 
     // add enemies
     for(int i=0; i<level; i++) {
@@ -379,7 +379,7 @@ void GameScene::startLevel(int level) {
         enemy->setParticleType(Particle::ParticleEnemy);
         enemy->setSticky(true);
         enemy->setCharge(enemyCharge);
-        enemy->setScale(1.2 * globalScale);
+        enemy->setScale(1.35 * globalScale);
     }
     qDebug() << "level started";
 }
@@ -444,7 +444,7 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                 QVector2D position = QVector2D(fromFp(event->scenePos().x()),fromFp(event->scenePos().y()));
                 particle->setPosition(position);
                 particle->setCharge(fortegn * simpleCharge);
-                particle->setScale(1 * globalScale);
+                particle->setScale(1.2 * globalScale);
             }
         } else {
             QGraphicsScene::mousePressEvent(event);
