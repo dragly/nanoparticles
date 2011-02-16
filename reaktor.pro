@@ -5,11 +5,11 @@
 #-------------------------------------------------
 
 QT       += core gui
-unix {
-    !symbian {
+#unix {
+#    !symbian {
         QT += opengl
-    }
-}
+#    }
+#}
 TARGET = Reaktor
 VERSION = 0.3.0
 TEMPLATE = app
@@ -34,12 +34,13 @@ CONFIG += mobility
 MOBILITY = 
 
 symbian {
-    ICON = images/particle-positive.svg
+    ICON = untitled.svg
 
     TARGET.UID3 = 0xe273c3f6
     # TARGET.CAPABILITY += 
     TARGET.EPOCSTACKSIZE = 0x14000
     TARGET.EPOCHEAPSIZE = 0x020000 0x800000
+    #TARGET.CAPABILITY += ReadUserData WriteUserData UserEnvironment NetworkServices # added to avoid crash
     # cone.lib, eikcore.lib and avkon.lib Symbian libraries
     LIBS += -lcone -leikcore -lavkon
 }

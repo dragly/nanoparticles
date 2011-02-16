@@ -40,8 +40,6 @@ public slots:
 
 protected:
 private:
-    GameScene *gameScene() {return (GameScene*)scene();}
-
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
     int _buttonType;

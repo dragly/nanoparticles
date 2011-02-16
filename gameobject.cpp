@@ -1,7 +1,7 @@
 #include "gameobject.h"
 
 GameObject::GameObject() :
-        QGraphicsObject(), _size(-1,-1,1,1), _position(0,0)
+    QGraphicsObject(), _size(-1,-1,1,1), _position(0,0)
 {
 }
 
@@ -17,10 +17,19 @@ QRectF GameObject::realsize(bool useSmallest) const {
 }
 
 GameScene* GameObject::gameScene() {
-    return (GameScene*)scene();
+    if(scene()) {
+        return (GameScene*)scene();
+    } else {
+        qDebug() << "GameObject::gameScene(): Cannot return gameScene without scene";
+        return 0;
+    }
 }
 
 void GameObject::setPosition(QVector2D position) {
     this->_position = position;
-    setPos(gameScene()->toFp(position.x()),gameScene()->toFp(position.y()));
+    if(gameScene()) {
+        setPos(gameScene()->toFp(position.x()),gameScene()->toFp(position.y()));
+    } else {
+        qWarning() << "GameObject::setPosition: Cannot set position without scene.";
+    }
 }

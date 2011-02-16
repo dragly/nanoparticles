@@ -5,24 +5,26 @@
 #include <QDebug>
 
 /* TODO
-    - Lower the decharge rate.
-    - Draw using FullViewPortUpdate to avoid movement calculations on Symbian (slow)
-    - Create a system for levels.
-    - Create level menu (and figure out how to format this).
-    - Save highest achieved level, and make this the highest possible level to select in the level menu.
-    - (The above could be level up/down, with up disabled at the highest level).
-    - Create a timer to show how much longer the player needs to survive.
+    - Button indicator (what have I selected?).
+    - Save highest achieved level, and make this the highest possible level to select with the buttons.
+    - Always start at the highest level.
+    - Level indicator (in the main menu).
     - Create a countdown timer before the game starts - this gives the player a chance to make a strategy.
-    - Remove the background rectangle (or set opacity to 0.5).
     - Add instructions.
-    - Make the first levels a bit easier.
     - Add copyright/version window.
-    - Make it possible to place particles that are sticky after level 15
-    - Add license text.
-    - Test on Maemo and Symbian
+    - Draw using FullViewPortUpdate to avoid movement calculations on Symbian (slow)
     - Publish to Ovi Store
+
+    // To be tested (1.5)
+    - Better random generation (at least distributed homogenously in the areas around the player)
     - Test with Meego SDK
-    - Test with Android NDK
+    - Test with Android NDK (what about OpenGL? - how is the performance without it?)
+
+    // Enhanced version (2.0)
+    - New particles to play with
+    - New enemy particles (megacharges)
+    - Dummy particles (just in the way and sticky, but not dangerous)
+    - Make it possible to place particles that are sticky after level 15 (or something)
 */
 // gui
 const qreal globalScale = 3;
@@ -31,11 +33,20 @@ const qreal enemyCharge = -4;
 const qreal playerCharge = 4;
 const qreal simpleCharge = 2.5;
 
+// game area
+const qreal gameWidth = 82;
+
 const int incrementChargeNum = 1;
 const int baseChargeNum = 3;
 // time
 const int baseTime = 10;
 const int timeIncrement = 2;
+
+// z values
+const int zInGameMenu = 91;
+const int zInGameBackground = 90;
+const int zMainMenu = 101;
+const int zMainMenuBackground = 100;
 
 
 GameScene::GameScene(QObject *parent) :
@@ -58,38 +69,47 @@ GameScene::GameScene(QObject *parent) :
 
     setSceneRect(0, 0, 400, 300); // just for init
     setItemIndexMethod(QGraphicsScene::NoIndex);
-
     // Add in-game menu
     positiveButton = new Button();
     addItem(positiveButton);
-    positiveButton->setPosition(QVector2D(92,30));
-    positiveButton->setScale(12);
+    positiveButton->setPosition(QVector2D(92,35));
+    positiveButton->setScale(16);
     positiveButton->setButtonType(Button::ButtonPositive);
+    positiveButton->setZValue(zInGameMenu);
 
     negativeButton = new Button();
     addItem(negativeButton);
-    negativeButton->setScale(12);
-    negativeButton->setPosition(QVector2D(92,45));
+    negativeButton->setScale(16);
+    negativeButton->setPosition(QVector2D(92,55));
     negativeButton->setButtonType(Button::ButtonNegative);
+    negativeButton->setZValue(zInGameMenu);
 
     pauseGameButton = new Button();
     prepareButton(pauseGameButton);
+    pauseGameButton->setScale(15);
     pauseGameButton->setPosition(QVector2D(92,10));
     pauseGameButton->setImage(":/images/button-pause.png");
+    pauseGameButton->setZValue(zInGameMenu);
     QFont font;
     font.setFamily("NovaSquare");
     font.setPixelSize(toFp(5));
     timerText = addText("",font);
     timerText->setDefaultTextColor(QColor(250,250,250,220));
+    timerText->setZValue(zInGameMenu);
     // end add in-game menu
 
-    // Add menu
+    // Game menu background
+    gameMenuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
+    gameMenuBackgroundRect->show();
+    gameMenuBackgroundRect->setOpacity(0.7);
+    gameMenuBackgroundRect->setZValue(zInGameBackground);
+    // Main menu background
     menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
     menuBackgroundRect->show();
-    menuBackgroundRect->setOpacity(0.9);
-    menuBackgroundRect->setZValue(98);
-    menuBackgroundBlur.setBlurRadius(toFp(2));
-    menuBackgroundRect->setGraphicsEffect(&menuBackgroundBlur);
+    menuBackgroundRect->setOpacity(0.7);
+    menuBackgroundRect->setZValue(zMainMenuBackground);
+//    menuBackgroundBlur.setBlurRadius(toFp(2));
+//    menuBackgroundRect->setGraphicsEffect(&menuBackgroundBlur);
 
     continueButton = new Button();
     prepareButton(continueButton);
@@ -126,8 +146,8 @@ GameScene::GameScene(QObject *parent) :
     // menu title text
     menuTitleText = addText("Reaktor", menuFont);
     menuTitleText->setHtml("<center>Reaktor</center>");
-    menuTitleText->setZValue(99);
     menuTitleText->setDefaultTextColor(menuFontColor);
+    menuTitleText->setZValue(zMainMenu);
     // end add menu
 
     // set up timer
@@ -158,12 +178,13 @@ GameScene::GameScene(QObject *parent) :
     QObject::connect(&timer, SIGNAL(timeout()), SLOT(advance()));
     timer.start(10);
     time.start();
+    qDebug() << "Timers started!";
 }
 
 void GameScene::prepareButton(Button *button) {
     addItem(button);
     button->setScale(16);
-    button->setZValue(99);
+    button->setZValue(zMainMenu);
     button->setButtonType(Button::StandardButton);
 }
 
@@ -177,11 +198,12 @@ void GameScene::resized() {
             }
         }
     }
-    menuBackgroundRect->setRect(toFp(0),
-                                toFp(0),
-                                toFp(100),
-                                toFp(100));
-    timerText->setPos(toFp(90,false),toFp(55,true));
+    menuBackgroundRect->setRect(toFp(0), toFp(0), toFp(100), toFp(100));
+    gameMenuBackgroundRect->setRect(toFp(gameWidth), toFp(0), toFp(100 - gameWidth), toFp(100));
+    timerText->setPos(toFp(90,false),toFp(75,true));
+    QFont timerFont = menuTitleText->font();
+    timerFont.setPixelSize((int)toFp(8,true));
+    timerText->setFont(timerFont);
     menuTitleText->setPos(0,toFp(15,true));
     menuTitleText->setTextWidth(toFp(100));
     QFont menuFont = menuTitleText->font();
@@ -359,6 +381,7 @@ void GameScene::startLevel(int level) {
         enemy->setCharge(enemyCharge);
         enemy->setScale(1.2 * globalScale);
     }
+    qDebug() << "level started";
 }
 
 void GameScene::advance() {
@@ -391,7 +414,7 @@ void GameScene::removePositiveCharge() {
 
 void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     //Create particles
-    qDebug() << fromFp(event->scenePos().x()) << gameRectF().right();
+    qDebug() << "MousePress at" << fromFp(event->scenePos().x()) << gameRectF().right();
     if(_gameState == GameRunning){
         if(fromFp(event->scenePos().x()) < gameRectF().right()) {
             int fortegn = -1;
@@ -442,7 +465,7 @@ QRectF GameScene::gameRectF() {
     QRectF gameRect;
     gameRect.setLeft(0);
     gameRect.setTop(0);
-    double right = 80;
+    double right = gameWidth;
     double bottom = height() / width() * 100;
     gameRect.setRight(right);
     gameRect.setBottom(bottom);
