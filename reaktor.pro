@@ -50,3 +50,12 @@ RESOURCES += \
 
 OTHER_FILES += \
     LICENSE-font-NovaSquare.txt
+
+unix:!symbian {
+    maemo5 {
+        target.path = /opt/usr/bin
+    } else {
+        target.path = /usr/local/bin
+    }
+    INSTALLS += target
+}
