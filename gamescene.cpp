@@ -30,9 +30,9 @@
 // scaling
 const qreal globalScale = 2.5;
 // charges
-const qreal enemyCharge = -6.0;
-const qreal playerCharge = 5.4;
-const qreal simpleCharge = 3.5;
+const qreal enemyCharge = -5.0;
+const qreal playerCharge = 4.5;
+const qreal simpleCharge = 2.3;
 
 // game area
 const qreal gameWidth = 84;
