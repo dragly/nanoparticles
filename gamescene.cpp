@@ -41,7 +41,7 @@ const qreal levelChargeFactor = 0.05;
 // game area
 const qreal gameWidth = 84;
 
-const qreal incrementChargeNum = 1.35; // will be converted to int after multiplication with level number
+const qreal incrementChargeNum = 1.40; // will be converted to int after multiplication with level number
 const int baseChargeNum = 4;
 // time
 const int baseTime = 10;

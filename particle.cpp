@@ -10,8 +10,10 @@
 #include <math.h>
 
 const qreal dechargeRate = 0.75;
-const qreal springConstant = 60;
+const qreal springConstant = 45.0;
 const qreal minimumCharge = 1.0;
+const qreal dampingFactor = 0.2; // a scaling of the damping force
+const qreal particleMass = 1.0;
 
 Particle::Particle() :
         GameObject() , charge(0), _velocity(0,0), _sticky(false), _particleType(ParticleSimple)
@@ -88,7 +90,7 @@ void Particle::advance(int step) {
                         }
                         // Charge exchange
                         double chargediff = fabs(charge - particle->charge); // charge difference
-                        qreal dechargeRateTotal = fabs(r.length() - particleDistances) * dechargeRate;
+                        qreal dechargeRateTotal = fabs(r.length() - particleDistances) * dechargeRate * springConstant / 60.0; // including the spring constant to avoid changing the decharge rate when the spring constant is changed
                         if(particleType() != ParticleEnemy && particle->particleType() != ParticleEnemy) { // do not decharge enemies
                             if(particleType() == ParticlePlayer) { // if either particles are the player
                                 charge += fabs(particle->charge) * dt * dechargeRateTotal; // it gets some of the other's charge
@@ -118,9 +120,9 @@ void Particle::advance(int step) {
             }
         }
     }
-    QVector2D F_d = -0.15 * velocity(); //damping
+    QVector2D F_d = - dampingFactor * velocity(); //damping
     F += F_d;
-    QVector2D a = F / 1.0;
+    QVector2D a = F / particleMass;
     _velocity += a * dt;
     // lets not yet set our position, but save it temporarily. This avoids calculating forces for other particles with wrong positions
     nextPosition = position() + velocity() * dt;
