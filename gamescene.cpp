@@ -30,14 +30,15 @@
 // scaling
 const qreal globalScale = 2.5;
 // charges
-const qreal enemyCharge = -5.0;
-const qreal playerCharge = 4.5;
-const qreal simpleCharge = 2.3;
+const qreal enemyCharge = -4.0;
+const qreal playerCharge = 3.5;
+const qreal simpleCharge = 1.6;
+const qreal levelChargeFactor = 0.05;
 
 // game area
 const qreal gameWidth = 84;
 
-const qreal incrementChargeNum = 1.15; // will be converted to int after multiplication with level number
+const qreal incrementChargeNum = 1.35; // will be converted to int after multiplication with level number
 const int baseChargeNum = 4;
 // time
 const int baseTime = 10;
@@ -375,7 +376,7 @@ void GameScene::startLevel(int level) {
     // add player
     Particle *player = new Particle();
     addItem(player);
-    player->setCharge(playerCharge);
+    player->setCharge(playerCharge * (1 + levelChargeFactor * level));
     player->setParticleType(Particle::ParticlePlayer);
     player->setPosition(QVector2D(gameRectF().width() / 2,gameRectF().height() / 2));
     player->setScale(1.3 * globalScale);
@@ -411,7 +412,7 @@ void GameScene::startLevel(int level) {
         qDebug() << enemy->position();
         enemy->setParticleType(Particle::ParticleEnemy);
         enemy->setSticky(true);
-        enemy->setCharge(enemyCharge);
+        enemy->setCharge(enemyCharge * (1 + levelChargeFactor * level));
         enemy->setScale(1.35 * globalScale);
     }
     qDebug() << "level started";
@@ -481,7 +482,7 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                 addItem(particle);
                 QVector2D position = QVector2D(fromFp(event->scenePos().x()),fromFp(event->scenePos().y()));
                 particle->setPosition(position);
-                particle->setCharge(fortegn * simpleCharge);
+                particle->setCharge((fortegn * simpleCharge * (1 + levelChargeFactor * level)));
                 particle->setScale(1.2 * globalScale);
                 // update the UI text showing number of remaining charges
                 updateRemainingChargeText();
