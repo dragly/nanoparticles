@@ -15,7 +15,7 @@ class GameScene : public QGraphicsScene
 public:
     explicit GameScene(QObject *parent = 0);
 
-    enum GameState{GameStarted, GameRunning, GamePaused, GameOver};
+    enum GameState{GameStarted, GameRunning, GamePaused, GameOver, GameInstructionPause};
     enum ParticleType{ParticleNegative, ParticlePositive};
 
     int currentTime;
@@ -41,6 +41,8 @@ public:
     QTime time;
     int levelTime;
     QTimer *levelTimer;
+    QTimer *instructionTimer;
+    QTime instructionTime;
 
 signals:
 
@@ -56,10 +58,12 @@ public slots:
     void clickedPrevLevelButton();
     void updateTime();
     void gameOver();
+    void toggleInstructionText();
 
 private:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     int level;
+    int instructionNumber;
     int _gameState;
     int selectedParticleType;
     float _dt; // time difference in seconds
@@ -90,6 +94,7 @@ private:
     QGraphicsRectItem *gameMenuBackgroundRect;
 
     QGraphicsTextItem *timerText;
+    QGraphicsTextItem *instructionText;
     QGraphicsTextItem *menuTitleText;
     QGraphicsTextItem *remainingPositiveChargesText;
     QGraphicsTextItem *remainingNegativeChargesText;
