@@ -11,6 +11,9 @@
     - Level indicator (in the main menu).
     - Create a countdown timer before the game starts - this gives the player a chance to make a strategy.
     - Add instructions.
+    -- The first level could be telling the user to test the different charges, and point out the clock telling how long
+        you need to survive
+    -- This could be done by going in and out of pausing the game when the instructions appear on screen.
     - Fix font on Symbian.
     - Add copyright/version window.
     - Publish to Ovi Store
