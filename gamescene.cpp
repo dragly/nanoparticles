@@ -11,14 +11,15 @@
     - Level indicator (in the main menu).
     - Create a countdown timer before the game starts - this gives the player a chance to make a strategy.
     - Add instructions.
+    - Fix font on Symbian.
     - Add copyright/version window.
-    - Draw using FullViewPortUpdate to avoid movement calculations on Symbian (slow)
     - Publish to Ovi Store
 
     // To be tested (1.5)
     - Better random generation (at least distributed homogenously in the areas around the player)
     - Test with Meego SDK
     - Test with Android NDK (what about OpenGL? - how is the performance without it?)
+    - Draw using FullViewPortUpdate - does it give any performance improvements?
 
     // Enhanced version (2.0)
     - New particles to play with
@@ -26,28 +27,35 @@
     - Dummy particles (just in the way and sticky, but not dangerous)
     - Make it possible to place particles that are sticky after level 15 (or something)
 */
-// gui
+// scaling
 const qreal globalScale = 2.5;
 // charges
-const qreal enemyCharge = -3.5;
-const qreal playerCharge = 3.5;
-const qreal simpleCharge = 2.5;
+const qreal enemyCharge = -5.0;
+const qreal playerCharge = 5.4;
+const qreal simpleCharge = 1.6;
 
 // game area
 const qreal gameWidth = 84;
 
-const int incrementChargeNum = 1;
-const int baseChargeNum = 6;
+const qreal incrementChargeNum = 1.2; // will be converted to int after multiplication with level number
+const int baseChargeNum = 5;
 // time
 const int baseTime = 10;
 const int timeIncrement = 2;
 
 // z values
 const int zInGameMenu = 91;
+const int zInGameMenuNumbers = 92;
 const int zInGameBackground = 90;
 const int zMainMenu = 101;
 const int zMainMenuBackground = 100;
 
+// in game gui
+const qreal positiveButtonY = 35;
+const qreal negativeButtonY = 55;
+const qreal timerTextFontSize = 8;
+const qreal chargesLeftFontSize = 6;
+const qreal timerTextY = 75;
 
 GameScene::GameScene(QObject *parent) :
         QGraphicsScene(parent)
@@ -72,7 +80,7 @@ GameScene::GameScene(QObject *parent) :
     // Add in-game menu
     positiveButton = new Button();
     addItem(positiveButton);
-    positiveButton->setPosition(QVector2D(92,35));
+    positiveButton->setPosition(QVector2D(92,positiveButtonY));
     positiveButton->setScale(16);
     positiveButton->setButtonType(Button::ButtonPositive);
     positiveButton->setZValue(zInGameMenu);
@@ -80,7 +88,7 @@ GameScene::GameScene(QObject *parent) :
     negativeButton = new Button();
     addItem(negativeButton);
     negativeButton->setScale(16);
-    negativeButton->setPosition(QVector2D(92,55));
+    negativeButton->setPosition(QVector2D(92,negativeButtonY));
     negativeButton->setButtonType(Button::ButtonNegative);
     negativeButton->setZValue(zInGameMenu);
 
@@ -92,10 +100,17 @@ GameScene::GameScene(QObject *parent) :
     pauseGameButton->setZValue(zInGameMenu);
     QFont font;
     font.setFamily("NovaSquare");
-    font.setPixelSize(toFp(5));
     timerText = addText("",font);
     timerText->setDefaultTextColor(QColor(250,250,250,220));
     timerText->setZValue(zInGameMenu);
+
+    remainingPositiveChargesText = addText("",font);
+    remainingPositiveChargesText->setDefaultTextColor(QColor(250,250,250,220));
+    remainingPositiveChargesText->setZValue(zInGameMenu);
+
+    remainingNegativeChargesText = addText("",font);
+    remainingNegativeChargesText->setDefaultTextColor(QColor(250,250,250,220));
+    remainingNegativeChargesText->setZValue(zInGameMenu);
     // end add in-game menu
 
     // Game menu background
@@ -200,10 +215,21 @@ void GameScene::resized() {
     }
     menuBackgroundRect->setRect(toFp(0), toFp(0), toFp(100), toFp(100));
     gameMenuBackgroundRect->setRect(toFp(gameWidth), toFp(0), toFp(100 - gameWidth), toFp(100));
-    timerText->setPos(toFp(90,false),toFp(75,true));
+    timerText->setPos(toFp(gameWidth,false),toFp(timerTextY,true));
+    timerText->setTextWidth(toFp(100 - gameWidth));
+    remainingPositiveChargesText->setPos(toFp(gameWidth,false),toFp(positiveButtonY - chargesLeftFontSize * 0.8,true));
+    remainingPositiveChargesText->setTextWidth(toFp(100 - gameWidth));
+    remainingNegativeChargesText->setPos(toFp(gameWidth,false),toFp(negativeButtonY - chargesLeftFontSize * 0.8,true));
+    remainingNegativeChargesText->setTextWidth(toFp(100 - gameWidth));
+    // Reisze gui font
     QFont timerFont = menuTitleText->font();
-    timerFont.setPixelSize((int)toFp(8,true));
+    timerFont.setPixelSize((int)toFp(timerTextFontSize,true));
     timerText->setFont(timerFont);
+    QFont chargesLeftFont = menuTitleText->font();
+    chargesLeftFont.setPixelSize((int)toFp(chargesLeftFontSize,true));
+    remainingPositiveChargesText->setFont(chargesLeftFont);
+    remainingNegativeChargesText->setFont(chargesLeftFont);
+    // Menu title
     menuTitleText->setPos(0,toFp(15,true));
     menuTitleText->setTextWidth(toFp(100));
     QFont menuFont = menuTitleText->font();
@@ -213,7 +239,7 @@ void GameScene::resized() {
 
 void GameScene::updateTime() {
     levelTime--;
-    timerText->setPlainText(QString::number(levelTime));
+    timerText->setHtml("<center>" + QString::number(levelTime) + "</center>");
     qDebug() << levelTime;
     if(levelTime < 1) {
         pauseGame();
@@ -224,7 +250,7 @@ void GameScene::updateTime() {
 }
 
 void GameScene::continueGame() {
-    timerText->setPlainText(QString::number(levelTime));
+    timerText->setHtml("<center>" + QString::number(levelTime) + "</center>");
     if(gameState() == GameOver) {
         startLevel(level);
     }
@@ -234,6 +260,8 @@ void GameScene::continueGame() {
     negativeButton->show();
     positiveButton->show();
     timerText->show();
+    remainingPositiveChargesText->show();
+    remainingNegativeChargesText->show();
     // hide main menu
     menuBackgroundRect->hide();
     continueButton->hide();
@@ -267,6 +295,8 @@ void GameScene::pauseGame() {
     negativeButton->hide();
     positiveButton->hide();
     timerText->hide();
+    remainingPositiveChargesText->hide();
+    remainingNegativeChargesText->hide();
     // show main menu
     nextLevelButton->show();
     prevLevelButton->show();
@@ -336,8 +366,11 @@ void GameScene::startLevel(int level) {
     negativeButton->setEnabled(true);
 
     // set number of charges to use
-    remainingPositiveCharges = baseChargeNum + incrementChargeNum * level;
-    remainingNegativeCharges = baseChargeNum + incrementChargeNum * level;
+    remainingPositiveCharges = baseChargeNum + (int)(incrementChargeNum * level);
+    remainingNegativeCharges = baseChargeNum + (int)(incrementChargeNum * level);
+
+    // set text of remaining charges
+    updateRemainingChargeText();
 
     // add player
     Particle *player = new Particle();
@@ -382,6 +415,11 @@ void GameScene::startLevel(int level) {
         enemy->setScale(1.35 * globalScale);
     }
     qDebug() << "level started";
+}
+
+void GameScene::updateRemainingChargeText() {
+    remainingNegativeChargesText->setHtml("<center>" + QString::number(remainingNegativeCharges) + "</center>");
+    remainingPositiveChargesText->setHtml("<center>" + QString::number(remainingPositiveCharges) + "</center>");
 }
 
 void GameScene::advance() {
@@ -445,6 +483,8 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                 particle->setPosition(position);
                 particle->setCharge(fortegn * simpleCharge);
                 particle->setScale(1.2 * globalScale);
+                // update the UI text showing number of remaining charges
+                updateRemainingChargeText();
             }
         } else {
             QGraphicsScene::mousePressEvent(event);

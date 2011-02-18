@@ -91,9 +91,13 @@ private:
 
     QGraphicsTextItem *timerText;
     QGraphicsTextItem *menuTitleText;
+    QGraphicsTextItem *remainingPositiveChargesText;
+    QGraphicsTextItem *remainingNegativeChargesText;
 
     void removeNegativeCharge();
     void removePositiveCharge();
+
+    void updateRemainingChargeText();
 
 };
 
