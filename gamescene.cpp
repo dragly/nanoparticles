@@ -30,15 +30,15 @@
 // scaling
 const qreal globalScale = 2.5;
 // charges
-const qreal enemyCharge = -5.0;
+const qreal enemyCharge = -6.0;
 const qreal playerCharge = 5.4;
-const qreal simpleCharge = 1.6;
+const qreal simpleCharge = 3.5;
 
 // game area
 const qreal gameWidth = 84;
 
-const qreal incrementChargeNum = 1.2; // will be converted to int after multiplication with level number
-const int baseChargeNum = 5;
+const qreal incrementChargeNum = 1.15; // will be converted to int after multiplication with level number
+const int baseChargeNum = 4;
 // time
 const int baseTime = 10;
 const int timeIncrement = 2;

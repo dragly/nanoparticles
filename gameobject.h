@@ -22,6 +22,7 @@ public slots:
 protected:
     const QRectF _size;
     QVector2D _position;
+    QVector2D nextPosition;
 };
 
 #endif // GAMEOBJECT_H

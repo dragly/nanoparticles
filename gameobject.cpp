@@ -27,6 +27,7 @@ GameScene* GameObject::gameScene() {
 
 void GameObject::setPosition(QVector2D position) {
     this->_position = position;
+    this->nextPosition = position;
     if(gameScene()) {
         setPos(gameScene()->toFp(position.x()),gameScene()->toFp(position.y()));
     } else {
