@@ -9,8 +9,8 @@
 
 #include <math.h>
 
-const qreal dechargeRate = 0.14;
-const qreal springConstant = 30;
+const qreal dechargeRate = 0.75;
+const qreal springConstant = 60;
 const qreal minimumCharge = 1.0;
 
 Particle::Particle() :
@@ -45,7 +45,7 @@ void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
         } else if(opacity < 0.0) {
             opacity = 0.0;
         }
-//        painter->setOpacity(pacity);
+        //        painter->setOpacity(pacity);
         painter->drawImage(realsize(),gameScene()->playerImage);
         painter->setOpacity(opacity);
         painter->drawImage(realsize(),gameScene()->playerOverchargedImage);
@@ -61,6 +61,7 @@ void Particle::advance(int step) {
         qWarning() << "Particle::advance(): Cannot advance without gameScene";
         return;
     }
+    setPosition(nextPosition); // we calculated our next position in the last timestep, now, lets use it
     float dt = gameScene()->dt();
     QVector2D F;
     if(!sticky()) { // only calculate forces if the particle isn't sticky
@@ -71,12 +72,15 @@ void Particle::advance(int step) {
             if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
                 double particleDistances = scale() * size().width() / 2.0 + particle->scale() * particle->size().width() / 2.0;
                 QVector2D r = QVector2D(this->position() - particle->position());
-                if(r.length() != 0) {
+                if(r.lengthSquared() != 0) {
                     QVector2D rn = r.normalized();
                     double q1q2 = this->charge * particle->charge;
-                    QVector2D F_e = rn * (q1q2/(r.length()));
+                    QVector2D F_e;
                     QVector2D F_r;
-                    if(r.length() < particleDistances) {
+                    if(r.length() > particleDistances) {
+                        F_e += rn * 0.8 * (q1q2/(r.lengthSquared()));
+                        F_e += rn * 0.5 * (q1q2/(r.length()));
+                    } else {
                         F_r = -rn * springConstant * (r.length() - particleDistances);
                         if((particle->particleType() == ParticleEnemy && particleType() == ParticlePlayer) ||
                            (particle->particleType() == ParticlePlayer && particleType() == ParticleEnemy)) { // Player-enemy crash - Game Over
@@ -114,11 +118,12 @@ void Particle::advance(int step) {
             }
         }
     }
-    QVector2D F_d = -0.2 * velocity(); //damping
+    QVector2D F_d = -0.15 * velocity(); //damping
     F += F_d;
     QVector2D a = F / 1.0;
     _velocity += a * dt;
-    setPosition(position() + velocity() * dt);
+    // lets not yet set our position, but save it temporarily. This avoids calculating forces for other particles with wrong positions
+    nextPosition = position() + velocity() * dt;
 
     // restrain edges
     double minx = gameScene()->gameRectF().left() + size().width() * scale() / 2;
