@@ -74,23 +74,26 @@ void Particle::advance(int step) {
             if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
                 double particleDistances = scale() * size().width() / 2.0 + particle->scale() * particle->size().width() / 2.0;
                 QVector2D r = QVector2D(this->position() - particle->position());
-                if(r.lengthSquared() != 0) {
+                // save the length and lengthSquared to memory to avoid recalculations (with square roots!)
+                double length = r.length();
+                double lengthSquared = r.lengthSquared();
+                if(lengthSquared != 0) {
                     QVector2D rn = r.normalized();
                     double q1q2 = this->charge * particle->charge;
                     QVector2D F_e;
                     QVector2D F_r;
-                    if(r.length() > particleDistances) {
-                        F_e += rn * 0.8 * (q1q2/(r.lengthSquared()));
-                        F_e += rn * 0.5 * (q1q2/(r.length()));
+                    if(length > particleDistances) {
+                        F_e += rn * 0.8 * (q1q2/(lengthSquared));
+                        F_e += rn * 0.5 * (q1q2/(length));
                     } else {
-                        F_r = -rn * springConstant * (r.length() - particleDistances);
+                        F_r = -rn * springConstant * (length - particleDistances);
                         if((particle->particleType() == ParticleEnemy && particleType() == ParticlePlayer) ||
                            (particle->particleType() == ParticlePlayer && particleType() == ParticleEnemy)) { // Player-enemy crash - Game Over
                             gameScene()->gameOver();
                         }
                         // Charge exchange
                         double chargediff = fabs(charge - particle->charge); // charge difference
-                        qreal dechargeRateTotal = fabs(r.length() - particleDistances) * dechargeRate * springConstant / 60.0; // including the spring constant to avoid changing the decharge rate when the spring constant is changed
+                        qreal dechargeRateTotal = fabs(length - particleDistances) * dechargeRate * springConstant / 60.0; // including the spring constant to avoid changing the decharge rate when the spring constant is changed
                         if(particleType() != ParticleEnemy && particle->particleType() != ParticleEnemy) { // do not decharge enemies
                             if(particleType() == ParticlePlayer) { // if either particles are the player
                                 charge += fabs(particle->charge) * dt * dechargeRateTotal; // it gets some of the other's charge

@@ -11,6 +11,9 @@
     - Create a countdown timer before the game starts - this gives the player a chance to make a strategy.
     - Fix font on Symbian.
     - Start a new project from this to find the error that causes rectangles and text to be drawn infrequently.
+    - Add menutimer (avoid quick clicks)
+
+    // Finishing
     - Add copyright/version window.
     - Publish to Ovi Store
 
