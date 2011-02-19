@@ -435,26 +435,74 @@ void GameScene::startLevel(int level) {
     player->setScale(1.3 * globalScale);
 
     // add enemies
+    /*
+     Available regions. The player starts in the center, and all the "touching" regions are not allowed for enemies. Only the edges are available to the enemies.
+     _____________
+     |1 |11|7 |3 |
+     |5_|__|__|9_|
+     |10|__|__|6_|
+     |4_|8_|12|2_|
+
+     */
+    int areaNumber = 1;
     for(int i=0; i<level-1; i++) { // no enemies in level 1
         Particle *enemy = new Particle();
         addItem(enemy);
         // should the particle spawn at the topleft, topright, bottomleft or bottomright?
-        int left = 1;
-        int top = 1;
-        while((left == 1 && top == 1) || (left == 1 && top == 2) || (left == 2 && top == 1) || (left == 2 && top == 2)) {
-            left = qrand() % 4;
-            top = qrand() % 4;
+        int left;
+        int top;
+        switch(areaNumber) {
+        case 1:
+            left = 0;
+            top = 0;
+            break;
+        case 2:
+            left = 3;
+            top = 3;
+            break;
+        case 3:
+            left = 3;
+            top = 0;
+            break;
+        case 4:
+            left = 0;
+            top = 3;
+            break;
+        case 5:
+            left = 0;
+            top = 1;
+            break;
+        case 6:
+            left = 3;
+            top = 2;
+            break;
+        case 7:
+            left = 2;
+            top = 0;
+            break;
+        case 8:
+            left = 1;
+            top = 3;
+            break;
+        case 9:
+            left = 3;
+            top = 1;
+            break;
+        case 10:
+            left = 0;
+            top = 2;
+            break;
+        case 11:
+            left = 1;
+            top = 0;
+            break;
+        case 12:
+            left = 2;
+            top = 3;
+            break;
         }
-        // make sure that no enemies spawn in the middle region (close to the player)
-        /*
-         Available regions. The player starts in the center, and all the "touching" regions are not allowed for enemies. Only the edges are available to the enemies.
-          _ _ _ _
-         |_|_|_|_|
-         |_|_|_|_|
-         |_|_|_|_|
-         |_|_|_|_|
 
-         */
+        // make sure that no enemies spawn in the middle region (close to the player)
         qDebug() << gameRectF() << gameRectF().left() + gameRectF().width()/4.0 * left << gameRectF().width()/4.0 << left;
         QRectF spawnRect(gameRectF().left() + gameRectF().width()/4.0 * left, gameRectF().top() + gameRectF().height()/4.0 * top, gameRectF().width()/4.0, gameRectF().height()/4.0);
         qDebug() << "spawnRect" << spawnRect;
@@ -467,6 +515,10 @@ void GameScene::startLevel(int level) {
         enemy->setSticky(true);
         enemy->setCharge(enemyCharge * (1 + levelChargeFactor * pow((double)level,2)));
         enemy->setScale(1.35 * globalScale);
+        areaNumber++;
+        if(areaNumber > 12) {
+            areaNumber = 1;
+        }
     }
     qDebug() << "level started";
 }
