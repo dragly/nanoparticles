@@ -619,7 +619,7 @@ void GameScene::toggleInstructionText() {
                 break;
             case 5:
                 instructionText->setHtml(tr("<center>Alright! Let's kick things up a notch.<br/>We're moving on to the next level!</center>"));
-                levelTime = 3;
+                levelTime = 2;
                 break;
             default:
                 instructionText->setHtml("");
@@ -636,11 +636,11 @@ void GameScene::toggleInstructionText() {
                 instructionText->setHtml(tr("<center>The time is shown in the lower right corner.</center>"));
                 break;
             case 3:
-                instructionText->setHtml(tr("<center>When the time runs out,<br/>you will move on to the next quantum state!<br/>You might call the levels if you like.</center>"));
+                instructionText->setHtml(tr("<center>When the time runs out,<br/>you will move on to the next quantum state!<br/>You might call them levels if you like.</center>"));
                 break;
             case 4:
                 instructionText->setHtml(tr("<center>Well, it's up to you from here.<br/>I'll leave you with the next level.</center>"));
-                levelTime = 3;
+                levelTime = 2;
                 break;
             default:
                 instructionText->setHtml("");
