@@ -8,13 +8,13 @@ GameView::GameView() :
     qDebug() << "Setting scene";
     setScene(&gameScene);
     qDebug() << "Scene set";
-    setRenderHint(QPainter::Antialiasing,true);
+    setRenderHint(QPainter::HighQualityAntialiasing,true);
     setRenderHint(QPainter::SmoothPixmapTransform,true);
     setBackgroundBrush(QImage(":/images/background.png"));
     setCacheMode(QGraphicsView::CacheBackground);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Reaktor"));
     qDebug() << "View setup done";
 }
