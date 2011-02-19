@@ -8,19 +8,13 @@
     - Button indicator (what have I selected?).
     - Save highest achieved level, and make this the highest possible level to select with the buttons.
     - Always start at the highest level.
-    - Level indicator (in the main menu).
     - Create a countdown timer before the game starts - this gives the player a chance to make a strategy.
-    - Add instructions.
-    -- The first level could be telling the user to test the different charges, and point out the clock telling how long
-        you need to survive
-    -- This could be done by going in and out of pausing the game when the instructions appear on screen.
     - Fix font on Symbian.
     - Start a new project from this to find the error that causes rectangles and text to be drawn infrequently.
     - Add copyright/version window.
     - Publish to Ovi Store
 
     // To be tested (1.5)
-    - Better random generation (at least distributed homogenously in the areas around the player)
     - Test with Meego SDK
     - Test with Android NDK (what about OpenGL? - how is the performance without it?)
     - Draw using FullViewPortUpdate - does it give any performance improvements?
