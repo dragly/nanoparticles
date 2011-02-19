@@ -33,19 +33,19 @@
 // scaling
 const qreal globalScale = 2.5;
 // charges
-const qreal enemyCharge = -4.0;
-const qreal playerCharge = 3.5;
-const qreal simpleCharge = 1.6;
-const qreal levelChargeFactor = 0.05;
+const qreal enemyCharge = -5.8;
+const qreal playerCharge = 5.5;
+const qreal simpleCharge = 3.25;
+const qreal levelChargeFactor = 0.0015;
 
 // game area
 const qreal gameWidth = 84;
 
-const qreal incrementChargeNum = 1.40; // will be converted to int after multiplication with level number
+const qreal incrementChargeNum = 1.25; // will be converted to int after multiplication with level number
 const int baseChargeNum = 4;
 // time
 const int baseTime = 10;
-const int timeIncrement = 2;
+const qreal timeIncrement = 1.5;
 
 // z values
 const int zInGameMenu = 91;
@@ -114,6 +114,11 @@ GameScene::GameScene(QObject *parent) :
     instructionText->setDefaultTextColor(QColor(250,250,250,220));
     instructionText->setZValue(zMainMenu);
     instructionText->hide();
+    // instruction text
+    levelText = addText("",font);
+    levelText->setDefaultTextColor(QColor(250,250,250,220));
+    levelText->setZValue(zMainMenu);
+    levelText->hide();
 
     remainingPositiveChargesText = addText("",font);
     remainingPositiveChargesText->setDefaultTextColor(QColor(250,250,250,220));
@@ -146,7 +151,7 @@ GameScene::GameScene(QObject *parent) :
     retryButton = new Button();
     prepareButton(retryButton);
     retryButton->setPosition(QVector2D(70,50));
-    retryButton->setScale(10);
+    retryButton->setScale(14);
     retryButton->hide();
     retryButton->setImage(":/images/button-retry.png");
 
@@ -182,7 +187,6 @@ GameScene::GameScene(QObject *parent) :
     connect(levelTimer, SIGNAL(timeout()), SLOT(updateTime()));
     // instruction timer
     instructionTimer = new QTimer(this);
-    instructionTimer->setInterval(2000);
     connect(instructionTimer, SIGNAL(timeout()), SLOT(toggleInstructionText()));
     // end set up timers
 
@@ -232,6 +236,7 @@ void GameScene::resized() {
     gameMenuBackgroundRect->setRect(toFp(gameWidth), toFp(0), toFp(100 - gameWidth), toFp(100));
     timerText->setPos(toFp(gameWidth,false),toFp(timerTextY,true));
     timerText->setTextWidth(toFp(100 - gameWidth));
+    instructionText->setPos(toFp(5),toFp(5));
     instructionText->setTextWidth(toFp(gameWidth));
     remainingPositiveChargesText->setPos(toFp(gameWidth,false),toFp(positiveButtonY - chargesLeftFontSize * 0.8,true));
     remainingPositiveChargesText->setTextWidth(toFp(100 - gameWidth));
@@ -255,6 +260,12 @@ void GameScene::resized() {
     QFont menuFont = menuTitleText->font();
     menuFont.setPixelSize((int)toFp(10,true));
     menuTitleText->setFont(menuFont);
+    // Level text
+    levelText->setPos(toFp(0),toFp(5));
+    levelText->setTextWidth(toFp(100));
+    QFont levelFont = levelText->font();
+    levelFont.setPixelSize((int)toFp(6,true));
+    levelText->setFont(levelFont);
 }
 
 void GameScene::updateTime() {
@@ -286,6 +297,7 @@ void GameScene::continueGame() {
     remainingPositiveChargesText->show();
     remainingNegativeChargesText->show();
     // hide main menu
+    levelText->hide();
     menuBackgroundRect->hide();
     continueButton->hide();
     retryButton->hide();
@@ -322,6 +334,7 @@ void GameScene::pauseGame() {
     remainingPositiveChargesText->hide();
     remainingNegativeChargesText->hide();
     // show main menu
+    levelText->show();
     nextLevelButton->show();
     prevLevelButton->show();
     exitButton->show();
@@ -387,16 +400,24 @@ void GameScene::startLevel(int level) {
     positiveButton->setEnabled(true);
     negativeButton->setEnabled(true);
 
+    // set level text
+    levelText->setHtml("<center>Level " + QString::number(level) + "</center>");
+
+    // Start instructions if on level 1 or 2
+    if(level == 1 || level == 2) {
+        instructionTimer->setInterval(2000);
+    }
+
     // set number of charges to use
-    if(level == 1) {
+    if(level == 1 || level == 2) {
         remainingPositiveCharges = 20;
         remainingNegativeCharges = 20;
 
         // reset time
-        levelTime = 100;
+        levelTime = 50;
     } else {
         // reset time
-        levelTime = baseTime + timeIncrement * level;
+        levelTime = baseTime + (int)(timeIncrement * level);
         remainingPositiveCharges = baseChargeNum + (int)(incrementChargeNum * level);
         remainingNegativeCharges = baseChargeNum + (int)(incrementChargeNum * level);
     }
@@ -407,7 +428,7 @@ void GameScene::startLevel(int level) {
     // add player
     Particle *player = new Particle();
     addItem(player);
-    player->setCharge(playerCharge * (1 + levelChargeFactor * level));
+    player->setCharge(playerCharge * (1 + levelChargeFactor * pow(level,2)));
     player->setParticleType(Particle::ParticlePlayer);
     player->setPosition(QVector2D(gameRectF().width() / 2,gameRectF().height() / 2));
     player->setScale(1.3 * globalScale);
@@ -443,7 +464,7 @@ void GameScene::startLevel(int level) {
         qDebug() << enemy->position();
         enemy->setParticleType(Particle::ParticleEnemy);
         enemy->setSticky(true);
-        enemy->setCharge(enemyCharge * (1 + levelChargeFactor * level));
+        enemy->setCharge(enemyCharge * (1 + levelChargeFactor * pow(level,2)));
         enemy->setScale(1.35 * globalScale);
     }
     qDebug() << "level started";
@@ -486,7 +507,7 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     //Create particles
     qDebug() << "MousePress at" << fromFp(event->scenePos().x()) << gameRectF().right();
     if(gameState() == GameInstructionPause) {
-        if(instructionTime.elapsed() > 1000) {
+        if(instructionTime.elapsed() > 750) {
             toggleInstructionText();
         }
     } else if(gameState() == GameRunning){
@@ -517,7 +538,7 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                 addItem(particle);
                 QVector2D position = QVector2D(fromFp(event->scenePos().x()),fromFp(event->scenePos().y()));
                 particle->setPosition(position);
-                particle->setCharge((fortegn * simpleCharge * (1 + levelChargeFactor * level)));
+                particle->setCharge((fortegn * simpleCharge * (1 + levelChargeFactor * pow(level,2))));
                 particle->setScale(1.2 * globalScale);
                 // update the UI text showing number of remaining charges
                 updateRemainingChargeText();
@@ -573,7 +594,7 @@ void GameScene::toggleInstructionText() {
         instructionText->hide();
         levelTimer->start();
         menuBackgroundRect->hide();
-        instructionTimer->setInterval(6000);
+        instructionTimer->setInterval(8000);
     } else  {
         qDebug() << "Showing running" << level << instructionNumber;
         instructionTime.restart();
@@ -581,21 +602,24 @@ void GameScene::toggleInstructionText() {
         setGameState(GameInstructionPause);
         instructionText->show();
         menuBackgroundRect->show();
-        instructionTimer->setInterval(5000);
+        instructionTimer->setInterval(10000);
         if(level == 1) {
             switch(instructionNumber) {
             case 1:
-                instructionText->setHtml(tr("<center>The green charge is you. Try to move it by placing other charges on the map.</center>"));
+                instructionText->setHtml(tr("<center><p>Welcome!</p><p>You are the green charge.<br>Try to move the green charge by placing<br>other charges anywhere on the map.</p></center>"));
                 break;
             case 2:
-                instructionText->setHtml(tr("<center>The green charge is positive. Blue charges are negative and red ones are positive.</center>"));
+                instructionText->setHtml(tr("<center>You can also select blue charges by clicking on the blue button to the right.</center>"));
                 break;
             case 3:
                 instructionText->setHtml(tr("<center>The red charges push away the green one, while the blue charges attract it.</center>"));
                 break;
             case 4:
-                instructionText->setHtml(tr("<center>Alright. Let's kick things up a notch. We're moving to the next level!</center>"));
-                levelTime = 1;
+                instructionText->setHtml(tr("<center>Just be aware.<br />The green charge gets stronger when it crashes with the others.</center>"));
+                break;
+            case 5:
+                instructionText->setHtml(tr("<center>Alright! Let's kick things up a notch.<br/>We're moving on to the next level!</center>"));
+                levelTime = 3;
                 break;
             default:
                 instructionText->setHtml("");
@@ -606,13 +630,17 @@ void GameScene::toggleInstructionText() {
         } else if(level == 2) {
             switch(instructionNumber) {
             case 1:
-                instructionText->setHtml(tr("<center>You should try to avoid the purple charges.</center>"));
+                instructionText->setHtml(tr("<center>You should try to avoid the purple charges.<br />They are deadly to the green one.<br />Almost like antimatter.</center>"));
                 break;
             case 2:
                 instructionText->setHtml(tr("<center>The time is shown in the lower right corner.</center>"));
                 break;
             case 3:
-                instructionText->setHtml(tr("<center>When the time runs out, you will move on to the next quantum state!</center>"));
+                instructionText->setHtml(tr("<center>When the time runs out,<br/>you will move on to the next quantum state!<br/>You might call the levels if you like.</center>"));
+                break;
+            case 4:
+                instructionText->setHtml(tr("<center>Well, it's up to you from here.<br/>I'll leave you with the next level.</center>"));
+                levelTime = 3;
                 break;
             default:
                 instructionText->setHtml("");

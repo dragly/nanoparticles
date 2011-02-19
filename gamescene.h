@@ -94,6 +94,7 @@ private:
     QGraphicsRectItem *gameMenuBackgroundRect;
 
     QGraphicsTextItem *timerText;
+    QGraphicsTextItem *levelText;
     QGraphicsTextItem *instructionText;
     QGraphicsTextItem *menuTitleText;
     QGraphicsTextItem *remainingPositiveChargesText;
