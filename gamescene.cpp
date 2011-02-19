@@ -15,6 +15,7 @@
         you need to survive
     -- This could be done by going in and out of pausing the game when the instructions appear on screen.
     - Fix font on Symbian.
+    - Start a new project from this to find the error that causes rectangles and text to be drawn infrequently.
     - Add copyright/version window.
     - Publish to Ovi Store
 
