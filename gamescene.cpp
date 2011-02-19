@@ -428,7 +428,7 @@ void GameScene::startLevel(int level) {
     // add player
     Particle *player = new Particle();
     addItem(player);
-    player->setCharge(playerCharge * (1 + levelChargeFactor * pow(level,2)));
+    player->setCharge(playerCharge * (1 + levelChargeFactor * pow((double)level,2)));
     player->setParticleType(Particle::ParticlePlayer);
     player->setPosition(QVector2D(gameRectF().width() / 2,gameRectF().height() / 2));
     player->setScale(1.3 * globalScale);
@@ -464,7 +464,7 @@ void GameScene::startLevel(int level) {
         qDebug() << enemy->position();
         enemy->setParticleType(Particle::ParticleEnemy);
         enemy->setSticky(true);
-        enemy->setCharge(enemyCharge * (1 + levelChargeFactor * pow(level,2)));
+        enemy->setCharge(enemyCharge * (1 + levelChargeFactor * pow((double)level,2)));
         enemy->setScale(1.35 * globalScale);
     }
     qDebug() << "level started";
@@ -538,7 +538,7 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                 addItem(particle);
                 QVector2D position = QVector2D(fromFp(event->scenePos().x()),fromFp(event->scenePos().y()));
                 particle->setPosition(position);
-                particle->setCharge((fortegn * simpleCharge * (1 + levelChargeFactor * pow(level,2))));
+                particle->setCharge((fortegn * simpleCharge * (1 + levelChargeFactor * pow((double)level,2))));
                 particle->setScale(1.2 * globalScale);
                 // update the UI text showing number of remaining charges
                 updateRemainingChargeText();
