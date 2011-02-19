@@ -45,7 +45,7 @@ const qreal incrementChargeNum = 1.25; // will be converted to int after multipl
 const int baseChargeNum = 4;
 // time
 const int baseTime = 10;
-const qreal timeIncrement = 1.5;
+const qreal timeIncrement = 1.8;
 
 // z values
 const int zInGameMenu = 91;
