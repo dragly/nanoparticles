@@ -43,6 +43,7 @@ public:
     QTimer *levelTimer;
     QTimer *instructionTimer;
     QTime instructionTime;
+    QTime menuTime;
 
 signals:
 
@@ -59,6 +60,7 @@ public slots:
     void updateTime();
     void gameOver();
     void toggleInstructionText();
+    void animateMenuIn();
 
 private:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -104,6 +106,8 @@ private:
     void removePositiveCharge();
 
     void updateRemainingChargeText();
+
+    QSettings settings;
 
 };
 

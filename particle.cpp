@@ -12,8 +12,10 @@
 const qreal dechargeRate = 0.2;
 const qreal springConstant = 75.0;
 const qreal minimumCharge = 2.5;
-const qreal dampingFactor = 0.12; // a scaling of the damping force
+const qreal dampingFactor = 0.18; // a scaling of the damping force
 const qreal particleMass = 1.0;
+const qreal forceByLengthSquaredFactor = 0.4;
+const qreal forceByLengthFactor = 0.9;
 
 Particle::Particle() :
         GameObject() , charge(0), _velocity(0,0), _sticky(false), _particleType(ParticleSimple)
@@ -83,8 +85,8 @@ void Particle::advance(int step) {
                     QVector2D F_e;
                     QVector2D F_r;
                     if(length > particleDistances) {
-                        F_e += rn * 0.8 * (q1q2/(lengthSquared));
-                        F_e += rn * 0.5 * (q1q2/(length));
+                        F_e += rn * forceByLengthSquaredFactor * (q1q2/(lengthSquared));
+                        F_e += rn * forceByLengthFactor * (q1q2/(length));
                     } else {
                         F_r = -rn * springConstant * (length - particleDistances);
                         if((particle->particleType() == ParticleEnemy && particleType() == ParticlePlayer) ||
