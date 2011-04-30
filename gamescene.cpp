@@ -23,6 +23,7 @@
     - New enemy particles (megacharges)
     - Dummy particles (just in the way and sticky, but not dangerous)
     - Make it possible to place particles that are sticky after level 15 (or something)
+    - Use health bar instead immediate death.
 */
 // scaling
 const qreal globalScale = 2.5;
