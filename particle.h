@@ -33,6 +33,16 @@ public:
         this->_sticky = sticky;
     }
 
+    bool electroSticky() {return _electroSticky;}
+    void setElectroSticky(bool electroSticky) {
+        this->_electroSticky = electroSticky;
+    }
+
+    qreal mass() {return _mass;}
+    void setMass(qreal mass) {
+        this->_mass = mass;
+    }
+
     QRectF boundingRect() const;
 
 protected:
@@ -44,9 +54,11 @@ private:
     QImage negativeImage;
     QImage positiveImage;
     QImage neutralImage;
+    bool _electroSticky;
     bool _sticky;
     int _particleType;
     qreal originalCharge;
+    qreal _mass;
 
 };
 

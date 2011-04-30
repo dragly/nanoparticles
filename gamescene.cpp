@@ -49,7 +49,14 @@ const int zMainMenu = 101;
 const int zMainMenuBackground = 100;
 
 // in game gui
-const qreal positiveButtonY = 35;
+const QVector2D positiveButtonPosition(92,35);
+const QVector2D negativeButtonPosition(92,55);
+const QVector2D pauseGameButtonPosition(92,10);
+const QVector2D continueButtonPosition(50,50);
+const QVector2D retryButtonPosition(70,50);
+const QVector2D exitButtonPosition(92,10);
+const QVector2D prevLevelButtonPosition(60,75);
+const QVector2D nextLevelButtonPosition(40,75);
 const qreal negativeButtonY = 55;
 const qreal timerTextFontSize = 8;
 const qreal instructionTextFontSize = 5;
@@ -82,7 +89,7 @@ GameScene::GameScene(QObject *parent) :
     // Add in-game menu
     positiveButton = new Button();
     addItem(positiveButton);
-    positiveButton->setPosition(QVector2D(92,positiveButtonY));
+    positiveButton->setPosition(positiveButtonPosition);
     positiveButton->setScale(16);
     positiveButton->setButtonType(Button::ButtonPositive);
     positiveButton->setZValue(zInGameMenu);
@@ -90,14 +97,14 @@ GameScene::GameScene(QObject *parent) :
     negativeButton = new Button();
     addItem(negativeButton);
     negativeButton->setScale(16);
-    negativeButton->setPosition(QVector2D(92,negativeButtonY));
+    negativeButton->setPosition(negativeButtonPosition);
     negativeButton->setButtonType(Button::ButtonNegative);
     negativeButton->setZValue(zInGameMenu);
 
     pauseGameButton = new Button();
     prepareButton(pauseGameButton);
     pauseGameButton->setScale(15);
-    pauseGameButton->setPosition(QVector2D(92,10));
+    pauseGameButton->setPosition(pauseGameButtonPosition);
     pauseGameButton->setImage(":/images/button-pause.png");
     pauseGameButton->setZValue(zInGameMenu);
     // timer text (level time left)
@@ -142,19 +149,19 @@ GameScene::GameScene(QObject *parent) :
     continueButton = new Button();
     prepareButton(continueButton);
     continueButton->setScale(30);
-    continueButton->setPosition(QVector2D(50,50));
+    continueButton->setPosition(continueButtonPosition);
     continueButton->setImage(":/images/button-continue.png");
 
     retryButton = new Button();
     prepareButton(retryButton);
-    retryButton->setPosition(QVector2D(70,50));
+    retryButton->setPosition(retryButtonPosition);
     retryButton->setScale(14);
     retryButton->hide();
     retryButton->setImage(":/images/button-retry.png");
 
     exitButton = new Button();
     prepareButton(exitButton);
-    exitButton->setPosition(QVector2D(92,10));
+    exitButton->setPosition(exitButtonPosition);
     exitButton->setImage(":/images/button-exit.png");
     // next/prev level
     prevLevelButton = new Button();
@@ -162,13 +169,13 @@ GameScene::GameScene(QObject *parent) :
         prevLevelButton->hide();
     }
     prepareButton(prevLevelButton);
-    prevLevelButton->setPosition(QVector2D(60,75));
+    prevLevelButton->setPosition(prevLevelButtonPosition);
     prevLevelButton->setImage(":/images/button-leveldown.png");
 
     nextLevelButton = new Button();
     nextLevelButton->hide();
     prepareButton(nextLevelButton);
-    nextLevelButton->setPosition(QVector2D(40,75));
+    nextLevelButton->setPosition(nextLevelButtonPosition);
     nextLevelButton->setImage(":/images/button-levelup.png");
 
     // menu text
@@ -239,9 +246,9 @@ void GameScene::resized() {
     timerText->setTextWidth(toFp(100 - gameWidth));
     instructionText->setPos(toFp(5),toFp(5));
     instructionText->setTextWidth(toFp(gameWidth));
-    remainingPositiveChargesText->setPos(toFp(gameWidth,false),toFp(positiveButtonY - chargesLeftFontSize * 0.8,true));
+    remainingPositiveChargesText->setPos(toFp(gameWidth,false),toFp(positiveButtonPosition.y() - chargesLeftFontSize * 0.8,true));
     remainingPositiveChargesText->setTextWidth(toFp(100 - gameWidth));
-    remainingNegativeChargesText->setPos(toFp(gameWidth,false),toFp(negativeButtonY - chargesLeftFontSize * 0.8,true));
+    remainingNegativeChargesText->setPos(toFp(gameWidth,false),toFp(negativeButtonPosition.y() - chargesLeftFontSize * 0.8,true));
     remainingNegativeChargesText->setTextWidth(toFp(100 - gameWidth));
     // Reisze gui font
     QFont timerFont = menuTitleText->font();
@@ -559,7 +566,8 @@ void GameScene::startLevel(int level) {
         qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
         enemy->setPosition(QVector2D(spawnRect.left() + xrand*spawnRect.width(),spawnRect.top() + yrand*spawnRect.height()));
         enemy->setParticleType(Particle::ParticleEnemy);
-        enemy->setSticky(true);
+        enemy->setElectroSticky(true);
+        enemy->setMass(50.0);
         enemy->setCharge(enemyChargeLevel);
         enemy->setScale(1.35 * globalScale);
         areaNumber++;
