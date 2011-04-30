@@ -18,7 +18,7 @@ const qreal forceByLengthSquaredFactor = 0.4;
 const qreal forceByLengthFactor = 0.9;
 
 Particle::Particle() :
-        GameObject() , charge(0), _velocity(0,0), _sticky(false), _particleType(ParticleSimple)
+        GameObject() , charge(0), _velocity(0,0), _sticky(false), _particleType(ParticleSimple), _mass(particleMass), _electroSticky(false)
 {
 }
 
@@ -85,8 +85,10 @@ void Particle::advance(int step) {
                     QVector2D F_e;
                     QVector2D F_r;
                     if(length > particleDistances) {
-                        F_e += rn * forceByLengthSquaredFactor * (q1q2/(lengthSquared));
-                        F_e += rn * forceByLengthFactor * (q1q2/(length));
+                        if(!electroSticky()) { // only calculate electromagnetic forces if the particle isn't electrosticky
+                            F_e += rn * forceByLengthSquaredFactor * (q1q2/(lengthSquared));
+                            F_e += rn * forceByLengthFactor * (q1q2/(length));
+                        }
                     } else {
                         F_r = -rn * springConstant * (length - particleDistances);
                         if((particle->particleType() == ParticleEnemy && particleType() == ParticlePlayer) ||
@@ -127,7 +129,7 @@ void Particle::advance(int step) {
     }
     QVector2D F_d = - dampingFactor * velocity(); //damping
     F += F_d;
-    QVector2D a = F / particleMass;
+    QVector2D a = F / mass();
     _velocity += a * dt;
     // lets not yet set our position, but save it temporarily. This avoids calculating forces for other particles with wrong positions
     nextPosition = position() + velocity() * dt;
