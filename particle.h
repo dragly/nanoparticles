@@ -54,11 +54,11 @@ private:
     QImage negativeImage;
     QImage positiveImage;
     QImage neutralImage;
+    qreal _mass;
     bool _electroSticky;
     bool _sticky;
     int _particleType;
     qreal originalCharge;
-    qreal _mass;
 
 };
 

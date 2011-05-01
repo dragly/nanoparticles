@@ -34,6 +34,8 @@ public:
     void setGameState(int gameState);
     int gameState() {return _gameState;}
 
+    bool isDemo();
+
     void showGameMenu();
 
     int remainingNegativeCharges;
