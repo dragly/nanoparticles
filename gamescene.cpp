@@ -6,8 +6,8 @@
 
 /* TODO
     - Button indicator (what have I selected?).
-    - Fix font on Symbian.
     - Start a new project from this to find the error that causes rectangles and text to be drawn infrequently.
+    - OR remove rectangle and use image instead.
 
     // Finishing
     - Add copyright/version window.
