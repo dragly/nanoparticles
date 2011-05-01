@@ -6,6 +6,7 @@
 
 /* TODO
     - Button indicator (what have I selected?).
+    - Add link to Ovi Store when demo is over.
     - Start a new project from this to find the error that causes rectangles and text to be drawn infrequently.
     - OR remove rectangle and use image instead.
 
@@ -64,9 +65,15 @@ const qreal instructionTextFontSize = 5;
 const qreal chargesLeftFontSize = 6;
 const qreal timerTextY = 75;
 
+
 GameScene::GameScene(QObject *parent) :
     QGraphicsScene(parent)
 {
+    if(isDemo()) {
+        qDebug() << "This is the demo version";
+    } else {
+        qDebug() << "This is the full version";
+    }
     _gameState = GameRunning;
     _dt = 0;
     firstStep = true;
@@ -75,7 +82,7 @@ GameScene::GameScene(QObject *parent) :
 
     // load settings
     level = settings.value("highestLevel", 1).toInt();
-    qDebug() << "Level is" << level;
+    qDebug() << "Highest level is" << level;
 
     // load images
     positiveImage = QImage(":/images/particle-positive.png");
@@ -184,7 +191,11 @@ GameScene::GameScene(QObject *parent) :
     QColor menuFontColor(250,250,250,245);
     menuFont.setFamily("NovaSquare");
     // menu title text
-    menuTitleText = addText("Reaktor", menuFont);
+    if(isDemo()) {
+        menuTitleText = addText("Reaktor demo", menuFont);
+    } else {
+        menuTitleText = addText("Reaktor", menuFont);
+    }
     menuTitleText->setHtml("<center>Reaktor</center>");
     menuTitleText->setDefaultTextColor(menuFontColor);
     menuTitleText->setZValue(zMainMenu);
@@ -222,6 +233,18 @@ GameScene::GameScene(QObject *parent) :
     timer.start(10);
     time.start();
     qDebug() << "Timers started!";
+}
+
+bool GameScene::isDemo() {
+    // Yes, I know this is far from bullet proof, and that I
+    // should use the define check everywhere instead of letting crackers
+    // easily modify this variable in memory. But hey, this is an open source game.
+    // They could just have rebuilt the source if they wanted to :)
+    #ifdef ISDEMO
+    return true;
+    #else
+    return false;
+    #endif
 }
 
 void GameScene::prepareButton(Button *button) {
@@ -282,9 +305,16 @@ void GameScene::updateTime() {
     timerText->setHtml("<center>" + QString::number(levelTime) + "</center>");
     if(levelTime < 1) {
         pauseGame();
-        menuTitleText->setHtml("<center>Level up!</center>");
+        if(isDemo() && level >= 8) {
+            menuTitleText->setHtml("<center>End of demo.</center>");
+            levelText->setHtml("<center>Buy game in <a href='http://ovi.com'>Ovi Store</a></center>");
+            continueButton->hide();
+            nextLevelButton->hide();
+        } else {
+            menuTitleText->setHtml("<center>Level up!</center>");
+            startLevel(level + 1);
+        }
         menuTitleText->show();
-        startLevel(level + 1);
         if(settings.value("highestLevel", 1).toInt() < level) {
             settings.setValue("highestLevel", level);
         }
@@ -398,7 +428,7 @@ void GameScene::animateMenuIn() {
     animatedObjectsIn.append(exitButton);
     animatedObjectsIn.append(nextLevelButton);
     animatedObjectsIn.append(prevLevelButton);
-//    animatedObjectsIn.append(menuBackgroundRect);
+    //    animatedObjectsIn.append(menuBackgroundRect);
     animatedObjectsIn.append(menuTitleText);
     animatedObjectsIn.append(retryButton);
     animatedObjectsIn.append(continueButton);
