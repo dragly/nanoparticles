@@ -31,16 +31,16 @@ const qreal globalScale = 2.5;
 const qreal enemyCharge = -7.8;
 const qreal playerCharge = 7.5;
 const qreal simpleCharge = 5.0;
-const qreal levelChargeFactor = 0.00048;
+const qreal levelChargeFactor = 0.00040;
 
 // game area
 const qreal gameWidth = 84;
 
-const qreal incrementChargeNum = 1.25; // will be converted to int after multiplication with level number
+const qreal incrementChargeNum = 0.8; // will be converted to int after multiplication with level number
 const int baseChargeNum = 4;
 // time
 const int baseTime = 10;
-const qreal timeIncrement = 1.8;
+const qreal timeIncrement = 1.3;
 
 // z values
 const int zInGameMenu = 91;
@@ -567,8 +567,12 @@ void GameScene::startLevel(int level) {
         qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
         enemy->setPosition(QVector2D(spawnRect.left() + xrand*spawnRect.width(),spawnRect.top() + yrand*spawnRect.height()));
         enemy->setParticleType(Particle::ParticleEnemy);
-        enemy->setElectroSticky(true);
-        enemy->setMass(50.0);
+        if(level < 7) {
+            enemy->setSticky(true);
+        } else if(level < 15) {
+            enemy->setElectroSticky(true);
+        }
+        enemy->setMass(20.0);
         enemy->setCharge(enemyChargeLevel);
         enemy->setScale(1.35 * globalScale);
         areaNumber++;
