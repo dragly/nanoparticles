@@ -31,7 +31,7 @@ const qreal globalScale = 2.5;
 const qreal enemyCharge = -7.8;
 const qreal playerCharge = 7.5;
 const qreal simpleCharge = 5.0;
-const qreal levelChargeFactor = 0.00040;
+const qreal levelChargeFactor = 0.00036;
 
 // game area
 const qreal gameWidth = 84;
@@ -40,7 +40,7 @@ const qreal incrementChargeNum = 0.8; // will be converted to int after multipli
 const int baseChargeNum = 4;
 // time
 const int baseTime = 10;
-const qreal timeIncrement = 1.3;
+const qreal timeIncrement = 0.9;
 
 // z values
 const int zInGameMenu = 91;
@@ -572,7 +572,7 @@ void GameScene::startLevel(int level) {
         } else if(level < 15) {
             enemy->setElectroSticky(true);
         }
-        enemy->setMass(20.0);
+        enemy->setMass(26.0);
         enemy->setCharge(enemyChargeLevel);
         enemy->setScale(1.35 * globalScale);
         areaNumber++;
@@ -722,7 +722,7 @@ void GameScene::toggleInstructionText() {
                 instructionText->setHtml(tr("<center><p>Welcome!</p><p>You are the green charge.<br>Avoid hitting the purple charges,<br>they are deadly to the green one.<br>Try to move the green charge by placing<br>other charges anywhere on the map.</p></center>"));
                 break;
             case 2:
-                instructionText->setHtml(tr("<center>You can also select blue charges by clicking on the blue button to the right.<br>The red charges push away the green one, while the blue charges attract it.</center>"));
+                instructionText->setHtml(tr("<center>You can also select blue charges<br>by clicking on the blue button to the right.<br>The red charges push away the green one,<br>while the blue charges attract it.</center>"));
                 break;
             case 3:
                 instructionText->setHtml(tr("<center>The time is shown in the lower right corner.<br>When the time runs out,<br/>you will move on to the next quantum state!<br/>You might call them levels if you like.</center>"));
