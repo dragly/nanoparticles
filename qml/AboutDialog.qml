@@ -32,7 +32,7 @@ Rectangle {
             text: "Reaktor v0.4.0"
             anchors.left: parent.left
             anchors.top: parent.top
-            font.pixelSize: 0.07 * root.height
+            font.pixelSize: 0.09 * root.height
             wrapMode: Text.NoWrap
         }
 
@@ -40,25 +40,12 @@ Rectangle {
             id: text2
             anchors.top: text1.bottom
             color: "#ffffff"
-            text: "Physics based game by dragly."
+            text: "Physics based game by dragly.<br><br>This application is licensed under the GPL license v3 or newer.<br><br>Please visit <a href='http://dragly.org/source/reaktor'>dragly.org</a> for more information."
             anchors.left: parent.left
-            anchors.topMargin: 0.02 * root.height
-            wrapMode: Text.NoWrap
-            font.pixelSize: 0.04 * root.height
-        }
-
-        Text {
-            id: text4
-            height: 0.5 * parent.height
-            color: "#ffffff"
-            text: "This application is licensed under the GPL license v3 or newer.<br>Please visit <a href='http://dragly.org/source/reaktor'>dragly.org</a> for more information."
-            anchors.left: parent.left
-            anchors.top: text2.bottom
             anchors.topMargin: 0.02 * root.height
             anchors.right: parent.right
             wrapMode: Text.WordWrap
-            font.pixelSize: 0.04 * root.height
-            onLinkActivated: Qt.openUrlExternally(link)
+            font.pixelSize: 0.065 * root.height
         }
     }
 
