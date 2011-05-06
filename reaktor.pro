@@ -11,7 +11,7 @@ QT       += core gui declarative
 #    }
 #}
 TARGET = Reaktor
-VERSION = 0.3.0
+VERSION = 0.4.0
 TEMPLATE = app
 
 SOURCES += main.cpp \
@@ -64,8 +64,6 @@ unix:!symbian {
     }
     INSTALLS += target
 }
-
-DEFINES += VERSION=\\\"$${VERSION}\\\"
 
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)

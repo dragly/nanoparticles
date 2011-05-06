@@ -1,7 +1,6 @@
 import QtQuick 1.0
 
 Rectangle {
-    function setVersion(newVersion) {text1.text="Reaktor v" + newVersion}
 
     id: root
     width: 400
@@ -30,7 +29,7 @@ Rectangle {
         Text {
             id: text1
             color: "#ffffff"
-            text: "Reaktor v1.0.0"
+            text: "Reaktor v0.4.0"
             anchors.left: parent.left
             anchors.top: parent.top
             font.pixelSize: 0.07 * root.height
