@@ -4,15 +4,13 @@
 
 #include <QDebug>
 
-/* TODO
-    - Button indicator (what have I selected?).
-    - Add link to Ovi Store when demo is over.
-    - Start a new project from this to find the error that causes rectangles and text to be drawn infrequently.
-    - OR remove rectangle and use image instead.
-
+/* TODO.
     // Finishing
     - Add copyright/version window.
     - Publish to Ovi Store
+
+    // Demo version (1.1)
+    - Add link to Ovi Store when demo is over.
 
     // To be tested (1.5)
     - Test with Meego SDK
@@ -151,7 +149,8 @@ GameScene::GameScene(QObject *parent) :
     // Main menu background
     QPixmap menuBackgroundPixmap(":/images/blackback.png");
     menuBackgroundRect = addPixmap(menuBackgroundPixmap);
-    menuBackgroundRect->setScale(1);
+    menuBackgroundRect->setScale(1000);
+
 //    menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
     menuBackgroundRect->show();
     menuBackgroundRect->setOpacity(0.7);
