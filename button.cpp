@@ -4,9 +4,10 @@
 #include <QDebug>
 
 Button::Button() :
-        GameObject(), _buttonType(ButtonPositive)
+    GameObject(), _buttonType(ButtonPositive)
 {
     setButtonType(StandardButton);
+    _selected = false;
 }
 
 void Button::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
@@ -31,6 +32,9 @@ void Button::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
     } else {
         painter->drawImage(realsize(true),buttonImage);
     }
+    if(_selected) {
+        painter->drawImage(realsize(true),gameScene()->selectionImage);
+    }
 }
 
 void Button::mousePressEvent(QGraphicsSceneMouseEvent *event) {
@@ -38,6 +42,10 @@ void Button::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     emit clicked();
 }
 
+void Button::setSelected(bool selected) {
+    _selected = selected;
+    update();
+}
 
 QRectF Button::boundingRect() const {
     return realsize(true);
