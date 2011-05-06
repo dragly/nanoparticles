@@ -46,6 +46,7 @@ Rectangle {
             anchors.right: parent.right
             wrapMode: Text.WordWrap
             font.pixelSize: 0.065 * root.height
+            onLinkActivated: Qt.openUrlExternally(link)
         }
     }
 
