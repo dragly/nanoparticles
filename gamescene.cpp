@@ -62,7 +62,7 @@ const qreal chargesLeftFontSize = 6;
 const qreal timerTextY = 75;
 
 GameScene::GameScene(QObject *parent) :
-        QGraphicsScene(parent)
+    QGraphicsScene(parent)
 {
     level = 1;
     _gameState = GameRunning;
@@ -72,6 +72,7 @@ GameScene::GameScene(QObject *parent) :
     selectedParticleType = ParticlePositive;
 
     // load images
+    selectionImage = QImage(":/images/selection-overlay.png");
     positiveImage = QImage(":/images/particle-positive.png");
     negativeImage = QImage(":/images/particle-negative.png");
     neutralImage = QImage(":/images/particle-neutral.png");
@@ -88,6 +89,7 @@ GameScene::GameScene(QObject *parent) :
     positiveButton->setScale(16);
     positiveButton->setButtonType(Button::ButtonPositive);
     positiveButton->setZValue(zInGameMenu);
+    positiveButton->setSelected(true);
 
     negativeButton = new Button();
     addItem(negativeButton);
@@ -134,12 +136,15 @@ GameScene::GameScene(QObject *parent) :
     gameMenuBackgroundRect->setOpacity(0.7);
     gameMenuBackgroundRect->setZValue(zInGameBackground);
     // Main menu background
-    menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
+    QPixmap menuBackgroundPixmap(":/images/blackback.png");
+    menuBackgroundRect = addPixmap(menuBackgroundPixmap);
+    menuBackgroundRect->setScale(1000);
+    //menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
     menuBackgroundRect->show();
     menuBackgroundRect->setOpacity(0.7);
     menuBackgroundRect->setZValue(zMainMenuBackground);
-//    menuBackgroundBlur.setBlurRadius(toFp(2));
-//    menuBackgroundRect->setGraphicsEffect(&menuBackgroundBlur);
+    //    menuBackgroundBlur.setBlurRadius(toFp(2));
+    //    menuBackgroundRect->setGraphicsEffect(&menuBackgroundBlur);
 
     continueButton = new Button();
     prepareButton(continueButton);
@@ -231,7 +236,7 @@ void GameScene::resized() {
             }
         }
     }
-    menuBackgroundRect->setRect(toFp(0), toFp(0), toFp(100), toFp(100));
+    //menuBackgroundRect->setRect(toFp(0), toFp(0), toFp(100), toFp(100));
     gameMenuBackgroundRect->setRect(toFp(gameWidth), toFp(0), toFp(100 - gameWidth), toFp(100));
     timerText->setPos(toFp(gameWidth,false),toFp(timerTextY,true));
     timerText->setTextWidth(toFp(100 - gameWidth));
@@ -371,10 +376,16 @@ void GameScene::clickedPrevLevelButton() {
 
 void GameScene::clickedNegativeButton() {
     selectedParticleType = ParticleNegative;
+    qDebug() << "Clicked negative";
+    positiveButton->setSelected(false);
+    negativeButton->setSelected(true);
 }
 
 void GameScene::clickedPositiveButton() {
+    qDebug() << "Clicked positive";
     selectedParticleType = ParticlePositive;
+    positiveButton->setSelected(true);
+    negativeButton->setSelected(false);
 }
 
 void GameScene::setGameState(int gameState) {

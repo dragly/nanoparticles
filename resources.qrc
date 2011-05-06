@@ -28,5 +28,7 @@
         <file>images/particle-player.png</file>
         <file>images/particle-player-overcharged.png</file>
         <file>images/button-retry.png</file>
+        <file>images/blackback.png</file>
+        <file>images/selection-overlay.png</file>
     </qresource>
 </RCC>

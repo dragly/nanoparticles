@@ -26,6 +26,7 @@ public:
     QImage enemyImage;
     QImage playerImage;
     QImage playerOverchargedImage;
+    QImage selectionImage;
     float dt(); // time difference in seconds, should never fall below 20fps
     QRectF gameRectF();
     double toFp(double number, bool useSmallest = false) const;
@@ -89,7 +90,7 @@ private:
     Button* prevLevelButton;
 
     // menu background and effect
-    QGraphicsRectItem *menuBackgroundRect;
+    QGraphicsPixmapItem *menuBackgroundRect;
     QGraphicsBlurEffect menuBackgroundBlur;
     QGraphicsRectItem *gameMenuBackgroundRect;
 
