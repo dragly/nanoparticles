@@ -35,6 +35,8 @@ public:
     void setGameState(int gameState);
     int gameState() {return _gameState;}
 
+    bool isDemo();
+
     void showGameMenu();
 
     int remainingNegativeCharges;
@@ -44,6 +46,7 @@ public:
     QTimer *levelTimer;
     QTimer *instructionTimer;
     QTime instructionTime;
+    QTime menuTime;
 
 signals:
 
@@ -60,6 +63,7 @@ public slots:
     void updateTime();
     void gameOver();
     void toggleInstructionText();
+    void animateMenuIn();
 
 private:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -105,6 +109,8 @@ private:
     void removePositiveCharge();
 
     void updateRemainingChargeText();
+
+    QSettings settings;
 
 };
 

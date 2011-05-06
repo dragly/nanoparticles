@@ -25,6 +25,11 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
+    qDebug() << "Enabling settings";
+    QCoreApplication::setOrganizationName("Dragly");
+    QCoreApplication::setOrganizationDomain("dragly.org");
+    QCoreApplication::setApplicationName("Reaktor");
+
     qDebug() << "Starting view";
     GameView view;
     // Font loading

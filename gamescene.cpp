@@ -6,12 +6,9 @@
 
 /* TODO
     - Button indicator (what have I selected?).
-    - Save highest achieved level, and make this the highest possible level to select with the buttons.
-    - Always start at the highest level.
-    - Create a countdown timer before the game starts - this gives the player a chance to make a strategy.
-    - Fix font on Symbian.
+    - Add link to Ovi Store when demo is over.
     - Start a new project from this to find the error that causes rectangles and text to be drawn infrequently.
-    - Add menutimer (avoid quick clicks)
+    - OR remove rectangle and use image instead.
 
     // Finishing
     - Add copyright/version window.
@@ -32,19 +29,19 @@
 // scaling
 const qreal globalScale = 2.5;
 // charges
-const qreal enemyCharge = -5.8;
-const qreal playerCharge = 5.5;
-const qreal simpleCharge = 3.25;
-const qreal levelChargeFactor = 0.0015;
+const qreal enemyCharge = -7.8;
+const qreal playerCharge = 7.5;
+const qreal simpleCharge = 5.0;
+const qreal levelChargeFactor = 0.00036;
 
 // game area
 const qreal gameWidth = 84;
 
-const qreal incrementChargeNum = 1.25; // will be converted to int after multiplication with level number
+const qreal incrementChargeNum = 0.8; // will be converted to int after multiplication with level number
 const int baseChargeNum = 4;
 // time
 const int baseTime = 10;
-const qreal timeIncrement = 1.8;
+const qreal timeIncrement = 0.9;
 
 // z values
 const int zInGameMenu = 91;
@@ -54,22 +51,38 @@ const int zMainMenu = 101;
 const int zMainMenuBackground = 100;
 
 // in game gui
-const qreal positiveButtonY = 35;
+const QVector2D positiveButtonPosition(92,35);
+const QVector2D negativeButtonPosition(92,55);
+const QVector2D pauseGameButtonPosition(92,10);
+const QVector2D continueButtonPosition(50,50);
+const QVector2D retryButtonPosition(70,50);
+const QVector2D exitButtonPosition(92,10);
+const QVector2D prevLevelButtonPosition(60,75);
+const QVector2D nextLevelButtonPosition(40,75);
 const qreal negativeButtonY = 55;
 const qreal timerTextFontSize = 8;
 const qreal instructionTextFontSize = 5;
 const qreal chargesLeftFontSize = 6;
 const qreal timerTextY = 75;
 
+
 GameScene::GameScene(QObject *parent) :
     QGraphicsScene(parent)
 {
-    level = 1;
+    if(isDemo()) {
+        qDebug() << "This is the demo version";
+    } else {
+        qDebug() << "This is the full version";
+    }
     _gameState = GameRunning;
     _dt = 0;
     firstStep = true;
 
     selectedParticleType = ParticlePositive;
+
+    // load settings
+    level = settings.value("highestLevel", 1).toInt();
+    qDebug() << "Highest level is" << level;
 
     // load images
     selectionImage = QImage(":/images/selection-overlay.png");
@@ -85,7 +98,7 @@ GameScene::GameScene(QObject *parent) :
     // Add in-game menu
     positiveButton = new Button();
     addItem(positiveButton);
-    positiveButton->setPosition(QVector2D(92,positiveButtonY));
+    positiveButton->setPosition(positiveButtonPosition);
     positiveButton->setScale(16);
     positiveButton->setButtonType(Button::ButtonPositive);
     positiveButton->setZValue(zInGameMenu);
@@ -94,14 +107,14 @@ GameScene::GameScene(QObject *parent) :
     negativeButton = new Button();
     addItem(negativeButton);
     negativeButton->setScale(16);
-    negativeButton->setPosition(QVector2D(92,negativeButtonY));
+    negativeButton->setPosition(negativeButtonPosition);
     negativeButton->setButtonType(Button::ButtonNegative);
     negativeButton->setZValue(zInGameMenu);
 
     pauseGameButton = new Button();
     prepareButton(pauseGameButton);
     pauseGameButton->setScale(15);
-    pauseGameButton->setPosition(QVector2D(92,10));
+    pauseGameButton->setPosition(pauseGameButtonPosition);
     pauseGameButton->setImage(":/images/button-pause.png");
     pauseGameButton->setZValue(zInGameMenu);
     // timer text (level time left)
@@ -149,29 +162,33 @@ GameScene::GameScene(QObject *parent) :
     continueButton = new Button();
     prepareButton(continueButton);
     continueButton->setScale(30);
-    continueButton->setPosition(QVector2D(50,50));
+    continueButton->setPosition(continueButtonPosition);
     continueButton->setImage(":/images/button-continue.png");
 
     retryButton = new Button();
     prepareButton(retryButton);
-    retryButton->setPosition(QVector2D(70,50));
+    retryButton->setPosition(retryButtonPosition);
     retryButton->setScale(14);
     retryButton->hide();
     retryButton->setImage(":/images/button-retry.png");
 
     exitButton = new Button();
     prepareButton(exitButton);
-    exitButton->setPosition(QVector2D(92,10));
+    exitButton->setPosition(exitButtonPosition);
     exitButton->setImage(":/images/button-exit.png");
     // next/prev level
     prevLevelButton = new Button();
+    if(level <= 1) {
+        prevLevelButton->hide();
+    }
     prepareButton(prevLevelButton);
-    prevLevelButton->setPosition(QVector2D(60,75));
+    prevLevelButton->setPosition(prevLevelButtonPosition);
     prevLevelButton->setImage(":/images/button-leveldown.png");
 
     nextLevelButton = new Button();
+    nextLevelButton->hide();
     prepareButton(nextLevelButton);
-    nextLevelButton->setPosition(QVector2D(40,75));
+    nextLevelButton->setPosition(nextLevelButtonPosition);
     nextLevelButton->setImage(":/images/button-levelup.png");
 
     // menu text
@@ -179,7 +196,11 @@ GameScene::GameScene(QObject *parent) :
     QColor menuFontColor(250,250,250,245);
     menuFont.setFamily("NovaSquare");
     // menu title text
-    menuTitleText = addText("Reaktor", menuFont);
+    if(isDemo()) {
+        menuTitleText = addText("Reaktor demo", menuFont);
+    } else {
+        menuTitleText = addText("Reaktor", menuFont);
+    }
     menuTitleText->setHtml("<center>Reaktor</center>");
     menuTitleText->setDefaultTextColor(menuFontColor);
     menuTitleText->setZValue(zMainMenu);
@@ -211,12 +232,24 @@ GameScene::GameScene(QObject *parent) :
     resized();
 
     // Start level and start timers
-    startLevel(1);
+    startLevel(level);
 
     QObject::connect(&timer, SIGNAL(timeout()), SLOT(advance()));
     timer.start(10);
     time.start();
     qDebug() << "Timers started!";
+}
+
+bool GameScene::isDemo() {
+    // Yes, I know this is far from bullet proof, and that I
+    // should use the define check everywhere instead of letting crackers
+    // easily modify this variable in memory. But hey, this is an open source game.
+    // They could just have rebuilt the source if they wanted to :)
+    #ifdef ISDEMO
+    return true;
+    #else
+    return false;
+    #endif
 }
 
 void GameScene::prepareButton(Button *button) {
@@ -242,9 +275,9 @@ void GameScene::resized() {
     timerText->setTextWidth(toFp(100 - gameWidth));
     instructionText->setPos(toFp(5),toFp(5));
     instructionText->setTextWidth(toFp(gameWidth));
-    remainingPositiveChargesText->setPos(toFp(gameWidth,false),toFp(positiveButtonY - chargesLeftFontSize * 0.8,true));
+    remainingPositiveChargesText->setPos(toFp(gameWidth,false),toFp(positiveButtonPosition.y() - chargesLeftFontSize * 0.8,true));
     remainingPositiveChargesText->setTextWidth(toFp(100 - gameWidth));
-    remainingNegativeChargesText->setPos(toFp(gameWidth,false),toFp(negativeButtonY - chargesLeftFontSize * 0.8,true));
+    remainingNegativeChargesText->setPos(toFp(gameWidth,false),toFp(negativeButtonPosition.y() - chargesLeftFontSize * 0.8,true));
     remainingNegativeChargesText->setTextWidth(toFp(100 - gameWidth));
     // Reisze gui font
     QFont timerFont = menuTitleText->font();
@@ -275,12 +308,21 @@ void GameScene::resized() {
 void GameScene::updateTime() {
     levelTime--;
     timerText->setHtml("<center>" + QString::number(levelTime) + "</center>");
-    qDebug() << levelTime;
     if(levelTime < 1) {
         pauseGame();
-        menuTitleText->setHtml("<center>Level up!</center>");
+        if(isDemo() && level >= 8) {
+            menuTitleText->setHtml("<center>End of demo.</center>");
+            levelText->setHtml("<center>Buy game in <a href='http://ovi.com'>Ovi Store</a></center>");
+            continueButton->hide();
+            nextLevelButton->hide();
+        } else {
+            menuTitleText->setHtml("<center>Level up!</center>");
+            startLevel(level + 1);
+        }
         menuTitleText->show();
-        startLevel(level + 1);
+        if(settings.value("highestLevel", 1).toInt() < level) {
+            settings.setValue("highestLevel", level);
+        }
     }
 }
 
@@ -289,7 +331,7 @@ void GameScene::continueGame() {
     if(gameState() == GameOver) {
         startLevel(level);
     }
-    if(level == 1 || level == 2) {
+    if(level == 1) {
         instructionTimer->start();
     }
     setGameState(GameRunning);
@@ -317,7 +359,10 @@ void GameScene::continueGame() {
 }
 
 void GameScene::pauseGame() {
+    bool wasGameRunning = false;
     if(gameState() == GameRunning) {
+        menuTime.restart(); // start the timer that will avoid clicking on the quit button after level up or failed
+        wasGameRunning = true;
         setGameState(GamePaused);
         menuTitleText->setHtml("<center>Paused</center>");
         menuTitleText->show();
@@ -337,17 +382,34 @@ void GameScene::pauseGame() {
     timerText->hide();
     remainingPositiveChargesText->hide();
     remainingNegativeChargesText->hide();
+
     // show main menu
     levelText->show();
-    nextLevelButton->show();
-    prevLevelButton->show();
+    if(settings.value("highestLevel",1).toInt() > level) {
+        nextLevelButton->show();
+    } else {
+        nextLevelButton->hide();
+    }
+    if(level > 1) {
+        prevLevelButton->show();
+    } else {
+        prevLevelButton->hide();
+    }
     exitButton->show();
     // pause timer
     levelTimer->stop();
     qDebug() << "Game paused";
+    // Animation
+    // avoid animation if we are just changing levels. I.e., only animate if the game was running earlier.
+    if(wasGameRunning) {
+        animateMenuIn();
+    }
+
+    // end animation
 }
 
 void GameScene::gameOver() {
+    animateMenuIn();
     setGameState(GameOver);
     menuBackgroundRect->show();
     menuTitleText->setHtml("<center>Level Failed!</center>");
@@ -366,12 +428,36 @@ void GameScene::exitGame() {
     QApplication::quit();
 }
 
+void GameScene::animateMenuIn() {
+    QList<QObject*> animatedObjectsIn;
+    animatedObjectsIn.append(exitButton);
+    animatedObjectsIn.append(nextLevelButton);
+    animatedObjectsIn.append(prevLevelButton);
+    //    animatedObjectsIn.append(menuBackgroundRect);
+    animatedObjectsIn.append(menuTitleText);
+    animatedObjectsIn.append(retryButton);
+    animatedObjectsIn.append(continueButton);
+    animatedObjectsIn.append(levelText);
+    QList<QObject*> animatedObjectsOut;
+
+    foreach(QObject* animObject, animatedObjectsIn) {
+        QPropertyAnimation *animation = new QPropertyAnimation(animObject, "opacity", this);
+        animation->setStartValue(0);
+        animation->setEndValue(1);
+        animation->setDuration(800);
+        animation->setEasingCurve(QEasingCurve::InOutSine);
+        animation->start(QAbstractAnimation::DeleteWhenStopped);
+    }
+}
+
 void GameScene::clickedNextLevelButton() {
     startLevel(level + 1);
+    pauseGame();
 }
 
 void GameScene::clickedPrevLevelButton() {
     startLevel(level - 1);
+    pauseGame();
 }
 
 void GameScene::clickedNegativeButton() {
@@ -396,6 +482,10 @@ void GameScene::setGameState(int gameState) {
 }
 
 void GameScene::startLevel(int level) {
+    qDebug() << "Starting level" << level;
+
+    qreal enemyChargeLevel = enemyCharge * (1 + levelChargeFactor * pow((double)level,2));
+
     instructionNumber = 1; // if there are instructions, start with the first one
 
     this->level = level;
@@ -413,13 +503,13 @@ void GameScene::startLevel(int level) {
     // set level text
     levelText->setHtml("<center>Level " + QString::number(level) + "</center>");
 
-    // Start instructions if on level 1 or 2
-    if(level == 1 || level == 2) {
+    // Start instructions if on level 1
+    if(level == 1) {
         instructionTimer->setInterval(2000);
     }
 
     // set number of charges to use
-    if(level == 1 || level == 2) {
+    if(level == 1) {
         remainingPositiveCharges = 20;
         remainingNegativeCharges = 20;
 
@@ -449,12 +539,12 @@ void GameScene::startLevel(int level) {
      _____________
      |1 |11|7 |3 |
      |5_|__|__|9_|
-     |10|__|__|6_|
-     |4_|8_|12|2_|
+     |10|__|__|2_|
+     |4_|8_|12|6_|
 
      */
     int areaNumber = 1;
-    for(int i=0; i<level-1; i++) { // no enemies in level 1
+    for(int i=0; i<level; i++) { // 1 new enemy per level
         Particle *enemy = new Particle();
         addItem(enemy);
         // should the particle spawn at the topleft, topright, bottomleft or bottomright?
@@ -467,7 +557,7 @@ void GameScene::startLevel(int level) {
             break;
         case 2:
             left = 3;
-            top = 3;
+            top = 2;
             break;
         case 3:
             left = 3;
@@ -483,7 +573,7 @@ void GameScene::startLevel(int level) {
             break;
         case 6:
             left = 3;
-            top = 2;
+            top = 3;
             break;
         case 7:
             left = 2;
@@ -512,24 +602,25 @@ void GameScene::startLevel(int level) {
         }
 
         // make sure that no enemies spawn in the middle region (close to the player)
-        qDebug() << gameRectF() << gameRectF().left() + gameRectF().width()/4.0 * left << gameRectF().width()/4.0 << left;
         QRectF spawnRect(gameRectF().left() + gameRectF().width()/4.0 * left, gameRectF().top() + gameRectF().height()/4.0 * top, gameRectF().width()/4.0, gameRectF().height()/4.0);
-        qDebug() << "spawnRect" << spawnRect;
         // now, let's find a random position within this region
         qreal xrand = (qreal)qrand()/(qreal)RAND_MAX;
         qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
         enemy->setPosition(QVector2D(spawnRect.left() + xrand*spawnRect.width(),spawnRect.top() + yrand*spawnRect.height()));
-        qDebug() << enemy->position();
         enemy->setParticleType(Particle::ParticleEnemy);
-        enemy->setSticky(true);
-        enemy->setCharge(enemyCharge * (1 + levelChargeFactor * pow((double)level,2)));
+        if(level < 7) {
+            enemy->setSticky(true);
+        } else if(level < 15) {
+            enemy->setElectroSticky(true);
+        }
+        enemy->setMass(26.0);
+        enemy->setCharge(enemyChargeLevel);
         enemy->setScale(1.35 * globalScale);
         areaNumber++;
         if(areaNumber > 12) {
             areaNumber = 1;
         }
     }
-    qDebug() << "level started";
 }
 
 void GameScene::updateRemainingChargeText() {
@@ -567,9 +658,8 @@ void GameScene::removePositiveCharge() {
 
 void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     //Create particles
-    qDebug() << "MousePress at" << fromFp(event->scenePos().x()) << gameRectF().right();
     if(gameState() == GameInstructionPause) {
-        if(instructionTime.elapsed() > 750) {
+        if(instructionTime.elapsed() > 500) {
             toggleInstructionText();
         }
     } else if(gameState() == GameRunning){
@@ -609,7 +699,9 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             QGraphicsScene::mousePressEvent(event);
         }
     } else {
-        QGraphicsScene::mousePressEvent(event);
+        if(menuTime.elapsed() > 500) { // make sure we don't let the user hit any buttons before the timer has run out
+            QGraphicsScene::mousePressEvent(event);
+        }
     }
 }
 
@@ -668,41 +760,14 @@ void GameScene::toggleInstructionText() {
         if(level == 1) {
             switch(instructionNumber) {
             case 1:
-                instructionText->setHtml(tr("<center><p>Welcome!</p><p>You are the green charge.<br>Try to move the green charge by placing<br>other charges anywhere on the map.</p></center>"));
+                instructionText->setHtml(tr("<center><p>Welcome!</p><p>You are the green charge.<br>Avoid hitting the purple charges,<br>they are deadly to the green one.<br>Try to move the green charge by placing<br>other charges anywhere on the map.</p></center>"));
                 break;
             case 2:
-                instructionText->setHtml(tr("<center>You can also select blue charges by clicking on the blue button to the right.</center>"));
+                instructionText->setHtml(tr("<center>You can also select blue charges<br>by clicking on the blue button to the right.<br>The red charges push away the green one,<br>while the blue charges attract it.</center>"));
                 break;
             case 3:
-                instructionText->setHtml(tr("<center>The red charges push away the green one, while the blue charges attract it.</center>"));
-                break;
-            case 4:
-                instructionText->setHtml(tr("<center>Just be aware.<br />The green charge gets stronger when it crashes with the others.</center>"));
-                break;
-            case 5:
-                instructionText->setHtml(tr("<center>Alright! Let's kick things up a notch.<br/>We're moving on to the next level!</center>"));
-                levelTime = 2;
-                break;
-            default:
-                instructionText->setHtml("");
-                instructionTimer->stop();
-                toggleInstructionText();
-                break;
-            }
-        } else if(level == 2) {
-            switch(instructionNumber) {
-            case 1:
-                instructionText->setHtml(tr("<center>You should try to avoid the purple charges.<br />They are deadly to the green one.<br />Almost like antimatter.</center>"));
-                break;
-            case 2:
-                instructionText->setHtml(tr("<center>The time is shown in the lower right corner.</center>"));
-                break;
-            case 3:
-                instructionText->setHtml(tr("<center>When the time runs out,<br/>you will move on to the next quantum state!<br/>You might call them levels if you like.</center>"));
-                break;
-            case 4:
-                instructionText->setHtml(tr("<center>Well, it's up to you from here.<br/>I'll leave you with the next level.</center>"));
-                levelTime = 2;
+                instructionText->setHtml(tr("<center>The time is shown in the lower right corner.<br>When the time runs out,<br/>you will move on to the next quantum state!<br/>You might call them levels if you like.</center>"));
+                levelTime = 5;
                 break;
             default:
                 instructionText->setHtml("");
