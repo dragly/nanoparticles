@@ -3,6 +3,8 @@
 #include "button.h"
 
 #include <QDebug>
+#include <QtDeclarative/QDeclarativeEngine>
+#include <QtDeclarative/QDeclarativeComponent>
 
 /* TODO.
     // Finishing
@@ -54,6 +56,7 @@ const QVector2D negativeButtonPosition(92,55);
 const QVector2D pauseGameButtonPosition(92,10);
 const QVector2D continueButtonPosition(50,50);
 const QVector2D retryButtonPosition(70,50);
+const QVector2D aboutDialogButtonPosition(92,35);
 const QVector2D exitButtonPosition(92,10);
 const QVector2D prevLevelButtonPosition(60,75);
 const QVector2D nextLevelButtonPosition(40,75);
@@ -115,6 +118,7 @@ GameScene::GameScene(QObject *parent) :
     pauseGameButton->setPosition(pauseGameButtonPosition);
     pauseGameButton->setImage(":/images/button-pause.png");
     pauseGameButton->setZValue(zInGameMenu);
+
     // timer text (level time left)
     QFont font;
     font.setFamily("NovaSquare");
@@ -171,6 +175,13 @@ GameScene::GameScene(QObject *parent) :
     retryButton->hide();
     retryButton->setImage(":/images/button-retry.png");
 
+    aboutDialogButton = new Button();
+    prepareButton(aboutDialogButton);
+    aboutDialogButton->setPosition(aboutDialogButtonPosition);
+    aboutDialogButton->setScale(14);
+    aboutDialogButton->hide();
+    aboutDialogButton->setImage(":/images/button-retry.png");
+
     exitButton = new Button();
     prepareButton(exitButton);
     exitButton->setPosition(exitButtonPosition);
@@ -189,6 +200,18 @@ GameScene::GameScene(QObject *parent) :
     prepareButton(nextLevelButton);
     nextLevelButton->setPosition(nextLevelButtonPosition);
     nextLevelButton->setImage(":/images/button-levelup.png");
+
+    // About dialog
+    QDeclarativeEngine *engine = new QDeclarativeEngine;
+    QDeclarativeComponent component(engine, QUrl::fromLocalFile("qml/AboutDialog.qml"));
+    aboutDialog = qobject_cast<QGraphicsObject *>(component.create());
+    addItem(aboutDialog);
+    aboutDialog->hide();
+    aboutDialog->setProperty("opacity", 0);
+    aboutDialog->setZValue(10000);
+    aboutDialog->setProperty("width", QApplication::desktop()->width());
+    aboutDialog->setProperty("height", QApplication::desktop()->height());
+    qDebug() << "Width" << width();
 
     // menu text
     QFont menuFont;
@@ -222,6 +245,7 @@ GameScene::GameScene(QObject *parent) :
     connect(continueButton, SIGNAL(clicked()), SLOT(continueGame()));
     connect(pauseGameButton, SIGNAL(clicked()), SLOT(pauseGame()));
     connect(retryButton, SIGNAL(clicked()), SLOT(retryGame()));
+    connect(aboutDialogButton, SIGNAL(clicked()), SLOT(showAboutDialog()));
     connect(exitButton, SIGNAL(clicked()), SLOT(exitGame()));
     // next/prev level
     connect(nextLevelButton, SIGNAL(clicked()), SLOT(clickedNextLevelButton()));
@@ -342,6 +366,7 @@ void GameScene::continueGame() {
     remainingPositiveChargesText->show();
     remainingNegativeChargesText->show();
     // hide main menu
+    aboutDialogButton->hide();
     levelText->hide();
     menuBackgroundRect->hide();
     continueButton->hide();
@@ -394,6 +419,7 @@ void GameScene::pauseGame() {
     } else {
         prevLevelButton->hide();
     }
+    aboutDialogButton->show();
     exitButton->show();
     // pause timer
     levelTimer->stop();
@@ -405,6 +431,11 @@ void GameScene::pauseGame() {
     }
 
     // end animation
+}
+
+void GameScene::showAboutDialog() {
+    aboutDialog->show();
+    aboutDialog->setProperty("opacity", 1);
 }
 
 void GameScene::gameOver() {
@@ -547,8 +578,8 @@ void GameScene::startLevel(int level) {
         Particle *enemy = new Particle();
         addItem(enemy);
         // should the particle spawn at the topleft, topright, bottomleft or bottomright?
-        int left;
-        int top;
+        int left = 0;
+        int top = 0;
         switch(areaNumber) {
         case 1:
             left = 0;

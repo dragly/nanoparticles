@@ -64,6 +64,7 @@ public slots:
     void gameOver();
     void toggleInstructionText();
     void animateMenuIn();
+    void showAboutDialog();
 
 private:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -89,6 +90,7 @@ private:
     // menu buttons
     Button* continueButton;
     Button* retryButton;
+    Button* aboutDialogButton;
     Button* exitButton;
     Button* nextLevelButton;
     Button* prevLevelButton;
@@ -104,6 +106,9 @@ private:
     QGraphicsTextItem *menuTitleText;
     QGraphicsTextItem *remainingPositiveChargesText;
     QGraphicsTextItem *remainingNegativeChargesText;
+
+    // About dialog
+    QGraphicsObject *aboutDialog;
 
     void removeNegativeCharge();
     void removePositiveCharge();
