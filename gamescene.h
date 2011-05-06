@@ -26,6 +26,7 @@ public:
     QImage enemyImage;
     QImage playerImage;
     QImage playerOverchargedImage;
+    QImage selectionImage;
     float dt(); // time difference in seconds, should never fall below 20fps
     QRectF gameRectF();
     double toFp(double number, bool useSmallest = false) const;
@@ -33,6 +34,8 @@ public:
     void resized();
     void setGameState(int gameState);
     int gameState() {return _gameState;}
+
+    bool isDemo();
 
     void showGameMenu();
 
@@ -61,6 +64,7 @@ public slots:
     void gameOver();
     void toggleInstructionText();
     void animateMenuIn();
+    void showAboutDialog();
 
 private:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -86,12 +90,13 @@ private:
     // menu buttons
     Button* continueButton;
     Button* retryButton;
+    Button* aboutDialogButton;
     Button* exitButton;
     Button* nextLevelButton;
     Button* prevLevelButton;
 
     // menu background and effect
-    QGraphicsRectItem *menuBackgroundRect;
+    QGraphicsPixmapItem *menuBackgroundRect;
     QGraphicsBlurEffect menuBackgroundBlur;
     QGraphicsRectItem *gameMenuBackgroundRect;
 
@@ -101,6 +106,9 @@ private:
     QGraphicsTextItem *menuTitleText;
     QGraphicsTextItem *remainingPositiveChargesText;
     QGraphicsTextItem *remainingNegativeChargesText;
+
+    // About dialog
+    QGraphicsObject *aboutDialog;
 
     void removeNegativeCharge();
     void removePositiveCharge();

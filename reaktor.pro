@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui declarative
 #unix {
 #    !symbian {
         QT += opengl
@@ -33,6 +33,10 @@ FORMS    +=
 #CONFIG += mobility
 #MOBILITY =
 
+folder_01.source = qml
+folder_01.target =
+DEPLOYMENTFOLDERS = folder_01
+
 symbian {
     ICON = untitled.svg
 
@@ -49,7 +53,8 @@ RESOURCES += \
     resources.qrc
 
 OTHER_FILES += \
-    LICENSE-font-NovaSquare.txt
+    LICENSE-font-NovaSquare.txt \
+    AboutDialog.qml
 
 unix:!symbian {
     maemo5 {
@@ -59,3 +64,9 @@ unix:!symbian {
     }
     INSTALLS += target
 }
+
+DEFINES += VERSION=\\\"$${VERSION}\\\"
+
+# Please do not modify the following two lines. Required for deployment.
+include(qmlapplicationviewer/qmlapplicationviewer.pri)
+qtcAddDeployment()

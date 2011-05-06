@@ -3,15 +3,16 @@
 #include "button.h"
 
 #include <QDebug>
+#include <QtDeclarative/QDeclarativeEngine>
+#include <QtDeclarative/QDeclarativeComponent>
 
-/* TODO
-    - Button indicator (what have I selected?).
-    - Fix font on Symbian.
-    - Start a new project from this to find the error that causes rectangles and text to be drawn infrequently.
-
+/* TODO.
     // Finishing
     - Add copyright/version window.
     - Publish to Ovi Store
+
+    // Demo version (1.1)
+    - Add link to Ovi Store when demo is over.
 
     // To be tested (1.5)
     - Test with Meego SDK
@@ -55,6 +56,7 @@ const QVector2D negativeButtonPosition(92,55);
 const QVector2D pauseGameButtonPosition(92,10);
 const QVector2D continueButtonPosition(50,50);
 const QVector2D retryButtonPosition(70,50);
+const QVector2D aboutDialogButtonPosition(92,35);
 const QVector2D exitButtonPosition(92,10);
 const QVector2D prevLevelButtonPosition(60,75);
 const QVector2D nextLevelButtonPosition(40,75);
@@ -64,9 +66,15 @@ const qreal instructionTextFontSize = 5;
 const qreal chargesLeftFontSize = 6;
 const qreal timerTextY = 75;
 
+
 GameScene::GameScene(QObject *parent) :
     QGraphicsScene(parent)
 {
+    if(isDemo()) {
+        qDebug() << "This is the demo version";
+    } else {
+        qDebug() << "This is the full version";
+    }
     _gameState = GameRunning;
     _dt = 0;
     firstStep = true;
@@ -75,9 +83,10 @@ GameScene::GameScene(QObject *parent) :
 
     // load settings
     level = settings.value("highestLevel", 1).toInt();
-    qDebug() << "Level is" << level;
+    qDebug() << "Highest level is" << level;
 
     // load images
+    selectionImage = QImage(":/images/selection-overlay.png");
     positiveImage = QImage(":/images/particle-positive.png");
     negativeImage = QImage(":/images/particle-negative.png");
     neutralImage = QImage(":/images/particle-neutral.png");
@@ -94,6 +103,7 @@ GameScene::GameScene(QObject *parent) :
     positiveButton->setScale(16);
     positiveButton->setButtonType(Button::ButtonPositive);
     positiveButton->setZValue(zInGameMenu);
+    positiveButton->setSelected(true);
 
     negativeButton = new Button();
     addItem(negativeButton);
@@ -108,6 +118,7 @@ GameScene::GameScene(QObject *parent) :
     pauseGameButton->setPosition(pauseGameButtonPosition);
     pauseGameButton->setImage(":/images/button-pause.png");
     pauseGameButton->setZValue(zInGameMenu);
+
     // timer text (level time left)
     QFont font;
     font.setFamily("NovaSquare");
@@ -140,7 +151,11 @@ GameScene::GameScene(QObject *parent) :
     gameMenuBackgroundRect->setOpacity(0.7);
     gameMenuBackgroundRect->setZValue(zInGameBackground);
     // Main menu background
-    menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
+    QPixmap menuBackgroundPixmap(":/images/blackback.png");
+    menuBackgroundRect = addPixmap(menuBackgroundPixmap);
+    menuBackgroundRect->setScale(1000);
+
+//    menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
     menuBackgroundRect->show();
     menuBackgroundRect->setOpacity(0.7);
     menuBackgroundRect->setZValue(zMainMenuBackground);
@@ -159,6 +174,13 @@ GameScene::GameScene(QObject *parent) :
     retryButton->setScale(14);
     retryButton->hide();
     retryButton->setImage(":/images/button-retry.png");
+
+    aboutDialogButton = new Button();
+    prepareButton(aboutDialogButton);
+    aboutDialogButton->setPosition(aboutDialogButtonPosition);
+    aboutDialogButton->setScale(14);
+    aboutDialogButton->hide();
+    aboutDialogButton->setImage(":/images/button-info.png");
 
     exitButton = new Button();
     prepareButton(exitButton);
@@ -179,12 +201,27 @@ GameScene::GameScene(QObject *parent) :
     nextLevelButton->setPosition(nextLevelButtonPosition);
     nextLevelButton->setImage(":/images/button-levelup.png");
 
+    // About dialog
+    QDeclarativeEngine *engine = new QDeclarativeEngine;
+    QDeclarativeComponent component(engine, QUrl::fromLocalFile("qml/AboutDialog.qml"));
+    aboutDialog = qobject_cast<QGraphicsObject *>(component.create());
+    addItem(aboutDialog);
+    aboutDialog->hide();
+    aboutDialog->setProperty("opacity", 0);
+    aboutDialog->setZValue(10000);
+    aboutDialog->setProperty("width", QApplication::desktop()->screenGeometry().width());
+    aboutDialog->setProperty("height", QApplication::desktop()->screenGeometry().height());
+    QMetaObject::invokeMethod(aboutDialog, "setVersion",Q_ARG(QVariant, VERSION));
     // menu text
     QFont menuFont;
     QColor menuFontColor(250,250,250,245);
     menuFont.setFamily("NovaSquare");
     // menu title text
-    menuTitleText = addText("Reaktor", menuFont);
+    if(isDemo()) {
+        menuTitleText = addText("Reaktor demo", menuFont);
+    } else {
+        menuTitleText = addText("Reaktor", menuFont);
+    }
     menuTitleText->setHtml("<center>Reaktor</center>");
     menuTitleText->setDefaultTextColor(menuFontColor);
     menuTitleText->setZValue(zMainMenu);
@@ -207,6 +244,7 @@ GameScene::GameScene(QObject *parent) :
     connect(continueButton, SIGNAL(clicked()), SLOT(continueGame()));
     connect(pauseGameButton, SIGNAL(clicked()), SLOT(pauseGame()));
     connect(retryButton, SIGNAL(clicked()), SLOT(retryGame()));
+    connect(aboutDialogButton, SIGNAL(clicked()), SLOT(showAboutDialog()));
     connect(exitButton, SIGNAL(clicked()), SLOT(exitGame()));
     // next/prev level
     connect(nextLevelButton, SIGNAL(clicked()), SLOT(clickedNextLevelButton()));
@@ -222,6 +260,18 @@ GameScene::GameScene(QObject *parent) :
     timer.start(10);
     time.start();
     qDebug() << "Timers started!";
+}
+
+bool GameScene::isDemo() {
+    // Yes, I know this is far from bullet proof, and that I
+    // should use the define check everywhere instead of letting crackers
+    // easily modify this variable in memory. But hey, this is an open source game.
+    // They could just have rebuilt the source if they wanted to :)
+    #ifdef ISDEMO
+    return true;
+    #else
+    return false;
+    #endif
 }
 
 void GameScene::prepareButton(Button *button) {
@@ -241,7 +291,7 @@ void GameScene::resized() {
             }
         }
     }
-    menuBackgroundRect->setRect(toFp(0), toFp(0), toFp(100), toFp(100));
+    //menuBackgroundRect->setRect(toFp(0), toFp(0), toFp(100), toFp(100));
     gameMenuBackgroundRect->setRect(toFp(gameWidth), toFp(0), toFp(100 - gameWidth), toFp(100));
     timerText->setPos(toFp(gameWidth,false),toFp(timerTextY,true));
     timerText->setTextWidth(toFp(100 - gameWidth));
@@ -282,9 +332,16 @@ void GameScene::updateTime() {
     timerText->setHtml("<center>" + QString::number(levelTime) + "</center>");
     if(levelTime < 1) {
         pauseGame();
-        menuTitleText->setHtml("<center>Level up!</center>");
+        if(isDemo() && level >= 8) {
+            menuTitleText->setHtml("<center>End of demo.</center>");
+            levelText->setHtml("<center>Buy game in <a href='http://ovi.com'>Ovi Store</a></center>");
+            continueButton->hide();
+            nextLevelButton->hide();
+        } else {
+            menuTitleText->setHtml("<center>Level up!</center>");
+            startLevel(level + 1);
+        }
         menuTitleText->show();
-        startLevel(level + 1);
         if(settings.value("highestLevel", 1).toInt() < level) {
             settings.setValue("highestLevel", level);
         }
@@ -308,6 +365,7 @@ void GameScene::continueGame() {
     remainingPositiveChargesText->show();
     remainingNegativeChargesText->show();
     // hide main menu
+    aboutDialogButton->hide();
     levelText->hide();
     menuBackgroundRect->hide();
     continueButton->hide();
@@ -360,6 +418,7 @@ void GameScene::pauseGame() {
     } else {
         prevLevelButton->hide();
     }
+    aboutDialogButton->show();
     exitButton->show();
     // pause timer
     levelTimer->stop();
@@ -371,6 +430,11 @@ void GameScene::pauseGame() {
     }
 
     // end animation
+}
+
+void GameScene::showAboutDialog() {
+    aboutDialog->show();
+    aboutDialog->setProperty("opacity", 1);
 }
 
 void GameScene::gameOver() {
@@ -398,11 +462,12 @@ void GameScene::animateMenuIn() {
     animatedObjectsIn.append(exitButton);
     animatedObjectsIn.append(nextLevelButton);
     animatedObjectsIn.append(prevLevelButton);
-//    animatedObjectsIn.append(menuBackgroundRect);
+    //    animatedObjectsIn.append(menuBackgroundRect);
     animatedObjectsIn.append(menuTitleText);
     animatedObjectsIn.append(retryButton);
     animatedObjectsIn.append(continueButton);
     animatedObjectsIn.append(levelText);
+    animatedObjectsIn.append(aboutDialogButton);
     QList<QObject*> animatedObjectsOut;
 
     foreach(QObject* animObject, animatedObjectsIn) {
@@ -427,10 +492,16 @@ void GameScene::clickedPrevLevelButton() {
 
 void GameScene::clickedNegativeButton() {
     selectedParticleType = ParticleNegative;
+    qDebug() << "Clicked negative";
+    positiveButton->setSelected(false);
+    negativeButton->setSelected(true);
 }
 
 void GameScene::clickedPositiveButton() {
+    qDebug() << "Clicked positive";
     selectedParticleType = ParticlePositive;
+    positiveButton->setSelected(true);
+    negativeButton->setSelected(false);
 }
 
 void GameScene::setGameState(int gameState) {
@@ -507,8 +578,8 @@ void GameScene::startLevel(int level) {
         Particle *enemy = new Particle();
         addItem(enemy);
         // should the particle spawn at the topleft, topright, bottomleft or bottomright?
-        int left;
-        int top;
+        int left = 0;
+        int top = 0;
         switch(areaNumber) {
         case 1:
             left = 0;
