@@ -33,6 +33,8 @@ public:
     }
 
     QRectF boundingRect() const;
+    bool selected() { return _selected; }
+    void setSelected(bool selected);
 
 signals:
     void clicked();
@@ -43,6 +45,8 @@ private:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
     int _buttonType;
+
+    bool _selected;
     QImage buttonImage;
 };
 
