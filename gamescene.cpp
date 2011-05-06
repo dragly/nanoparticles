@@ -180,7 +180,7 @@ GameScene::GameScene(QObject *parent) :
     aboutDialogButton->setPosition(aboutDialogButtonPosition);
     aboutDialogButton->setScale(14);
     aboutDialogButton->hide();
-    aboutDialogButton->setImage(":/images/button-retry.png");
+    aboutDialogButton->setImage(":/images/button-info.png");
 
     exitButton = new Button();
     prepareButton(exitButton);
@@ -209,10 +209,9 @@ GameScene::GameScene(QObject *parent) :
     aboutDialog->hide();
     aboutDialog->setProperty("opacity", 0);
     aboutDialog->setZValue(10000);
-    aboutDialog->setProperty("width", QApplication::desktop()->width());
-    aboutDialog->setProperty("height", QApplication::desktop()->height());
-    qDebug() << "Width" << width();
-
+    aboutDialog->setProperty("width", QApplication::desktop()->screenGeometry().width());
+    aboutDialog->setProperty("height", QApplication::desktop()->screenGeometry().height());
+    QMetaObject::invokeMethod(aboutDialog, "setVersion",Q_ARG(QVariant, VERSION));
     // menu text
     QFont menuFont;
     QColor menuFontColor(250,250,250,245);
@@ -468,6 +467,7 @@ void GameScene::animateMenuIn() {
     animatedObjectsIn.append(retryButton);
     animatedObjectsIn.append(continueButton);
     animatedObjectsIn.append(levelText);
+    animatedObjectsIn.append(aboutDialogButton);
     QList<QObject*> animatedObjectsOut;
 
     foreach(QObject* animObject, animatedObjectsIn) {

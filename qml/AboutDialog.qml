@@ -1,8 +1,7 @@
 import QtQuick 1.0
 
 Rectangle {
-    property real realwidth: 400
-    property real realheight: 300
+    function setVersion(newVersion) {text1.text="Reaktor v" + newVersion}
 
     id: root
     width: 400
@@ -14,65 +13,69 @@ Rectangle {
         NumberAnimation { duration: 500 }
     }
 
-    Text {
-        id: text1
-        x: 15
-        y: 15
-        width: 80
-        height: 20
-        color: "#ffffff"
-        text: "Reaktor v1.0.0"
-        font.pixelSize: 16 * root.height / root.realheight
-        anchors.left: parent.left
-        anchors.leftMargin: 15
-        anchors.top: parent.top
-        anchors.topMargin: 15 * root.height / root.realheight
-        wrapMode: Text.NoWrap
-        styleColor: "#ffffff"
+    MouseArea {
+        id: mouse_area1
+        anchors.fill: parent
+        onClicked: {console.log(parent.width)}
     }
 
-    Text {
-        id: text2
-        x: 15
-        y: 43
-        width: 150
-        color: "#ffffff"
-        text: "Physics based game by dragly."
-        anchors.left: parent.left
-        anchors.leftMargin: 15
+    Item {
+        id: textArea
         anchors.top: parent.top
-        anchors.topMargin: 43 * root.height / root.realheight
-        wrapMode: Text.NoWrap
-        font.pixelSize: 12 * root.height / root.realheight
-    }
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        width: 0.8 * parent.width
+        anchors.topMargin: 0.05 * root.height
+        anchors.leftMargin: 0.05 * root.height
+        Text {
+            id: text1
+            color: "#ffffff"
+            text: "Reaktor v1.0.0"
+            anchors.left: parent.left
+            anchors.top: parent.top
+            font.pixelSize: 0.07 * root.height
+            wrapMode: Text.NoWrap
+        }
 
-    Text {
-        id: text4
-        width: 150
-        color: "#ffffff"
-        text: "This game is open source. Check out http://dragly.com for more information."
-        anchors.left: parent.left
-        anchors.leftMargin: 15
-        anchors.top: parent.top
-        anchors.topMargin: 88 * root.height / root.realheight
-        wrapMode: Text.NoWrap
-        font.pixelSize: 12 * root.height / root.realheight
+        Text {
+            id: text2
+            anchors.top: text1.bottom
+            color: "#ffffff"
+            text: "Physics based game by dragly."
+            anchors.left: parent.left
+            anchors.topMargin: 0.02 * root.height
+            wrapMode: Text.NoWrap
+            font.pixelSize: 0.04 * root.height
+        }
+
+        Text {
+            id: text4
+            height: 0.5 * parent.height
+            color: "#ffffff"
+            text: "This application is licensed under the GPL license v3 or newer.<br>Please visit <a href='http://dragly.org/source/reaktor'>dragly.org</a> for more information."
+            anchors.left: parent.left
+            anchors.top: text2.bottom
+            anchors.topMargin: 0.02 * root.height
+            anchors.right: parent.right
+            wrapMode: Text.WordWrap
+            font.pixelSize: 0.04 * root.height
+            onLinkActivated: Qt.openUrlExternally(link)
+        }
     }
 
     Image {
-        id: image1
-        x: 282
-        y: 15
-        width: 100
-        height: 100
+        anchors.right:  parent.right
         anchors.top: parent.top
-        anchors.topMargin: 15
-        anchors.right: parent.right
-        anchors.rightMargin: 18
+
+        id: image1
+        width: 0.12 * parent.width
+        height: 0.12 * parent.width
+        anchors.rightMargin: 0.02 * root.height
+        anchors.topMargin: 0.02 * root.height
         source: "qrc:/images/button-exit.png"
         MouseArea {
-            onClicked: {root.opacity = 0}
             anchors.fill: parent
+            onClicked: {root.opacity = 0}
         }
 
     }

@@ -30,5 +30,6 @@
         <file>images/button-retry.png</file>
         <file>images/blackback.png</file>
         <file>images/selection-overlay.png</file>
+        <file>images/button-info.png</file>
     </qresource>
 </RCC>
