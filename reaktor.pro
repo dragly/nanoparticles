@@ -30,8 +30,8 @@ HEADERS  += \
 
 FORMS    +=
 
-CONFIG += mobility
-MOBILITY = 
+#CONFIG += mobility
+#MOBILITY =
 
 symbian {
     ICON = untitled.svg
