@@ -151,8 +151,8 @@ GameScene::GameScene(QObject *parent) :
     // Main menu background
     QPixmap menuBackgroundPixmap(":/images/blackback.png");
     menuBackgroundRect = addPixmap(menuBackgroundPixmap);
-    menuBackgroundRect->setScale(1000);
-    //menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
+    menuBackgroundRect->setScale(1);
+//    menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
     menuBackgroundRect->show();
     menuBackgroundRect->setOpacity(0.7);
     menuBackgroundRect->setZValue(zMainMenuBackground);

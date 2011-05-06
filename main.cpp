@@ -57,14 +57,13 @@ int main(int argc, char *argv[])
 //#endif
     qDebug() << "setViewport";
 
-    //view.resize(400, 300);
 #if defined(Q_WS_S60)
     view.showFullScreen();
     qDebug() << "showFullScreen";
 #elif defined(Q_WS_MAEMO_5)
     view.showFullScreen();
 #else
-    view.show();
+    view.showFullScreen();
 #endif
 
     return a.exec();
