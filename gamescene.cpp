@@ -211,7 +211,6 @@ GameScene::GameScene(QObject *parent) :
     aboutDialog->setZValue(10000);
     aboutDialog->setProperty("width", QApplication::desktop()->screenGeometry().width());
     aboutDialog->setProperty("height", QApplication::desktop()->screenGeometry().height());
-    QMetaObject::invokeMethod(aboutDialog, "setVersion",Q_ARG(QVariant, VERSION));
     // menu text
     QFont menuFont;
     QColor menuFontColor(250,250,250,245);
