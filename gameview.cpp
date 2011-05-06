@@ -16,6 +16,7 @@ GameView::GameView() :
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Reaktor"));
+    setInteractive(true);
     qDebug() << "View setup done";
 }
 
