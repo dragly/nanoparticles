@@ -30,16 +30,6 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationDomain("dragly.org");
     QCoreApplication::setApplicationName("Reaktor");
 
-    qDebug() << "Starting view";
-    GameView view;
-    // Font loading
-    qDebug() << "Starting database";
-    QFontDatabase database;
-    if(!database.addApplicationFont(":/fonts/novasquare/NovaSquare.ttf")) {
-        qWarning() << "Could not load Nova font!";
-    }
-    qDebug() << "font loaded";
-
     // Symbian specific code
 #ifdef Q_OS_SYMBIAN
     CAknAppUi* appUi = dynamic_cast<CAknAppUi*> (CEikonEnv::Static()->AppUi());
@@ -51,6 +41,23 @@ int main(int argc, char *argv[])
     );
 #endif
     qDebug() << "landscape loaded";
+
+    qDebug() << "Starting view";
+    GameView view;
+
+#if QT_VERSION > 0x040702
+    // Qt < 4.7.2 does not yet have the Qt::WA_*Orientation attributes
+    view.setAttribute(Qt::WA_LockLandscapeOrientation, true);
+#endif // QT_VERSION < 0x040702
+    qDebug() << "landscape loaded second run";
+
+    // Font loading
+    qDebug() << "Starting database";
+    QFontDatabase database;
+    if(!database.addApplicationFont(":/fonts/novasquare/NovaSquare.ttf")) {
+        qWarning() << "Could not load Nova font!";
+    }
+    qDebug() << "font loaded";
 
 //#if defined(Q_WS_MAEMO_5) || defined(Q_OS_LINUX)
     view.setViewport(new QGLWidget()); // IMPORTANT: Disabling this makes animations with images sluggish. Disable only if enteriely necessary, and try to find another option to draw smooth animations first.
