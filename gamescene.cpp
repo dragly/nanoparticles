@@ -209,8 +209,15 @@ GameScene::GameScene(QObject *parent) :
     aboutDialog->hide();
     aboutDialog->setProperty("opacity", 0);
     aboutDialog->setZValue(10000);
-    aboutDialog->setProperty("width", QApplication::desktop()->screenGeometry().width());
-    aboutDialog->setProperty("height", QApplication::desktop()->screenGeometry().height());
+    qreal screenWidth = QApplication::desktop()->screenGeometry().width();
+    qreal screenHeight = QApplication::desktop()->screenGeometry().height();
+    if(screenWidth  > screenHeight) { // Symbian hack
+        aboutDialog->setProperty("width", screenWidth);
+        aboutDialog->setProperty("height", screenHeight);
+    } else {
+        aboutDialog->setProperty("width", screenHeight);
+        aboutDialog->setProperty("height", screenWidth);
+    }
     // menu text
     QFont menuFont;
     QColor menuFontColor(250,250,250,245);
