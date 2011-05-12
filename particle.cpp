@@ -13,7 +13,7 @@ const qreal dechargeRate = 0.2;
 const qreal springConstant = 75.0;
 const qreal minimumCharge = 2.5;
 const qreal dampingFactor = 0.18; // a scaling of the damping force
-const qreal particleMass = 1.0;
+const qreal particleMass = 1.3;
 const qreal forceByLengthSquaredFactor = 0.4;
 const qreal forceByLengthFactor = 0.9;
 
