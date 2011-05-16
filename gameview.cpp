@@ -15,7 +15,7 @@ GameView::GameView() :
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Reaktor"));
+    setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Nanoparticles"));
     setStyleSheet("QGraphicsView { border-style: none; }");
     setInteractive(true);
     setFrameShape(QFrame::NoFrame);

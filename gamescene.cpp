@@ -62,7 +62,7 @@ const QVector2D prevLevelButtonPosition(60,75);
 const QVector2D nextLevelButtonPosition(40,75);
 const qreal negativeButtonY = 55;
 const qreal timerTextFontSize = 8;
-const qreal instructionTextFontSize = 5;
+const qreal instructionTextFontSize = 7;
 const qreal chargesLeftFontSize = 6;
 const qreal timerTextY = 75;
 
@@ -224,11 +224,11 @@ GameScene::GameScene(QObject *parent) :
     menuFont.setFamily("NovaSquare");
     // menu title text
     if(isDemo()) {
-        menuTitleText = addText("Reaktor demo", menuFont);
+        menuTitleText = addText("<center>Nanoparticles demo</center>", menuFont);
     } else {
-        menuTitleText = addText("Reaktor", menuFont);
+        menuTitleText = addText("<center>Nanoparticles</center>", menuFont);
     }
-    menuTitleText->setHtml("<center>Reaktor</center>");
+    menuTitleText->setHtml("<center>Nanoparticles</center>");
     menuTitleText->setDefaultTextColor(menuFontColor);
     menuTitleText->setZValue(zMainMenu);
     // end add menu
