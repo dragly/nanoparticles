@@ -30,7 +30,7 @@ Rectangle {
         Text {
             id: text1
             color: "#ffffff"
-            text: "Nanoparticles v0.5.0"
+            text: "Nanoparticles v1.0.0"
             anchors.left: parent.left
             anchors.top: parent.top
             font.pixelSize: 0.09 * root.height
@@ -41,7 +41,7 @@ Rectangle {
             id: text2
             anchors.top: text1.bottom
             color: "#ffffff"
-            text: "Physics based game by dragly.<br><br>This application is licensed under the GPL license v3 or newer.<br><br>Please visit <a href='http://dragly.org/source/nanoparticles'>dragly.org</a> for more information.<br><br>The font used in this application is named Nova Square and created by Wojciech Kalinowski &lt;wmk69@o2.pl&gt;, with no affiliation with the application itself.<br>The font is licensed under the SIL Open Font License 1.1."
+            text: "Physics based game by dragly.<br><br><b>Are the physics behind this game real?</b><br>To a very good approximation they imitate the physics of real world particles. Behind it all is the Euler-Cromer method, the Biot-Savart law and a good dose of Newtonian physics. However, some adjustments have been made for the sake of entertainment.<br><br><i>Do not use this game as a simulator in safety-critical systems.</i><br>(CERN scientists, I'm looking at you...)<br><br><b>Legal info</b><br>This application is licensed under the GPL license v3 or newer.<br><br>Please visit <a href='http://dragly.org/source/nanoparticles'>dragly.org</a> for more information.<br><br>The font used in this application is named Nova Square and created by Wojciech Kalinowski &lt;wmk69@o2.pl&gt;, with no affiliation with the application itself.<br>The font is licensed under the SIL Open Font License 1.1."
             anchors.left: parent.left
             anchors.topMargin: 0.02 * root.height
             anchors.right: parent.right

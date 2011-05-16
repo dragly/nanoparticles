@@ -11,7 +11,7 @@ QT       += core gui declarative
 #    }
 #}
 TARGET = Nanoparticles
-VERSION = 0.5.0
+VERSION = 1.0.0
 TEMPLATE = app
 
 SOURCES += main.cpp \
