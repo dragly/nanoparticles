@@ -18,7 +18,7 @@ Rectangle {
         onClicked: {console.log(parent.width)}
     }
 
-    Item {
+    Flickable {
         id: textArea
         anchors.top: parent.top
         anchors.left: parent.left
@@ -26,10 +26,11 @@ Rectangle {
         width: 0.8 * parent.width
         anchors.topMargin: 0.05 * root.height
         anchors.leftMargin: 0.05 * root.height
+        contentHeight: text1.height + text2.height + text2.anchors.topMargin
         Text {
             id: text1
             color: "#ffffff"
-            text: "Reaktor v0.4.0"
+            text: "Nanoparticles v0.5.0"
             anchors.left: parent.left
             anchors.top: parent.top
             font.pixelSize: 0.09 * root.height
@@ -40,7 +41,7 @@ Rectangle {
             id: text2
             anchors.top: text1.bottom
             color: "#ffffff"
-            text: "Physics based game by dragly.<br><br>This application is licensed under the GPL license v3 or newer.<br><br>Please visit <a href='http://dragly.org/source/reaktor'>dragly.org</a> for more information."
+            text: "Physics based game by dragly.<br><br>This application is licensed under the GPL license v3 or newer.<br><br>Please visit <a href='http://dragly.org/source/nanoparticles'>dragly.org</a> for more information.<br><br>The font used in this application is named Nova Square and created by Wojciech Kalinowski &lt;wmk69@o2.pl&gt;, with no affiliation with the application itself.<br>The font is licensed under the SIL Open Font License 1.1."
             anchors.left: parent.left
             anchors.topMargin: 0.02 * root.height
             anchors.right: parent.right

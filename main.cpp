@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     qDebug() << "Enabling settings";
     QCoreApplication::setOrganizationName("Dragly");
     QCoreApplication::setOrganizationDomain("dragly.org");
-    QCoreApplication::setApplicationName("Reaktor");
+    QCoreApplication::setApplicationName("Nanoparticles");
 
     // Symbian specific code
 #ifdef Q_OS_SYMBIAN

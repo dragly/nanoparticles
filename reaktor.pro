@@ -10,8 +10,8 @@ QT       += core gui declarative
         QT += opengl
 #    }
 #}
-TARGET = Reaktor
-VERSION = 0.4.0
+TARGET = Nanoparticles
+VERSION = 0.5.0
 TEMPLATE = app
 
 SOURCES += main.cpp \
