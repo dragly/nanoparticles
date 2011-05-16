@@ -35,6 +35,8 @@ public:
     void setGameState(int gameState);
     int gameState() {return _gameState;}
 
+    QString adjustPath(const QString &path);
+
     bool isDemo();
 
     void showGameMenu();
