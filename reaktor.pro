@@ -54,7 +54,13 @@ RESOURCES += \
 
 OTHER_FILES += \
     LICENSE-font-NovaSquare.txt \
-    AboutDialog.qml
+    AboutDialog.qml \
+    qtc_packaging/debian_fremantle/rules \
+    qtc_packaging/debian_fremantle/README \
+    qtc_packaging/debian_fremantle/copyright \
+    qtc_packaging/debian_fremantle/control \
+    qtc_packaging/debian_fremantle/compat \
+    qtc_packaging/debian_fremantle/changelog
 
 unix:!symbian {
     maemo5 {
@@ -68,3 +74,27 @@ unix:!symbian {
 # Please do not modify the following two lines. Required for deployment.
 include(qmlapplicationviewer/qmlapplicationviewer.pri)
 qtcAddDeployment()
+
+maemo5 {
+    desktopfile.files = $${TARGET}.desktop
+    desktopfile.path = /usr/share/applications/hildon
+    INSTALLS += desktopfile
+}
+
+maemo5 {
+    desktopfile.files = $${TARGET}.desktop
+    desktopfile.path = /usr/share/applications/hildon
+    INSTALLS += desktopfile
+}
+
+maemo5 {
+    desktopfile.files = $${TARGET}.desktop
+    desktopfile.path = /usr/share/applications/hildon
+    INSTALLS += desktopfile
+}
+
+maemo5 {
+    desktopfile.files = $${TARGET}.desktop
+    desktopfile.path = /usr/share/applications/hildon
+    INSTALLS += desktopfile
+}
