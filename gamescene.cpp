@@ -276,12 +276,13 @@ QString GameScene::adjustPath(const QString &path)
         return QCoreApplication::applicationDirPath()
                 + QLatin1String("/../Resources/") + path;
 #else
-    const QString pathInShareDir = QCoreApplication::applicationDirPath()
-        + QLatin1String("/../share/")
-        + QFileInfo(QCoreApplication::applicationFilePath()).fileName()
-        + QLatin1Char('/') + path;
-    if (QFileInfo(pathInShareDir).exists())
-        return pathInShareDir;
+    const QString pathInInstallDir = QCoreApplication::applicationDirPath()
+        + QLatin1String("/../") + path;
+    if (pathInInstallDir.contains(QLatin1String("opt"))
+            && pathInInstallDir.contains(QLatin1String("bin"))
+            && QFileInfo(pathInInstallDir).exists()) {
+        return pathInInstallDir;
+    }
 #endif
 #endif
     return path;
