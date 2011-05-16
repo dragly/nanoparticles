@@ -203,7 +203,7 @@ GameScene::GameScene(QObject *parent) :
 
     // About dialog
     QDeclarativeEngine *engine = new QDeclarativeEngine;
-    QDeclarativeComponent component(engine, QUrl::fromLocalFile("qml/AboutDialog.qml"));
+    QDeclarativeComponent component(engine, QUrl::fromLocalFile(adjustPath("qml/AboutDialog.qml")));
     aboutDialog = qobject_cast<QGraphicsObject *>(component.create());
     addItem(aboutDialog);
     aboutDialog->hide();
@@ -266,6 +266,25 @@ GameScene::GameScene(QObject *parent) :
     timer.start(10);
     time.start();
     qDebug() << "Timers started!";
+}
+
+QString GameScene::adjustPath(const QString &path)
+{
+#ifdef Q_OS_UNIX
+#ifdef Q_OS_MAC
+    if (!QDir::isAbsolutePath(path))
+        return QCoreApplication::applicationDirPath()
+                + QLatin1String("/../Resources/") + path;
+#else
+    const QString pathInShareDir = QCoreApplication::applicationDirPath()
+        + QLatin1String("/../share/")
+        + QFileInfo(QCoreApplication::applicationFilePath()).fileName()
+        + QLatin1Char('/') + path;
+    if (QFileInfo(pathInShareDir).exists())
+        return pathInShareDir;
+#endif
+#endif
+    return path;
 }
 
 bool GameScene::isDemo() {
