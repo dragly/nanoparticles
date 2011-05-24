@@ -40,7 +40,7 @@ DEPLOYMENTFOLDERS = folder_01
 symbian {
     ICON = untitled.svg
 
-    TARGET.UID3 = 0xe273c3f6
+    TARGET.UID3 = 0x200420AD
     # TARGET.CAPABILITY += 
     TARGET.EPOCSTACKSIZE = 0x14000
     TARGET.EPOCHEAPSIZE = 0x020000 0x800000
@@ -82,19 +82,7 @@ maemo5 {
 }
 
 maemo5 {
-    desktopfile.files = $${TARGET}.desktop
-    desktopfile.path = /usr/share/applications/hildon
-    INSTALLS += desktopfile
-}
-
-maemo5 {
-    desktopfile.files = $${TARGET}.desktop
-    desktopfile.path = /usr/share/applications/hildon
-    INSTALLS += desktopfile
-}
-
-maemo5 {
-    desktopfile.files = $${TARGET}.desktop
-    desktopfile.path = /usr/share/applications/hildon
-    INSTALLS += desktopfile
+    icon.files = nanoparticles.png
+    icon.path = /usr/share/icons/hicolor/64x64/apps
+    INSTALLS += icon
 }

@@ -205,6 +205,8 @@ GameScene::GameScene(QObject *parent) :
     QDeclarativeEngine *engine = new QDeclarativeEngine;
     QDeclarativeComponent component(engine, QUrl::fromLocalFile(adjustPath("qml/AboutDialog.qml")));
     aboutDialog = qobject_cast<QGraphicsObject *>(component.create());
+    qDebug() << "Component errors:\n" << component.errors();
+    qDebug() << "End component errors";
     addItem(aboutDialog);
     aboutDialog->hide();
     aboutDialog->setProperty("opacity", 0);

@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 #elif defined(Q_WS_MAEMO_5)
     view.showFullScreen();
 #else
-    view.showFullScreen();
+    view.show();
 #endif
 
     return a.exec();
