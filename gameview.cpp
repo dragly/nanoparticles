@@ -22,6 +22,16 @@ GameView::GameView() :
     qDebug() << "View setup done";
 }
 
+void GameView::changeEvent(QEvent *event) {
+#ifdef Q_WS_MAEMO_5
+    if(event->type()==QEvent::ActivationChange) {
+        if(!isActiveWindow()) {
+            gameScene.pauseGame();
+        }
+    }
+#endif
+}
+
 void GameView::resizeEvent(QResizeEvent *event) {
     qDebug() << "resize";
     Q_UNUSED(event)

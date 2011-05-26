@@ -1,24 +1,10 @@
 <RCC>
     <qresource prefix="/">
-        <file>images/particle-negative.svg</file>
-        <file>images/particle-positive.svg</file>
         <file>images/background.png</file>
-        <file>images/particle-neutral.svg</file>
         <file>images/particle-neutral.png</file>
-        <file>images/particle-enemy.svg</file>
-        <file>images/particle-player.svg</file>
-        <file>images/particle-player-overcharged.svg</file>
         <file>fonts/novasquare/NovaSquare.ttf</file>
-        <file>images/button-continue.svg</file>
-        <file>images/button-exit.svg</file>
-        <file>images/button-pause.svg</file>
-        <file>images/button-retry.svg</file>
-        <file>images/button-leveldown.svg</file>
-        <file>images/button-levelup.svg</file>
-        <file>images/background.svg</file>
         <file>images/button-leveldown.png</file>
         <file>images/button-levelup.png</file>
-        <file>images/cheese.jpg</file>
         <file>images/particle-negative.png</file>
         <file>images/particle-positive.png</file>
         <file>images/button-continue.png</file>
@@ -31,5 +17,6 @@
         <file>images/blackback.png</file>
         <file>images/selection-overlay.png</file>
         <file>images/button-info.png</file>
+        <file>images/button-dashboard.png</file>
     </qresource>
 </RCC>

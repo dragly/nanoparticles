@@ -6,6 +6,10 @@
 #include <QtDeclarative/QDeclarativeEngine>
 #include <QtDeclarative/QDeclarativeComponent>
 
+#ifdef Q_WS_MAEMO_5
+#include <QtDBus/QtDBus>
+#endif
+
 /* TODO.
     // Finishing
     - Add copyright/version window.
@@ -58,6 +62,7 @@ const QVector2D continueButtonPosition(50,50);
 const QVector2D retryButtonPosition(70,50);
 const QVector2D aboutDialogButtonPosition(92,35);
 const QVector2D exitButtonPosition(92,10);
+const QVector2D dashboardButtonPosition(8,10);
 const QVector2D prevLevelButtonPosition(60,75);
 const QVector2D nextLevelButtonPosition(40,75);
 const qreal negativeButtonY = 55;
@@ -182,6 +187,14 @@ GameScene::GameScene(QObject *parent) :
     aboutDialogButton->hide();
     aboutDialogButton->setImage(":/images/button-info.png");
 
+#ifdef Q_WS_MAEMO_5
+    dashboardButton = new Button();
+    prepareButton(dashboardButton);
+    dashboardButton->setPosition(dashboardButtonPosition);
+    dashboardButton->setImage(":/images/button-dashboard.png");
+    dashboardButton->setScale(14);
+#endif
+
     exitButton = new Button();
     prepareButton(exitButton);
     exitButton->setPosition(exitButtonPosition);
@@ -254,6 +267,9 @@ GameScene::GameScene(QObject *parent) :
     connect(retryButton, SIGNAL(clicked()), SLOT(retryGame()));
     connect(aboutDialogButton, SIGNAL(clicked()), SLOT(showAboutDialog()));
     connect(exitButton, SIGNAL(clicked()), SLOT(exitGame()));
+#ifdef Q_WS_MAEMO_5
+    connect(dashboardButton, SIGNAL(clicked()), SLOT(minimizeToDashboard()));
+#endif
     // next/prev level
     connect(nextLevelButton, SIGNAL(clicked()), SLOT(clickedNextLevelButton()));
     connect(prevLevelButton, SIGNAL(clicked()), SLOT(clickedPrevLevelButton()));
@@ -399,6 +415,9 @@ void GameScene::continueGame() {
     continueButton->hide();
     retryButton->hide();
     exitButton->hide();
+#ifdef Q_WS_MAEMO_5
+    dashboardButton->hide();
+#endif
     nextLevelButton->hide();
     prevLevelButton->hide();
     // hide main menu text
@@ -448,6 +467,9 @@ void GameScene::pauseGame() {
     }
     aboutDialogButton->show();
     exitButton->show();
+#ifdef Q_WS_MAEMO_5
+    dashboardButton->show();
+#endif
     // pause timer
     levelTimer->stop();
     qDebug() << "Game paused";
@@ -485,9 +507,21 @@ void GameScene::exitGame() {
     QApplication::quit();
 }
 
+#ifdef Q_WS_MAEMO_5
+void GameScene::minimizeToDashboard() {
+    QDBusConnection connection = QDBusConnection::sessionBus();
+    QDBusMessage message = QDBusMessage::createSignal("/","com.nokia.hildon_desktop","exit_app_view");
+    connection.send(message);
+}
+
+#endif
+
 void GameScene::animateMenuIn() {
     QList<QObject*> animatedObjectsIn;
     animatedObjectsIn.append(exitButton);
+#ifdef Q_WS_MAEMO_5
+    animatedObjectsIn.append(dashboardButton);
+#endif
     animatedObjectsIn.append(nextLevelButton);
     animatedObjectsIn.append(prevLevelButton);
     //    animatedObjectsIn.append(menuBackgroundRect);

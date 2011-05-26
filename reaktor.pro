@@ -5,11 +5,12 @@
 #-------------------------------------------------
 
 QT       += core gui declarative
-#unix {
-#    !symbian {
-        QT += opengl
-#    }
-#}
+QT       += opengl
+
+maemo5 {
+    CONFIG += qdbus
+}
+
 TARGET = Nanoparticles
 VERSION = 1.0.0
 TEMPLATE = app
