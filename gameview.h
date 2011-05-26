@@ -16,7 +16,7 @@ public slots:
 
 protected:
     void resizeEvent(QResizeEvent *event);
-
+    void changeEvent(QEvent *event);
 private:
     GameScene gameScene;
 

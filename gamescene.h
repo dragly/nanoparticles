@@ -67,6 +67,9 @@ public slots:
     void toggleInstructionText();
     void animateMenuIn();
     void showAboutDialog();
+#ifdef Q_WS_MAEMO_5
+    void minimizeToDashboard();
+#endif
 
 private:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -96,6 +99,9 @@ private:
     Button* exitButton;
     Button* nextLevelButton;
     Button* prevLevelButton;
+#ifdef Q_WS_MAEMO_5
+    Button* dashboardButton;
+#endif
 
     // menu background and effect
     QGraphicsPixmapItem *menuBackgroundRect;

@@ -60,8 +60,10 @@ int main(int argc, char *argv[])
     qDebug() << "font loaded";
 
 //#if defined(Q_WS_MAEMO_5) || defined(Q_OS_LINUX)
-    view.setViewport(new QGLWidget()); // IMPORTANT: Disabling this makes animations with images sluggish. Disable only if enteriely necessary, and try to find another option to draw smooth animations first.
-//#endif
+    QGLWidget *glwidget = new QGLWidget();
+    view.setViewport(glwidget); // IMPORTANT: Disabling this makes animations with images sluggish. Disable only if enteriely necessary, and try to find another option to draw smooth animations first.
+
+    //#endif
     qDebug() << "setViewport";
 
 #if defined(Q_WS_S60)
