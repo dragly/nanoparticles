@@ -14,6 +14,7 @@
     // Finishing
     - Add copyright/version window.
     - Publish to Ovi Store
+    - Add window focus lost event for Symbian
 
     // Demo version (1.1)
     - Add link to Ovi Store when demo is over.
@@ -430,6 +431,9 @@ void GameScene::continueGame() {
 
 void GameScene::pauseGame() {
     bool wasGameRunning = false;
+    if(gameState() == GameInstructionPause) {
+        toggleInstructionText(); // Make sure we hide all text and everything if we just got paused.
+    }
     if(gameState() == GameRunning) {
         menuTime.restart(); // start the timer that will avoid clicking on the quit button after level up or failed
         wasGameRunning = true;

@@ -2,6 +2,13 @@
 #include "gamescene.h"
 #include <QDebug>
 
+#ifdef Q_WS_MAEMO_5
+#include <mce/dbus-names.h>
+#include <mce/mode-names.h>
+
+static QDBusConnection dBusConnection = QDBusConnection::systemBus();
+#endif
+
 GameView::GameView() :
     QGraphicsView()
 {
@@ -20,10 +27,23 @@ GameView::GameView() :
     setInteractive(true);
     setFrameShape(QFrame::NoFrame);
     qDebug() << "View setup done";
+
+#ifdef Q_WS_MAEMO_5
+    dBusInterface = new QDBusInterface(MCE_SERVICE, MCE_REQUEST_PATH,
+                                       MCE_REQUEST_IF, dBusConnection, this);
+
+    dBusConnection.connect(MCE_SERVICE, MCE_SIGNAL_PATH, MCE_SIGNAL_IF,
+                           MCE_DISPLAY_SIG, this, SLOT(displayStateChanged(const QDBusMessage &)));
+
+    dBusInterface->callWithCallback(MCE_DISPLAY_STATUS_GET, QList<QVariant>(), this,
+                                      SLOT(setDisplayState(QString)),
+                                      SLOT(displayStateError(QDBusError)));
+#endif
 }
 
 void GameView::changeEvent(QEvent *event) {
 #ifdef Q_WS_MAEMO_5
+    qDebug() << "Some event happened" << event->type();
     if(event->type()==QEvent::ActivationChange) {
         if(!isActiveWindow()) {
             gameScene.pauseGame();
@@ -40,3 +60,27 @@ void GameView::resizeEvent(QResizeEvent *event) {
     gameScene->resized();
     qDebug() << "resized";
 }
+
+// MAEMO DBUS FOR LOCK EVENT
+
+#ifdef Q_WS_MAEMO_5
+
+void GameView::displayStateChanged(const QDBusMessage &message)
+{
+    QString state = message.arguments().at(0).toString();
+    setDisplayState(state);
+}
+
+void GameView::displayStateError(const QDBusError &error)
+{
+    Q_UNUSED(error)
+}
+
+void GameView::setDisplayState(const QString &state)
+{
+    if (!state.isEmpty()) {
+        if (state == MCE_DISPLAY_OFF_STRING)
+            gameScene.pauseGame();
+    }
+}
+#endif
