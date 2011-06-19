@@ -33,11 +33,7 @@ GameView::GameView() :
                                        MCE_REQUEST_IF, dBusConnection, this);
 
     dBusConnection.connect(MCE_SERVICE, MCE_SIGNAL_PATH, MCE_SIGNAL_IF,
-                           MCE_DISPLAY_SIG, this, SLOT(displayStateChanged(const QDBusMessage &)));
-
-    dBusInterface->callWithCallback(MCE_DISPLAY_STATUS_GET, QList<QVariant>(), this,
-                                      SLOT(setDisplayState(QString)),
-                                      SLOT(displayStateError(QDBusError)));
+                           MCE_DISPLAY_SIG, this, SLOT(screenChange(const QDBusMessage &)));
 #endif
 }
 
@@ -64,20 +60,9 @@ void GameView::resizeEvent(QResizeEvent *event) {
 // MAEMO DBUS FOR LOCK EVENT
 
 #ifdef Q_WS_MAEMO_5
-
-void GameView::displayStateChanged(const QDBusMessage &message)
+void GameView::screenChange(const QDBusMessage &message)
 {
     QString state = message.arguments().at(0).toString();
-    setDisplayState(state);
-}
-
-void GameView::displayStateError(const QDBusError &error)
-{
-    Q_UNUSED(error)
-}
-
-void GameView::setDisplayState(const QString &state)
-{
     if (!state.isEmpty()) {
         if (state == MCE_DISPLAY_OFF_STRING)
             gameScene.pauseGame();

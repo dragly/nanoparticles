@@ -453,7 +453,7 @@ void GameScene::pauseGame() {
     pauseGameButton->hide();
     negativeButton->hide();
     positiveButton->hide();
-    timerText->hide();
+//    timerText->hide();
     remainingPositiveChargesText->hide();
     remainingNegativeChargesText->hide();
 
