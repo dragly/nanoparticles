@@ -17,9 +17,7 @@ signals:
 
 public slots:
 #ifdef Q_WS_MAEMO_5
-    void displayStateChanged(const QDBusMessage &message);
-    void setDisplayState(const QString &state);
-    void displayStateError(const QDBusError &error);
+    void screenChange(const QDBusMessage &message);
 #endif
 
 protected:
