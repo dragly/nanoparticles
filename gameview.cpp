@@ -38,7 +38,7 @@ GameView::GameView() :
 }
 
 void GameView::changeEvent(QEvent *event) {
-#ifdef Q_WS_MAEMO_5
+#if defined(Q_WS_MAEMO_5) || defined(OS_IS_HARMATTAN)
     qDebug() << "Some event happened" << event->type();
     if(event->type()==QEvent::ActivationChange) {
         if(!isActiveWindow()) {
