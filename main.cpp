@@ -67,11 +67,16 @@ int main(int argc, char *argv[])
     qDebug() << "setViewport";
 
 #if defined(Q_WS_S60)
+    qDebug() << "Is Symbian!";
     view.showFullScreen();
-    qDebug() << "showFullScreen";
 #elif defined(Q_WS_MAEMO_5)
+    qDebug() << "Is Maemo!";
+    view.showFullScreen();
+#elif defined(OS_IS_HARMATTAN)
+    qDebug() << "Is MeeGo!";
     view.showFullScreen();
 #else
+    qDebug() << "Is some unknown OS!";
     view.show();
 #endif
 
