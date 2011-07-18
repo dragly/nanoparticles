@@ -11,7 +11,16 @@ maemo5 {
     CONFIG += qdbus
 }
 
-TARGET = Nanoparticles
+unix:!symbian:!maemo5 {} { # harmattan (to become a keyword of its own)
+    DEFINES += OS_IS_HARMATTAN
+}
+
+symbian {
+    TARGET = Nanoparticles
+}
+!symbian {
+    TARGET = nanoparticles
+}
 VERSION = 1.0.0
 TEMPLATE = app
 
@@ -69,27 +78,18 @@ OTHER_FILES += \
     qtc_packaging/debian_harmattan/compat \
     qtc_packaging/debian_harmattan/changelog
 
-unix:!symbian {
-    maemo5 {
-        target.path = /opt/usr/bin
-    } else {
-        target.path = /usr/local/bin
-    }
-    INSTALLS += target
-}
-
 # Please do not modify the following two lines. Required for deployment.
-include(qmlapplicationviewer/qmlapplicationviewer.pri)
+include(deployment.pri)
 qtcAddDeployment()
 
-maemo5 {
-    desktopfile.files = $${TARGET}.desktop
-    desktopfile.path = /usr/share/applications/hildon
-    INSTALLS += desktopfile
-}
+#maemo5 {
+#    desktopfile.files = $${TARGET}.desktop
+#    desktopfile.path = /usr/share/applications/hildon
+#    INSTALLS += desktopfile
+#}
 
-maemo5 {
-    icon.files = nanoparticles.png
-    icon.path = /usr/share/icons/hicolor/64x64/apps
-    INSTALLS += icon
-}
+#maemo5 {
+#    icon.files = nanoparticles.png
+#    icon.path = /usr/share/icons/hicolor/64x64/apps
+#    INSTALLS += icon
+#}
