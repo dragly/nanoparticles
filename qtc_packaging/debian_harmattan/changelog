@@ -1,5 +1,11 @@
+nanoparticles (1.0.1) unstable; urgency=low
+
+  * Small changes to about screen and timer usage.
+
+ -- Svenn-Arne <s@dragly.com>  Fri, 9 Sep 2011 01:30:00 +0200
+
 nanoparticles (1.0.0) unstable; urgency=low
 
   * Initial Release.
 
- -- Svenn-Arne <svenni@unknown>  Sat, 25 Jun 2011 01:48:21 +0200
+ -- Svenn-Arne <s@dragly.com>  Sat, 25 Jun 2011 01:48:21 +0200
