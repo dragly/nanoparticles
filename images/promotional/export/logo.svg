@@ -25,7 +25,7 @@
     <linearGradient
        id="linearGradient3788">
       <stop
-         style="stop-color:#ffffff;stop-opacity:0.59677419"
+         style="stop-color:#ffffff;stop-opacity:0.26291078"
          offset="0"
          id="stop3790" />
       <stop
@@ -124,11 +124,11 @@
      pagecolor="#000000"
      bordercolor="#666666"
      borderopacity="1.0"
-     inkscape:pageopacity="0"
+     inkscape:pageopacity="1"
      inkscape:pageshadow="2"
      inkscape:zoom="0.52929686"
-     inkscape:cx="3.8530155"
-     inkscape:cy="21.043799"
+     inkscape:cx="3.960493"
+     inkscape:cy="20.732381"
      inkscape:document-units="px"
      inkscape:current-layer="layer5"
      showgrid="false"

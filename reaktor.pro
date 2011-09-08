@@ -21,7 +21,7 @@ symbian {
 !symbian {
     TARGET = nanoparticles
 }
-VERSION = 1.0.0
+VERSION = 1.0.1
 TEMPLATE = app
 
 SOURCES += main.cpp \

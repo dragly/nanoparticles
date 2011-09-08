@@ -426,6 +426,8 @@ void GameScene::continueGame() {
 
     // start timer
     levelTimer->start();
+    // start the main timer as well (start using CPU again)
+    timer.start();
     qDebug() << "Game started";
 }
 
@@ -482,7 +484,8 @@ void GameScene::pauseGame() {
     if(wasGameRunning) {
         animateMenuIn();
     }
-
+    // Stop the timer to save CPU power (hopefully this won't lock up anything else)
+    timer.stop();
     // end animation
 }
 
