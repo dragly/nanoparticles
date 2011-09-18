@@ -11,7 +11,11 @@ maemo5 {
     CONFIG += qdbus
 }
 
-unix:!symbian:!maemo5 {} { # harmattan (to become a keyword of its own)
+android {
+    DEFINES += OS_IS_ANDROID
+}
+
+unix:!symbian:!maemo5:!android {} { # harmattan (to become a keyword of its own)
     DEFINES += OS_IS_HARMATTAN
 }
 
@@ -48,7 +52,7 @@ folder_01.target =
 DEPLOYMENTFOLDERS = folder_01
 
 symbian {
-    ICON = untitled.svg
+    ICON = nanoparticles.svg
 
     #TARGET.UID3 = 0x200420AD
     TARGET.UID3 = 0xE4365487
@@ -77,7 +81,26 @@ OTHER_FILES += \
     qtc_packaging/debian_harmattan/copyright \
     qtc_packaging/debian_harmattan/control \
     qtc_packaging/debian_harmattan/compat \
-    qtc_packaging/debian_harmattan/changelog
+    qtc_packaging/debian_harmattan/changelog \
+    android/AndroidManifest.xml \
+    android/src/eu/licentia/necessitas/mobile/QtSensors.java \
+    android/src/eu/licentia/necessitas/mobile/QtMediaPlayer.java \
+    android/src/eu/licentia/necessitas/mobile/QtFeedback.java \
+    android/src/eu/licentia/necessitas/mobile/QtAndroidContacts.java \
+    android/src/eu/licentia/necessitas/mobile/QtSystemInfo.java \
+    android/src/eu/licentia/necessitas/mobile/QtLocation.java \
+    android/src/eu/licentia/necessitas/mobile/QtCamera.java \
+    android/src/eu/licentia/necessitas/industrius/QtActivity.java \
+    android/src/eu/licentia/necessitas/industrius/QtSurface.java \
+    android/src/eu/licentia/necessitas/industrius/QtApplication.java \
+    android/src/eu/licentia/necessitas/industrius/QtLayout.java \
+    android/src/eu/licentia/necessitas/ministro/IMinistro.aidl \
+    android/src/eu/licentia/necessitas/ministro/IMinistroCallback.aidl \
+    android/res/drawable-ldpi/icon.png \
+    android/res/drawable-mdpi/icon.png \
+    android/res/drawable-hdpi/icon.png \
+    android/res/values/strings.xml \
+    android/res/values/libs.xml
 
 # Please do not modify the following two lines. Required for deployment.
 include(deployment.pri)
