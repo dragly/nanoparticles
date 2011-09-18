@@ -228,24 +228,24 @@ GameScene::GameScene(QObject *parent) :
     nextLevelButton->setImage(":/images/button-levelup.png");
 
     // About dialog
-//    QDeclarativeEngine *engine = new QDeclarativeEngine;
-//    QDeclarativeComponent component(engine, QUrl::fromLocalFile(adjustPath("qml/AboutDialog.qml")));
-//    aboutDialog = qobject_cast<QGraphicsObject *>(component.create());
-//    qDebug() << "Component errors:\n" << component.errors();
-//    qDebug() << "End component errors";
-//    addItem(aboutDialog);
-//    aboutDialog->hide();
-//    aboutDialog->setProperty("opacity", 0);
-//    aboutDialog->setZValue(10000);
-//    qreal screenWidth = QApplication::desktop()->screenGeometry().width();
-//    qreal screenHeight = QApplication::desktop()->screenGeometry().height();
-//    if(screenWidth  > screenHeight) { // Symbian hack
-//        aboutDialog->setProperty("width", screenWidth);
-//        aboutDialog->setProperty("height", screenHeight);
-//    } else {
-//        aboutDialog->setProperty("width", screenHeight);
-//        aboutDialog->setProperty("height", screenWidth);
-//    }
+    QDeclarativeEngine *engine = new QDeclarativeEngine;
+    QDeclarativeComponent component(engine, QUrl::fromLocalFile(adjustPath("qml/AboutDialog.qml")));
+    aboutDialog = qobject_cast<QGraphicsObject *>(component.create());
+    qDebug() << "Component errors:\n" << component.errors();
+    qDebug() << "End component errors";
+    addItem(aboutDialog);
+    aboutDialog->hide();
+    aboutDialog->setProperty("opacity", 0);
+    aboutDialog->setZValue(10000);
+    qreal screenWidth = QApplication::desktop()->screenGeometry().width();
+    qreal screenHeight = QApplication::desktop()->screenGeometry().height();
+    if(screenWidth  > screenHeight) { // Symbian hack
+        aboutDialog->setProperty("width", screenWidth);
+        aboutDialog->setProperty("height", screenHeight);
+    } else {
+        aboutDialog->setProperty("width", screenHeight);
+        aboutDialog->setProperty("height", screenWidth);
+    }
     // menu text
     QFont menuFont;
     QColor menuFontColor(250,250,250,245);
@@ -505,8 +505,8 @@ void GameScene::pauseGame() {
 }
 
 void GameScene::showAboutDialog() {
-//    aboutDialog->show();
-//    aboutDialog->setProperty("opacity", 1);
+    aboutDialog->show();
+    aboutDialog->setProperty("opacity", 1);
 }
 
 void GameScene::gameOver() {
