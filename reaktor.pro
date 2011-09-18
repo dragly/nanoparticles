@@ -52,7 +52,7 @@ folder_01.target =
 DEPLOYMENTFOLDERS = folder_01
 
 symbian {
-    ICON = untitled.svg
+    ICON = nanoparticles.svg
 
     TARGET.UID3 = 0x200420AD
     # TARGET.CAPABILITY += 
