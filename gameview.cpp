@@ -17,7 +17,11 @@ GameView::GameView() :
     qDebug() << "Scene set";
     setRenderHint(QPainter::HighQualityAntialiasing,true);
     setRenderHint(QPainter::SmoothPixmapTransform,true);
+#ifdef OS_IS_HARMATTAN
+    setBackgroundBrush(QImage(":/images/background-harmattan.png"));
+#else
     setBackgroundBrush(QImage(":/images/background.png"));
+#endif
     setCacheMode(QGraphicsView::CacheBackground);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
