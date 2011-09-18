@@ -18,5 +18,6 @@
         <file>images/selection-overlay.png</file>
         <file>images/button-info.png</file>
         <file>images/button-dashboard.png</file>
+        <file>images/background-harmattan.png</file>
     </qresource>
 </RCC>
