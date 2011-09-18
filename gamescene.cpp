@@ -61,7 +61,13 @@ const QVector2D negativeButtonPosition(92,55);
 const QVector2D pauseGameButtonPosition(92,10);
 const QVector2D continueButtonPosition(50,50);
 const QVector2D retryButtonPosition(70,50);
+
+#ifdef OS_IS_HARMATTAN
+const QVector2D aboutDialogButtonPosition(92,10);
+#else
 const QVector2D aboutDialogButtonPosition(92,35);
+#endif
+
 const QVector2D exitButtonPosition(92,10);
 const QVector2D dashboardButtonPosition(8,10);
 const QVector2D prevLevelButtonPosition(60,75);
@@ -127,7 +133,9 @@ GameScene::GameScene(QObject *parent) :
 
     // timer text (level time left)
     QFont font;
+#ifndef OS_IS_ANDROID
     font.setFamily("NovaSquare");
+#endif
     timerText = addText("",font);
     timerText->setDefaultTextColor(QColor(250,250,250,220));
     timerText->setZValue(zInGameMenu);
@@ -200,6 +208,10 @@ GameScene::GameScene(QObject *parent) :
     prepareButton(exitButton);
     exitButton->setPosition(exitButtonPosition);
     exitButton->setImage(":/images/button-exit.png");
+
+#ifdef OS_IS_HARMATTAN
+    exitButton->hide();
+#endif
     // next/prev level
     prevLevelButton = new Button();
     if(level <= 1) {
@@ -216,24 +228,24 @@ GameScene::GameScene(QObject *parent) :
     nextLevelButton->setImage(":/images/button-levelup.png");
 
     // About dialog
-    QDeclarativeEngine *engine = new QDeclarativeEngine;
-    QDeclarativeComponent component(engine, QUrl::fromLocalFile(adjustPath("qml/AboutDialog.qml")));
-    aboutDialog = qobject_cast<QGraphicsObject *>(component.create());
-    qDebug() << "Component errors:\n" << component.errors();
-    qDebug() << "End component errors";
-    addItem(aboutDialog);
-    aboutDialog->hide();
-    aboutDialog->setProperty("opacity", 0);
-    aboutDialog->setZValue(10000);
-    qreal screenWidth = QApplication::desktop()->screenGeometry().width();
-    qreal screenHeight = QApplication::desktop()->screenGeometry().height();
-    if(screenWidth  > screenHeight) { // Symbian hack
-        aboutDialog->setProperty("width", screenWidth);
-        aboutDialog->setProperty("height", screenHeight);
-    } else {
-        aboutDialog->setProperty("width", screenHeight);
-        aboutDialog->setProperty("height", screenWidth);
-    }
+//    QDeclarativeEngine *engine = new QDeclarativeEngine;
+//    QDeclarativeComponent component(engine, QUrl::fromLocalFile(adjustPath("qml/AboutDialog.qml")));
+//    aboutDialog = qobject_cast<QGraphicsObject *>(component.create());
+//    qDebug() << "Component errors:\n" << component.errors();
+//    qDebug() << "End component errors";
+//    addItem(aboutDialog);
+//    aboutDialog->hide();
+//    aboutDialog->setProperty("opacity", 0);
+//    aboutDialog->setZValue(10000);
+//    qreal screenWidth = QApplication::desktop()->screenGeometry().width();
+//    qreal screenHeight = QApplication::desktop()->screenGeometry().height();
+//    if(screenWidth  > screenHeight) { // Symbian hack
+//        aboutDialog->setProperty("width", screenWidth);
+//        aboutDialog->setProperty("height", screenHeight);
+//    } else {
+//        aboutDialog->setProperty("width", screenHeight);
+//        aboutDialog->setProperty("height", screenWidth);
+//    }
     // menu text
     QFont menuFont;
     QColor menuFontColor(250,250,250,245);
@@ -472,7 +484,10 @@ void GameScene::pauseGame() {
         prevLevelButton->hide();
     }
     aboutDialogButton->show();
+#ifndef OS_IS_HARMATTAN
     exitButton->show();
+#endif
+
 #ifdef Q_WS_MAEMO_5
     dashboardButton->show();
 #endif
@@ -490,8 +505,8 @@ void GameScene::pauseGame() {
 }
 
 void GameScene::showAboutDialog() {
-    aboutDialog->show();
-    aboutDialog->setProperty("opacity", 1);
+//    aboutDialog->show();
+//    aboutDialog->setProperty("opacity", 1);
 }
 
 void GameScene::gameOver() {

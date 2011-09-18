@@ -52,17 +52,20 @@ int main(int argc, char *argv[])
     qDebug() << "landscape loaded second run";
 
     // Font loading
+#ifndef OS_IS_ANDROID
     qDebug() << "Starting database";
     QFontDatabase database;
     if(!database.addApplicationFont(":/fonts/novasquare/NovaSquare.ttf")) {
         qWarning() << "Could not load Nova font!";
     }
     qDebug() << "font loaded";
+#endif
 
 //#if defined(Q_WS_MAEMO_5) || defined(Q_OS_LINUX)
+#ifndef OS_IS_ANDROID
     QGLWidget *glwidget = new QGLWidget();
     view.setViewport(glwidget); // IMPORTANT: Disabling this makes animations with images sluggish. Disable only if enteriely necessary, and try to find another option to draw smooth animations first.
-
+#endif
     //#endif
     qDebug() << "setViewport";
 

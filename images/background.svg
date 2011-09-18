@@ -13,11 +13,11 @@
    height="744.09448"
    id="svg4527"
    version="1.1"
-   inkscape:version="0.48.0 r9654"
+   inkscape:version="0.48.1 r9760"
    sodipodi:docname="background.svg"
-   inkscape:export-filename="/home/svenni/Prosjekter/Programmer/Spill/reaktor/images/background.png"
-   inkscape:export-xdpi="34.209999"
-   inkscape:export-ydpi="34.209999">
+   inkscape:export-filename="/home/svenni/Prosjekter/Programmer/Spill/reaktor/images/background-848.png"
+   inkscape:export-xdpi="72.519997"
+   inkscape:export-ydpi="72.519997">
   <defs
      id="defs4529">
     <filter
@@ -349,9 +349,9 @@
      inkscape:current-layer="g6742"
      showgrid="false"
      inkscape:window-width="1600"
-     inkscape:window-height="1089"
-     inkscape:window-x="0"
-     inkscape:window-y="24"
+     inkscape:window-height="1084"
+     inkscape:window-x="-2"
+     inkscape:window-y="36"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata4532">
@@ -395,7 +395,7 @@
          sodipodi:type="arc" />
       <path
          transform="translate(-331.66144,238.65974)"
-         d="m 686.52551,517.5274 a 13.648619,15.013481 0 1 1 -27.29724,0 13.648619,15.013481 0 1 1 27.29724,0 z"
+         d="m 686.52551,517.5274 c 0,8.29172 -6.11069,15.01349 -13.64862,15.01349 -7.53792,0 -13.64862,-6.72177 -13.64862,-15.01349 0,-8.29171 6.1107,-15.01348 13.64862,-15.01348 7.53793,0 13.64862,6.72177 13.64862,15.01348 z"
          sodipodi:ry="15.013481"
          sodipodi:rx="13.648619"
          sodipodi:cy="517.5274"
@@ -425,7 +425,7 @@
          sodipodi:type="arc" />
       <path
          transform="translate(-279.79668,70.781735)"
-         d="m 825.74142,593.27722 a 20.472929,30.709393 0 1 1 -40.94586,0 20.472929,30.709393 0 1 1 40.94586,0 z"
+         d="m 825.74142,593.27722 c 0,16.96033 -9.16604,30.70939 -20.47293,30.70939 -11.30688,0 -20.47293,-13.74906 -20.47293,-30.70939 0,-16.96033 9.16605,-30.70939 20.47293,-30.70939 11.30689,0 20.47293,13.74906 20.47293,30.70939 z"
          sodipodi:ry="30.709393"
          sodipodi:rx="20.472929"
          sodipodi:cy="593.27722"
@@ -465,7 +465,7 @@
          sodipodi:type="arc" />
       <path
          transform="translate(-46.405303,50.308798)"
-         d="m 802.5388,482.72342 a 42.993149,30.709393 0 1 1 -85.98629,0 42.993149,30.709393 0 1 1 85.98629,0 z"
+         d="m 802.5388,482.72342 c 0,16.96033 -19.24869,30.70939 -42.99315,30.70939 -23.74446,0 -42.99314,-13.74906 -42.99314,-30.70939 0,-16.96033 19.24868,-30.70939 42.99314,-30.70939 23.74446,0 42.99315,13.74906 42.99315,30.70939 z"
          sodipodi:ry="30.709393"
          sodipodi:rx="42.993149"
          sodipodi:cy="482.72342"
