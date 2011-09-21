@@ -7,24 +7,30 @@
 QT       += core gui declarative
 QT       += opengl
 
+TARGET = nanoparticles
+
 maemo5 {
+    message(Detected OS: Maemo5)
     CONFIG += qdbus
-}
-
-android {
+} else:android {
+    message(Detected OS: Android)
     DEFINES += OS_IS_ANDROID
-}
-
-unix:!symbian:!maemo5:!android {} { # harmattan (to become a keyword of its own)
+} else:contains(MEEGO_EDITION,harmattan) { # harmattan (to become a keyword of its own)
+    message(Detected OS: Harmattan)
     DEFINES += OS_IS_HARMATTAN
+} else:macx {
+    message(Detected OS: Mac OS X)
+} else:symbian {
+    message(Detected OS: Symbian)
+    TARGET = Nanoparticles
+} else:win32 {
+    message(Detected OS: Windows)
+} else {
+    message(Detected OS: Desktop Linux)
 }
 
-symbian {
-    TARGET = Nanoparticles
-}
-!symbian {
-    TARGET = nanoparticles
-}
+message(Target: $$TARGET)
+
 VERSION = 1.0.1
 TEMPLATE = app
 
