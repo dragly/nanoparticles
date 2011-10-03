@@ -123,3 +123,6 @@ qtcAddDeployment()
 #    icon.path = /usr/share/icons/hicolor/64x64/apps
 #    INSTALLS += icon
 #}
+
+message(Current defines:)
+message($$DEFINES)
