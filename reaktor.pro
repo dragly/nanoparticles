@@ -25,8 +25,11 @@ maemo5 {
     TARGET = Nanoparticles
 } else:win32 {
     message(Detected OS: Windows)
-} else {
+} else:unix {
     message(Detected OS: Desktop Linux)
+    DEFINES += OS_IS_DESKTOP_LINUX
+} else {
+    message(Detected OS: Unknown)
 }
 
 message(Target: $$TARGET)

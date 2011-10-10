@@ -78,6 +78,9 @@ int main(int argc, char *argv[])
 #elif defined(OS_IS_HARMATTAN)
     qDebug() << "Is MeeGo!";
     view.showFullScreen();
+#elif defined(OS_IS_DESKTOP_LINUX)
+    qDebug() << "Is Destkop Linux";
+    view.showFullScreen();
 #else
     qDebug() << "Is some unknown OS!";
     view.show();
