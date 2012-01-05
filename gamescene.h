@@ -12,6 +12,9 @@ class Button;
 class GameScene : public QGraphicsScene
 {
     Q_OBJECT
+    Q_PROPERTY(int highestLevel READ highestLevel WRITE setHighestLevel NOTIFY highestLevelChanged)
+    Q_PROPERTY(int level READ level WRITE setLevel NOTIFY levelChanged)
+    Q_PROPERTY(int levelTime READ levelTime WRITE setLevelTime NOTIFY levelTimeChanged)
 public:
     explicit GameScene(QObject *parent = 0);
 
@@ -44,13 +47,40 @@ public:
     int remainingNegativeCharges;
     int remainingPositiveCharges;
     QTime time;
-    int levelTime;
+    int m_levelTime;
     QTimer *levelTimer;
     QTimer *instructionTimer;
     QTime instructionTime;
     QTime menuTime;
 
+    void setHighestLevel(int alevel) {
+        m_highestLevel = alevel;
+        emit highestLevelChanged(alevel);
+    }
+    int highestLevel() {
+        return m_highestLevel;
+    }
+
+    void setLevel(int alevel) {
+        m_level = alevel;
+        emit levelChanged(alevel);
+    }
+    int level() {
+        return m_level;
+    }
+    void setLevelTime(int alevelTime) {
+        m_levelTime = alevelTime;
+        emit levelTimeChanged(alevelTime);
+    }
+    int levelTime() {
+        return m_levelTime;
+    }
+
+
 signals:
+    void highestLevelChanged(int);
+    void levelChanged(int);
+    void levelTimeChanged(int);
 
 public slots:
     void advance();
@@ -65,27 +95,27 @@ public slots:
     void updateTime();
     void gameOver();
     void toggleInstructionText();
-    void animateMenuIn();
-    void showAboutDialog();
 #ifdef Q_WS_MAEMO_5
     void minimizeToDashboard();
 #endif
 
 private:
+    int m_highestLevel;
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    int level;
+    int m_level;
     int instructionNumber;
     int _gameState;
     int selectedParticleType;
     float _dt; // time difference in seconds
 
-    void startLevel(int level);
+    void startLevel(int m_level);
 
     void prepareButton(Button* button);
 
     QTimer timer;
 
     bool firstStep;
+    bool firstResize;
 
     // right menu buttons
     Button* positiveButton;
@@ -115,8 +145,9 @@ private:
     QGraphicsTextItem *remainingPositiveChargesText;
     QGraphicsTextItem *remainingNegativeChargesText;
 
-    // About dialog
+    // QML Components
     QGraphicsObject *aboutDialog;
+    QGraphicsObject *mainMenu;
 
     void removeNegativeCharge();
     void removePositiveCharge();
