@@ -58,7 +58,7 @@ FORMS    +=
 #MOBILITY =
 
 folder_01.source = qml
-folder_01.target = qml
+folder_01.target =
 DEPLOYMENTFOLDERS = folder_01
 
 # Additional import path used to resolve QML modules in Creator's code model

@@ -76,6 +76,10 @@ const qreal timerTextY = 75;
 GameScene::GameScene(QObject *parent) :
     QGraphicsScene(parent)
 {
+#ifdef Q_OS_ANDROID
+    qDebug() << "Force syncing settings";
+    settings.sync();
+#endif
     if(isDemo()) {
         qDebug() << "This is the demo version";
     } else {
@@ -116,7 +120,7 @@ GameScene::GameScene(QObject *parent) :
     instructionText->hide();
     // end add in-game menu
 
-//    menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
+    //    menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
     //    menuBackgroundBlur.setBlurRadius(toFp(2));
     //    menuBackgroundRect->setGraphicsEffect(&menuBackgroundBlur);
 
@@ -133,7 +137,7 @@ GameScene::GameScene(QObject *parent) :
     QDeclarativeEngine *engine = new QDeclarativeEngine;
 #ifdef Q_OS_ANDROID
     qDebug() << "Setting base URL for Android to /";
-//    engine->setBaseUrl(QUrl::fromLocalFile("/"));
+    engine->setBaseUrl(QUrl::fromLocalFile("/"));
 #endif
     QDeclarativeComponent mainMenuComponent(engine, QUrl::fromLocalFile(adjustPath("qml/MainMenu.qml")));
 
@@ -216,11 +220,11 @@ bool GameScene::isDemo() {
     // should use the define check everywhere instead of letting crackers
     // easily modify this variable in memory. But hey, this is an open source game.
     // They could just have rebuilt the source if they wanted to :)
-    #ifdef ISDEMO
+#ifdef ISDEMO
     return true;
-    #else
+#else
     return false;
-    #endif
+#endif
 }
 
 void GameScene::prepareButton(Button *button) {
@@ -252,10 +256,17 @@ void GameScene::updateTime() {
         } else {
             startLevel(m_level + 1);
         }
+        if(highestLevel() < level()) {
+            setHighestLevel(level());
+        }
         if(settings.value("highestLevel", 1).toInt() < m_level) {
             settings.setValue("highestLevel", m_level);
         }
     }
+#ifdef Q_OS_ANDROID
+    qDebug() << "Force syncing settings";
+    settings.sync();
+#endif
 }
 
 void GameScene::continueGame() {
@@ -302,7 +313,7 @@ void GameScene::pauseGame() {
     instructionTimer->stop();
 
 #ifndef OS_IS_HARMATTAN
-//    exitButton->show();
+    //    exitButton->show();
 #endif
 
 #ifdef Q_WS_MAEMO_5

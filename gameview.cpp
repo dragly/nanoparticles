@@ -15,8 +15,10 @@ GameView::GameView() :
     qDebug() << "Setting scene";
     setScene(&gameScene);
     qDebug() << "Scene set";
+#ifndef Q_OS_ANDROID
     setRenderHint(QPainter::HighQualityAntialiasing,true);
     setRenderHint(QPainter::SmoothPixmapTransform,true);
+#endif
 #ifdef OS_IS_HARMATTAN
     setBackgroundBrush(QImage(":/images/background-harmattan.png"));
 #else
