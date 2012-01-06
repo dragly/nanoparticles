@@ -10,7 +10,7 @@
 #endif
 // not Symbian
 //#if defined(Q_WS_MAEMO_5) || defined(Q_OS_LINUX)
-#include <QGLWidget>
+//#include <QGLWidget>
 //#endif
 // internal (all)
 #include "gamescene.h"
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 //#ifdef Q_WS_S60
 //    QApplication::setGraphicsSystem("openvg");
 //#endif
-    qDebug() << "Starting app";
+    qDebug() << "Starting app now with no OpenGL...";
     QApplication a(argc, argv);
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
 
 //#if defined(Q_WS_MAEMO_5) || defined(Q_OS_LINUX)
 #ifndef OS_IS_ANDROID
-    QGLWidget *glwidget = new QGLWidget();
-    view.setViewport(glwidget); // IMPORTANT: Disabling this makes animations with images sluggish. Disable only if enteriely necessary, and try to find another option to draw smooth animations first.
+//    QGLWidget *glwidget = new QGLWidget();
+//    view.setViewport(glwidget); // IMPORTANT: Disabling this makes animations with images sluggish. Disable only if enteriely necessary, and try to find another option to draw smooth animations first.
 #endif
     //#endif
     qDebug() << "setViewport";
@@ -80,6 +80,9 @@ int main(int argc, char *argv[])
     view.showFullScreen();
 #elif defined(OS_IS_DESKTOP_LINUX)
     qDebug() << "Is Destkop Linux";
+    view.showFullScreen();
+#elif defined(Q_OS_ANDROID)
+    qDebug() << "Is Android!";
     view.showFullScreen();
 #else
     qDebug() << "Is some unknown OS!";
