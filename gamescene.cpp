@@ -229,6 +229,9 @@ GameScene::GameScene(QObject *parent) :
 
     // About dialog
     QDeclarativeEngine *engine = new QDeclarativeEngine;
+#ifdef Q_OS_ANDROID
+    engine->setBaseUrl(QUrl::fromLocalFile("/"));
+#endif
     QDeclarativeComponent component(engine, QUrl::fromLocalFile(adjustPath("qml/AboutDialog.qml")));
     aboutDialog = qobject_cast<QGraphicsObject *>(component.create());
     qDebug() << "Component errors:\n" << component.errors();
@@ -301,19 +304,21 @@ GameScene::GameScene(QObject *parent) :
 
 QString GameScene::adjustPath(const QString &path)
 {
+#ifdef Q_OS_ANDROID
+    return path;
+#endif
 #ifdef Q_OS_UNIX
 #ifdef Q_OS_MAC
     if (!QDir::isAbsolutePath(path))
         return QCoreApplication::applicationDirPath()
                 + QLatin1String("/../Resources/") + path;
 #else
-    const QString pathInInstallDir = QCoreApplication::applicationDirPath()
-        + QLatin1String("/../") + path;
-    if (pathInInstallDir.contains(QLatin1String("opt"))
-            && pathInInstallDir.contains(QLatin1String("bin"))
-            && QFileInfo(pathInInstallDir).exists()) {
+    QString pathInInstallDir;
+    const QString applicationDirPath = QCoreApplication::applicationDirPath();
+    pathInInstallDir = QString::fromAscii("%1/../%2").arg(applicationDirPath, path);
+
+    if (QFileInfo(pathInInstallDir).exists())
         return pathInInstallDir;
-    }
 #endif
 #endif
     return path;
