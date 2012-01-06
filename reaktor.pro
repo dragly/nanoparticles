@@ -8,6 +8,9 @@ QT       += core gui declarative
 !android {
     QT       += opengl
 }
+android {
+    DEFINES += NO_OPENGL
+}
 TARGET = nanoparticles
 
 maemo5 {
