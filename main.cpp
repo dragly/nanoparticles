@@ -3,8 +3,8 @@
 #include <QDebug>
 #include <QDeclarativeEngine>
 #include <QDeclarativeComponent>
-// Not Android
-#ifndef Q_OS_ANDROID
+// OpenGL
+#ifndef NO_OPENGL
 #include <QGLWidget>
 #endif
 // Symbian
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     qDebug() << "landscape loaded second run";
 
     // Font loading
-#ifndef OS_IS_ANDROID
+#ifndef Q_OS_ANDROID
     qDebug() << "Starting database";
     QFontDatabase database;
     if(!database.addApplicationFont(":/fonts/novasquare/NovaSquare.ttf")) {
@@ -67,9 +67,10 @@ int main(int argc, char *argv[])
 #endif
 
 //#if defined(Q_WS_MAEMO_5) || defined(Q_OS_LINUX)
-#ifndef Q_OS_ANDROID
+#ifndef NO_OPENGL
     qDebug() << "Using OpenGL";
     QGLWidget *glwidget = new QGLWidget();
+    glwidget->showFullScreen();
     // IMPORTANT: Disabling this makes animations with images sluggish.
     // Disable only if enteriely necessary, and try to find another option to draw smooth animations first
     view.setViewport(glwidget);

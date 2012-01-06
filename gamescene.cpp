@@ -262,11 +262,11 @@ void GameScene::updateTime() {
         if(settings.value("highestLevel", 1).toInt() < m_level) {
             settings.setValue("highestLevel", m_level);
         }
-    }
 #ifdef Q_OS_ANDROID
     qDebug() << "Force syncing settings";
     settings.sync();
 #endif
+    }
 }
 
 void GameScene::continueGame() {
