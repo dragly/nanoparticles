@@ -168,3 +168,4 @@ qtcAddDeployment()
 message(Current defines:)
 message($$DEFINES)
 
+
