@@ -106,7 +106,7 @@ GameScene::GameScene(QObject *parent) :
     playerOverchargedImage = QImage(":/images/particle-player-overcharged.png");
     enemyImage = QImage(":/images/particle-enemy.png");
 
-    setSceneRect(0, 0, 800, 600); // just for init
+    setSceneRect(0, 0, 800, 480); // just for init, should be chosen by the platform
     setItemIndexMethod(QGraphicsScene::NoIndex);
 
     // timer text (level time left)
@@ -133,6 +133,10 @@ GameScene::GameScene(QObject *parent) :
     dashboardButton->setImage(":/images/button-dashboard.png");
     dashboardButton->setScale(14);
 #endif
+
+    // Background image
+    QPixmap backgroundPixmap(":/images/background.png");
+    backgroundImage = this->addPixmap(backgroundPixmap);
 
     // Main menu
     QDeclarativeEngine *engine = new QDeclarativeEngine;
@@ -242,6 +246,20 @@ void GameScene::resized() {
 
     instructionText->setPos(toFp(5),toFp(5));
     instructionText->setTextWidth(toFp(gameWidth));
+
+    QPixmap backgroundPixmap(":/images/background.png");
+    QPixmap scaledBackgroundPixmap;
+    // check the ratio of the pixmap against the ratio of our scene
+    if(backgroundPixmap.width() / backgroundPixmap.height() > width() / height()) {
+        scaledBackgroundPixmap = backgroundPixmap.scaledToHeight(height());
+    } else {
+        scaledBackgroundPixmap = backgroundPixmap.scaledToWidth(width());
+    }
+    this->removeItem(backgroundImage);
+    delete backgroundImage;
+    backgroundImage = addPixmap(scaledBackgroundPixmap);
+    backgroundImage->setZValue(-1000);
+
     // Reisze gui font
     QFont instructionFont = instructionText->font();
     instructionFont.setPixelSize((int)toFp(instructionTextFontSize,true));

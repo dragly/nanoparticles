@@ -2,24 +2,35 @@ import QtQuick 1.0
 
 ImageButton {
     property bool selected
-    onSelectedChanged: {
+    property string normalSource
+    property string selectedSource
+
+    source: normalSource
+
+    function refreshImage() {
         if(selected) {
-            selectedImage.opacity = 1.0
+            source = selectedSource
         } else {
-            selectedImage.opacity = 0.0
+            source = normalSource
         }
     }
-    selected: false
+
+    onSelectedChanged: {
+        refreshImage()
+    }
+    onNormalSourceChanged: {
+        refreshImage()
+    }
+    onSelectedSourceChanged: {
+        refreshImage()
+    }
 
     Image {
         id: selectedImage
-        source: "qrc:/images/selection-overlay.png"
+        source: parent.selectedSource
         anchors.fill: parent
         opacity: 0
     }
 
-//    Text {
-//        anchors.centerIn: parent
-//        text: "12"
-//    }
+    selected: false
 }

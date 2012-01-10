@@ -1,10 +1,15 @@
 import QtQuick 1.0
 
-Image {
+Item {
+    signal clicked
+    property bool selected
+    property string source
+    property string selectedSource
+
     id: imgButton
 
     state: "released"
-    signal clicked
+    selected: false
 
     MouseArea {
         id: mouseArea
@@ -13,7 +18,47 @@ Image {
         onReleased: imgButton.state = "released"
         onClicked: parent.clicked()
     }
-    source: "qrc:/images/button-info.png"
+
+    Image {
+        id: normalImage
+        source: parent.source
+        anchors.fill: parent
+        opacity: 1
+        Behavior on opacity {
+            NumberAnimation { duration: 300 }
+        }
+    }
+
+    Image {
+        id: selectedImage
+        source: parent.selectedSource
+        anchors.fill: parent
+        opacity: 0
+        Behavior on opacity {
+            NumberAnimation { duration: 300 }
+        }
+    }
+
+    function refreshImage() {
+        if(selected) {
+            normalImage.opacity = 0
+            selectedImage.opacity = 1
+        } else {
+            normalImage.opacity = 1
+            selectedImage.opacity = 0
+        }
+    }
+
+    onSelectedChanged: {
+        refreshImage()
+    }
+    onSourceChanged: {
+        refreshImage()
+    }
+    onSelectedSourceChanged: {
+        refreshImage()
+    }
+
     states: [
         State {
             name: "pressed"
@@ -38,7 +83,7 @@ Image {
             PropertyAnimation {
                 target: imgButton
                 properties: "scale"
-                duration: 50
+                duration: 100
             }
         },
 
@@ -48,7 +93,7 @@ Image {
             PropertyAnimation {
                 target: imgButton
                 properties: "scale"
-                duration: 50
+                duration: 100
             }
         }
     ]
