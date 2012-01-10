@@ -74,6 +74,8 @@ int main(int argc, char *argv[])
     // IMPORTANT: Disabling this makes animations with images sluggish.
     // Disable only if enteriely necessary, and try to find another option to draw smooth animations first
     view.setViewport(glwidget);
+#else
+    qDebug() << "Not using OpenGL";
 #endif
     //#endif
     qDebug() << "setViewport";
