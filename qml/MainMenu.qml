@@ -7,8 +7,8 @@ Item {
     property int level
 
     id: root
-    width: 400
-    height: 300
+    width: 800
+    height: 600
     state: "initial"
     level: 1
 
@@ -236,31 +236,33 @@ Item {
 
         }
     }
+    Behavior on level {
+        SequentialAnimation {
+            id: bounceAround
+            running: false
+            loops: 1
+            NumberAnimation {
+                target: levelText
+                property: "anchors.topMargin"
+                to: root.height * 0.06
+                duration: 100
+                easing.type: Easing.InCubic
+            }
+            NumberAnimation {
+                target: levelText
+                property: "anchors.topMargin"
+                to: root.height * 0.1
+                duration: 300
+                easing.type: Easing.OutCubic
+            }
+        }
+    }
 
     AboutDialog {
         id: aboutDialog
         opacity: 0
         z: 2
         anchors.fill: parent
-    }
-
-    SequentialAnimation {
-        id: bounceAround
-        running: false
-        NumberAnimation {
-            target: levelText
-            property: "anchors.topMargin"
-            to: root.height * 0.06
-            duration: 100
-            easing.type: Easing.InCubic
-        }
-        NumberAnimation {
-            target: levelText
-            property: "anchors.topMargin"
-            to: root.height * 0.1
-            duration: 100
-            easing.type: Easing.OutCubic
-        }
     }
 
     Rectangle {
@@ -288,7 +290,7 @@ Item {
 
     }
 
-    ChargeButton {
+    ImageButton {
         id: positiveCharges
         anchors.right: parent.right
         anchors.top: parent.top
@@ -302,10 +304,11 @@ Item {
             selected = true
             negativeCharges.selected = false
         }
-        source: "qrc:/images/particle-positive.png"
+        source: "qrc:/images/button-positive-charge.png"
+        selectedSource: "qrc:/images/button-positive-charge-selected.png"
     }
 
-    ChargeButton {
+    ImageButton {
         id: negativeCharges
         anchors.right: parent.right
         anchors.top: parent.top
@@ -319,7 +322,8 @@ Item {
             selected = true
             positiveCharges.selected = false
         }
-        source: "qrc:/images/particle-negative.png"
+        source: "qrc:/images/button-negative-charge.png"
+        selectedSource: "qrc:/images/button-negative-charge-selected.png"
     }
 
     Text {

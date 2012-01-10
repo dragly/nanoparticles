@@ -19,5 +19,14 @@
         <file>images/button-info.png</file>
         <file>images/button-dashboard.png</file>
         <file>images/background-harmattan.png</file>
+        <file>images/button-negative-charge.png</file>
+        <file>images/button-negative-charge.svg</file>
+        <file>images/button-negative-charge-selected.png</file>
+        <file>images/button-negative-charge-selected.svg</file>
+        <file>images/button-pause.svg</file>
+        <file>images/button-positive-charge.png</file>
+        <file>images/button-positive-charge.svg</file>
+        <file>images/button-positive-charge-selected.png</file>
+        <file>images/button-positive-charge-selected.svg</file>
     </qresource>
 </RCC>

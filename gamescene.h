@@ -145,6 +145,8 @@ private:
     QGraphicsTextItem *remainingPositiveChargesText;
     QGraphicsTextItem *remainingNegativeChargesText;
 
+    QGraphicsPixmapItem *backgroundImage;
+
     // QML Components
     QGraphicsObject *aboutDialog;
     QGraphicsObject *mainMenu;
