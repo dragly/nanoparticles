@@ -5,11 +5,10 @@
 #-------------------------------------------------
 
 QT       += core gui declarative
-!android {
-    QT       += opengl
-}
+QT       += opengl
 android {
     DEFINES += NO_OPENGL
+    QT       -= opengl
 }
 TARGET = nanoparticles
 

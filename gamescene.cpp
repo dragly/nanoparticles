@@ -6,6 +6,7 @@
 #include <QtDeclarative/QDeclarativeEngine>
 #include <QtDeclarative/QDeclarativeComponent>
 #include <QtDeclarative/QDeclarativeContext>
+#include <QtDeclarative>
 
 #ifdef Q_WS_MAEMO_5
 #include <QtDBus/QtDBus>
@@ -105,7 +106,7 @@ GameScene::GameScene(QObject *parent) :
     playerOverchargedImage = QImage(":/images/particle-player-overcharged.png");
     enemyImage = QImage(":/images/particle-enemy.png");
 
-    setSceneRect(0, 0, 400, 300); // just for init
+    setSceneRect(0, 0, 800, 600); // just for init
     setItemIndexMethod(QGraphicsScene::NoIndex);
 
     // timer text (level time left)
