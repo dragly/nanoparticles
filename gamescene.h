@@ -14,18 +14,41 @@ class GameScene : public QGraphicsScene
     Q_OBJECT
     Q_PROPERTY(int highestLevel READ highestLevel WRITE setHighestLevel NOTIFY highestLevelChanged)
     Q_PROPERTY(int level READ level WRITE setLevel NOTIFY levelChanged)
+    Q_PROPERTY(double timeFactor READ timeFactor WRITE setTimeFactor)
     Q_PROPERTY(int levelTime READ levelTime WRITE setLevelTime NOTIFY levelTimeChanged)
-    Q_PROPERTY(int gameState READ gameState WRITE setGameState)
-    Q_PROPERTY(GameMode gameMode READ gameMode WRITE setGameMode)
+    Q_PROPERTY(GameState gameState READ gameState WRITE setGameState NOTIFY gameStateChanged)
+    Q_PROPERTY(GameMode gameMode READ gameMode WRITE setGameMode NOTIFY gameModeChanged)
+    Q_ENUMS(GameMode)
+    Q_ENUMS(GameState)
 public:
     explicit GameScene(QObject *parent = 0);
 
-    enum GameState{GameStarted, GameRunning, GamePaused, GameOver, GameInstructionPause};
+    /*!
+      Defines the state of the game
+      */
+    enum GameState{
+        GameStarted, /*! The game has just started */
+        GameRunning, /*! The game is running */
+        GamePaused,  /*! The game has been paused */
+        GameOver,    /*! The level was failed */
+        GameInstructionPause /*! The game is running, but we are showing instructions on screen */
+    };
     enum ParticleType{ParticleNegative, ParticlePositive};
     enum GameMode{ ModeClassic, ModeParty };
 
+    //Time variables
     int currentTime;
     int lastFrameTime;
+    int lastSpecialSpawnTime;
+    double timeFactor() {
+        return m_timeFactor;
+    }
+    void setTimeFactor(double timeFactor) {
+        m_timeFactor = timeFactor;
+    }
+
+    float dt(); // time difference in seconds, should never fall below 20fps
+    // Image variables
     QImage negativeImage;
     QImage positiveImage;
     QImage neutralImage;
@@ -33,18 +56,12 @@ public:
     QImage playerImage;
     QImage playerOverchargedImage;
     QImage selectionImage;
-    float dt(); // time difference in seconds, should never fall below 20fps
     QRectF gameRectF();
     double toFp(double number, bool useSmallest = false) const;
     double fromFp(double number, bool useSmallest = false) const;
     void resized();
-    void setGameState(int gameState);
-    int gameState() {return m_gameState;}
-
-    GameMode gameMode() { return m_gameMode; }
-    void setGameMode(GameMode gameMode) {
-        m_gameMode = gameMode;
-    }
+    void setGameState(GameState gameState);
+    GameState gameState() {return m_gameState;}
 
     QString adjustPath(const QString &path);
 
@@ -61,6 +78,9 @@ public:
     QTime instructionTime;
     QTime menuTime;
 
+    GameMode gameMode() { return m_gameMode; }
+    void setGameMode(GameMode gameMode);
+
     void setHighestLevel(int alevel) {
         m_highestLevel = alevel;
         emit highestLevelChanged(alevel);
@@ -69,10 +89,7 @@ public:
         return m_highestLevel;
     }
 
-    void setLevel(int alevel) {
-        m_level = alevel;
-        emit levelChanged(alevel);
-    }
+    void setLevel(int level);
     int level() {
         return m_level;
     }
@@ -83,12 +100,16 @@ public:
     int levelTime() {
         return m_levelTime;
     }
+    void setSlowMotion(bool on, int time);
+    QPropertyAnimation *timeFactorAnimation;
 
 
 signals:
     void highestLevelChanged(int);
     void levelChanged(int);
     void levelTimeChanged(int);
+    void gameStateChanged(GameState);
+    void gameModeChanged(GameMode);
 
 public slots:
     void advance();
@@ -104,18 +125,19 @@ public slots:
     void gameOver();
     void toggleInstructionText();
     void minimizeToDashboard();
+    void stopSlowMotion();
 
 private:
+    void addEnemies();
     int m_highestLevel;
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     int m_level;
     int instructionNumber;
-    int m_gameState;
+    GameState m_gameState;
     GameMode m_gameMode;
     int selectedParticleType;
-    float _dt; // time difference in seconds
-
-    void startLevel(int m_level);
+    float m_dt; // time difference in seconds
+    double m_timeFactor;
 
     QTimer timer;
 
@@ -143,7 +165,8 @@ private:
     QSettings settings;
 
 };
-
 Q_DECLARE_METATYPE(GameScene::GameMode)
+Q_DECLARE_METATYPE(GameScene::GameState)
+
 
 #endif // GAMESCENE_H

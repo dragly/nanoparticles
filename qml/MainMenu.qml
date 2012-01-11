@@ -1,26 +1,45 @@
 import QtQuick 1.0
+import Nanoparticles 1.0
 
-// The gameScene object is passed to this QML object through the GameScene initialization in C++
 
 Item {
 
     property int level
+    property int gameMode
+    property int gameState
+    // The contextGameScene object is passed to this QML object through the GameScene initialization in C++
+    // We then set it to our internal property gameScene
+    property GameScene gameScene
+    gameScene: contextGameScene
 
     id: root
     width: 800
     height: 600
     state: "initial"
-    level: 1
+    level: gameScene.level
+    gameMode: gameScene.gameMode
+    gameState: gameScene.gameState
+
+    onGameStateChanged: {
+        if(gameState == GameScene.GameStarted) {
+            statusText.text = "Nanoparticles"
+            state = "paused"
+            console.log("Game starteda")
+        } else if(gameState == GameScene.GamePaused) {
+            statusText.text = "Paused"
+            state = "paused"
+            console.log("Game pauseda")
+        } else if(gameState == GameScene.GameOver) {
+            console.log("Game Over")
+            statusText.text = "Level failed"
+            state = "paused"
+        } else if(gameState == GameScene.GameRunning) {
+            state = "running"
+            console.log("Game runninga")
+        }
+    }
 
     states: [
-        State {
-            name: "initial"
-            PropertyChanges { target: statusText; text: "Nanoparticles" }
-            PropertyChanges { target: retry; visible: false }
-            AnchorChanges { target: pause; anchors.right: undefined;  anchors.left: parent.right }
-            AnchorChanges { target: positiveCharges; anchors.right: undefined;  anchors.left: parent.right }
-            AnchorChanges { target: negativeCharges; anchors.right: undefined;  anchors.left: parent.right }
-        },
         State {
             name: "running"
             PropertyChanges { target: menuBack; opacity: 0.0 }
@@ -28,18 +47,11 @@ Item {
             AnchorChanges { target: levelUp; anchors.top: parent.bottom }
             AnchorChanges { target: exit; anchors.right: undefined; anchors.left: parent.right }
             AnchorChanges { target: about; anchors.right: undefined;  anchors.left: parent.right }
+            AnchorChanges { target: spinner; anchors.left: undefined;  anchors.right: parent.left }
         },
         State {
             name: "paused"
-            PropertyChanges { target: statusText; text: "Paused" }
             PropertyChanges { target: continu; scale: 1 }
-            AnchorChanges { target: pause; anchors.right: undefined;  anchors.left: parent.right }
-            AnchorChanges { target: positiveCharges; anchors.right: undefined;  anchors.left: parent.right }
-            AnchorChanges { target: negativeCharges; anchors.right: undefined;  anchors.left: parent.right }
-        },
-        State {
-            name: "gameOver"
-            PropertyChanges { target: statusText; text: "Level failed" }
             AnchorChanges { target: pause; anchors.right: undefined;  anchors.left: parent.right }
             AnchorChanges { target: positiveCharges; anchors.right: undefined;  anchors.left: parent.right }
             AnchorChanges { target: negativeCharges; anchors.right: undefined;  anchors.left: parent.right }
@@ -55,10 +67,12 @@ Item {
                 easing.type: Easing.InQuad
             }
             SequentialAnimation {
-                AnchorAnimation {
-                    targets: [ levelDown, levelUp, about, exit ]
-                    duration: 500
-                    easing.type: Easing.InBack
+                ParallelAnimation {
+                    AnchorAnimation {
+                        targets: [ levelDown, levelUp, about, exit, spinner ]
+                        duration: 500
+                        easing.type: Easing.InBack
+                    }
                 }
                 AnchorAnimation {
                     targets: [ pause, positiveCharges, negativeCharges, timeLeft ]
@@ -78,20 +92,16 @@ Item {
                 duration: 500
                 easing.type: Easing.OutBack
             }
-        },
-        Transition {
-            to: "gameOver"
-            NumberAnimation {
-                properties: "opacity"
-                duration: 500
-                easing.type: Easing.OutQuad
-            }
-            AnchorAnimation {
-                duration: 500
-                easing.type: Easing.OutBack
-            }
         }
     ]
+
+    onGameModeChanged: {
+        if(gameMode == GameScene.ModeClassic) {
+            spinner.state = "classic"
+        } else {
+            spinner.state = "party"
+        }
+    }
 
     Item {
         id: menuBack
@@ -126,14 +136,24 @@ Item {
             font.pixelSize: root.height * 0.1
         }
 
-        Text {
-            id: modeText
-            text: {
-                if(gameScene.gameMode == gameScene.ModeClassic) {
-                    return "classic"
-                } else {
-                    return "party"
+        SelectorSpinner {
+            id: spinner
+
+            anchors.left: parent.left
+            anchors.leftMargin: parent.width * 0.02
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: parent.width * 0.02
+            width: parent.width * 0.25
+            height: parent.width * 0.25
+            MouseArea {
+                onClicked: {
+                    if(gameScene.gameMode == GameScene.ModeClassic) {
+                        gameScene.gameMode = GameScene.ModeParty
+                    } else {
+                        gameScene.gameMode = GameScene.ModeClassic
+                    }
                 }
+                anchors.fill: parent
             }
         }
 
@@ -152,7 +172,6 @@ Item {
             width: parent.width * 0.22
             height: parent.width * 0.22
             onClicked: {
-                root.state = "running"
                 continueTimer.start()
             }
         }
@@ -174,7 +193,6 @@ Item {
             anchors.left: continu.right
             anchors.leftMargin: parent.width * 0.01
             onClicked: {
-                root.state = "running"
                 retryTimer.start()
             }
         }
@@ -249,8 +267,6 @@ Item {
     Behavior on level {
         SequentialAnimation {
             id: bounceAround
-            running: false
-            loops: 1
             NumberAnimation {
                 target: levelText
                 property: "anchors.topMargin"
