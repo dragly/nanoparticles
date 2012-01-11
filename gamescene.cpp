@@ -39,10 +39,16 @@ const qreal levelChargeFactor = 0.00036;
 const qreal gameWidth = 84;
 
 const qreal incrementChargeNum = 1.1; // will be converted to int after multiplication with level number
+const qreal incrementChargeNumParty = 0.5; // will be converted to int after multiplication with level number
 const int baseChargeNum = 4;
+const int baseChargeNumParty = 10;
 // time
 const int baseTime = 10;
 const qreal timeIncrement = 0.9;
+const int baseTimeParty = 30;
+const qreal timeIncrementParty = 5;
+const qreal normalTimeFactor = 1.0;
+const qreal slowMotionTimeFactor = 0.4;
 
 // z values
 const int zInGameMenu = 91;
@@ -57,7 +63,8 @@ const qreal instructionTextFontSize = 7;
 GameScene::GameScene(QObject *parent) :
     QGraphicsScene(parent)
 {
-    qRegisterMetaType("GameScene::GameMode");
+    qRegisterMetaType<GameScene::GameMode>("GameMode");
+    qRegisterMetaType<GameScene::GameState>("GameState");
 #ifdef Q_OS_ANDROID
     qDebug() << "Force syncing settings";
     settings.sync();
@@ -68,16 +75,10 @@ GameScene::GameScene(QObject *parent) :
         qDebug() << "This is the full version";
     }
     m_gameState = GameRunning;
-    _dt = 0;
+    m_dt = 0;
     firstStep = true;
 
     selectedParticleType = ParticlePositive;
-
-    // load settings
-    setLevel(settings.value("highestLevel", 1).toInt());
-    setHighestLevel(m_level);
-    setGameMode((GameMode)settings.value("gameMode", ModeClassic).toInt());
-    qDebug() << "Highest level is" << m_level;
 
     // load images
     selectionImage = QImage(":/images/selection-overlay.png");
@@ -128,7 +129,7 @@ GameScene::GameScene(QObject *parent) :
 #endif
     QDeclarativeComponent mainMenuComponent(engine, QUrl::fromLocalFile(adjustPath("qml/MainMenu.qml")));
 
-    engine->rootContext()->setContextProperty("gameScene", this);
+    engine->rootContext()->setContextProperty("contextGameScene", this);
     mainMenu = qobject_cast<QGraphicsObject *>(mainMenuComponent.create());
     qDebug() << "Component errors:\n" << mainMenuComponent.errors();
     qDebug() << "End component errors";
@@ -161,20 +162,25 @@ GameScene::GameScene(QObject *parent) :
     connect(instructionTimer, SIGNAL(timeout()), SLOT(toggleInstructionText()));
     // end set up timers
 
+    // Set up animations
+    timeFactorAnimation = new QPropertyAnimation(this, "timeFactor");
+
+    // load settings
+    setGameMode((GameMode)settings.value("gameMode", ModeClassic).toInt());
+    qDebug() << "Highest level is" << m_level;
+
     setGameState(GameStarted);
 
 #ifdef Q_WS_MAEMO_5
     connect(dashboardButton, SIGNAL(clicked()), SLOT(minimizeToDashboard()));
 #endif
-
-
     // just init all in the resize() function
     resized();
 
     // Start level and start timers
-    startLevel(level());
+    //    startLevel(level());
 
-    QObject::connect(&timer, SIGNAL(timeout()), SLOT(advance()));
+    connect(&timer, SIGNAL(timeout()), SLOT(advance()));
     timer.start(10);
     time.start();
     qDebug() << "Timers started!";
@@ -248,26 +254,32 @@ void GameScene::updateTime() {
         if(isDemo() && m_level >= 8) {
 
         } else {
-            startLevel(m_level + 1);
+            setLevel(m_level + 1);
         }
         if(highestLevel() < level()) {
             setHighestLevel(level());
         }
-        if(settings.value("highestLevel", 1).toInt() < m_level) {
-            settings.setValue("highestLevel", m_level);
+        if(gameMode() == GameScene::ModeClassic) {
+            if(settings.value("highestLevel", 1).toInt() < level()) {
+                settings.setValue("highestLevel", level());
+            }
+        } else {
+            if(settings.value("highestLevelParty", 1).toInt() < level()) {
+                settings.setValue("highestLevelParty", level());
+            }
         }
 #ifdef Q_OS_ANDROID
-    qDebug() << "Force syncing settings";
-    settings.sync();
+        qDebug() << "Force syncing settings";
+        settings.sync();
 #endif
     }
 }
 
 void GameScene::continueGame() {
     if(gameState() == GameOver) {
-        startLevel(m_level);
+        setLevel(m_level);
     }
-    if(m_level == 1) {
+    if(gameMode() == ModeClassic && level() == 1) {
         instructionTimer->start();
     }
     setGameState(GameRunning);
@@ -302,7 +314,6 @@ void GameScene::pauseGame() {
     if(gameState() == GameOver) {
         // show main menu
         mainMenu->show();
-        mainMenu->setProperty("state", "gameOver");
     }
     instructionTimer->stop();
 
@@ -329,7 +340,7 @@ void GameScene::gameOver() {
 }
 
 void GameScene::retryGame() {
-    startLevel(m_level);
+    setLevel(m_level);
     continueGame();
 }
 
@@ -347,13 +358,18 @@ void GameScene::minimizeToDashboard() {
 #endif
 }
 
+void GameScene::stopSlowMotion()
+{
+    setSlowMotion(false, 0);
+}
+
 void GameScene::clickedNextLevelButton() {
-    startLevel(m_level + 1);
+    setLevel(m_level + 1);
     pauseGame();
 }
 
 void GameScene::clickedPrevLevelButton() {
-    startLevel(m_level - 1);
+    setLevel(m_level - 1);
     pauseGame();
 }
 
@@ -367,23 +383,21 @@ void GameScene::clickedPositiveButton() {
     selectedParticleType = ParticlePositive;
 }
 
-void GameScene::setGameState(int gameState) {
+void GameScene::setGameState(GameState gameState) {
     this->m_gameState = gameState;
     if(gameState == GameStarted) {
         pauseGame();
     }
+    emit gameStateChanged(gameState);
 }
 
-void GameScene::startLevel(int level) {
+void GameScene::setLevel(int level) {
+    m_level = level;
+    emit levelChanged(level);
     qDebug() << "Starting level" << level;
 
-    mainMenu->setProperty("level",level);
-
-    qreal enemyChargeLevel = enemyCharge * (1 + levelChargeFactor * pow((double)level,2));
-
-    instructionNumber = 1; // if there are instructions, start with the first one
-
-    setLevel(level);
+    lastSpecialSpawnTime = 0;
+    setTimeFactor(normalTimeFactor);
 
     foreach(QGraphicsItem *item, items()) {
         if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
@@ -393,22 +407,25 @@ void GameScene::startLevel(int level) {
 
 
     // Start instructions if on level 1
-    if(level == 1) {
+    if(gameMode() == ModeClassic && level == 1) {
+        instructionNumber = 1; // if there are instructions, start with the first one
         instructionTimer->setInterval(2000);
-    }
 
-    // set number of charges to use
-    if(level == 1) {
         remainingPositiveCharges = 20;
         remainingNegativeCharges = 20;
 
         // reset time
         setLevelTime(50);
-    } else {
-        // reset time
+    } else if(gameMode() == ModeClassic) {
         setLevelTime(baseTime + (int)(timeIncrement * level));
         remainingPositiveCharges = baseChargeNum + (int)(incrementChargeNum * level);
         remainingNegativeCharges = baseChargeNum + (int)(incrementChargeNum * level);
+    } else if(gameMode() == ModeParty) {
+        setLevelTime(baseTimeParty + (int)(timeIncrementParty * level));
+        remainingPositiveCharges = baseChargeNumParty + (int)(incrementChargeNumParty * level);
+        remainingNegativeCharges = baseChargeNumParty + (int)(incrementChargeNumParty * level);
+    } else {
+        qWarning() << "Some unknown mode is set!";
     }
 
     // set text of remaining charges
@@ -423,6 +440,28 @@ void GameScene::startLevel(int level) {
     player->setScale(1.3 * globalScale);
 
     // add enemies
+    addEnemies();
+}
+
+void GameScene::setSlowMotion(bool on, int time)
+{
+    if(on) {
+        qDebug() << "Slow motion enabled";
+        QTimer::singleShot(time, this, SLOT(stopSlowMotion()));
+        timeFactorAnimation->setDuration(1000);
+        timeFactorAnimation->setStartValue(normalTimeFactor);
+        timeFactorAnimation->setEndValue(slowMotionTimeFactor);
+        timeFactorAnimation->start();
+    } else {
+        qDebug() << "Slow motion disabled";
+        timeFactorAnimation->setDuration(1000);
+        timeFactorAnimation->setStartValue(slowMotionTimeFactor);
+        timeFactorAnimation->setEndValue(normalTimeFactor);
+        timeFactorAnimation->start();
+    }
+}
+
+void GameScene::addEnemies() {
     /*
      Available regions. The player starts in the center, and all the "touching" regions are not allowed for enemies. Only the edges are available to the enemies.
      _____________
@@ -433,7 +472,14 @@ void GameScene::startLevel(int level) {
 
      */
     int areaNumber = 1;
-    for(int i=0; i<level; i++) { // 1 new enemy per level
+    int numberOfEnemies = 1;
+    qreal enemyChargeLevel = enemyCharge * (1 + levelChargeFactor * pow((double)level(),2));
+    if(gameMode() == ModeClassic) {
+        numberOfEnemies = level();
+    } else if(gameMode() == ModeParty) {
+        numberOfEnemies = level();
+    }
+    for(int i=0; i<numberOfEnemies; i++) { // 1 new enemy per level
         Particle *enemy = new Particle();
         addItem(enemy);
         // should the particle spawn at the topleft, topright, bottomleft or bottomright?
@@ -491,15 +537,18 @@ void GameScene::startLevel(int level) {
         }
 
         // make sure that no enemies spawn in the middle region (close to the player)
-        QRectF spawnRect(gameRectF().left() + gameRectF().width()/4.0 * left, gameRectF().top() + gameRectF().height()/4.0 * top, gameRectF().width()/4.0, gameRectF().height()/4.0);
+        QRectF spawnRect(gameRectF().left() + gameRectF().width()/4.0 * left,
+                         gameRectF().top() + gameRectF().height()/4.0 * top,
+                         gameRectF().width()/4.0,
+                         gameRectF().height()/4.0);
         // now, let's find a random position within this region
         qreal xrand = (qreal)qrand()/(qreal)RAND_MAX;
         qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
         enemy->setPosition(QVector2D(spawnRect.left() + xrand*spawnRect.width(),spawnRect.top() + yrand*spawnRect.height()));
         enemy->setParticleType(Particle::ParticleEnemy);
-        if(level < 7) {
+        if(level() < 7) {
             enemy->setSticky(true);
-        } else if(level < 15) {
+        } else if(level() < 15) {
             enemy->setElectroSticky(true);
         }
         enemy->setMass(26.0);
@@ -520,13 +569,47 @@ void GameScene::advance() {
     if(gameState() == GameRunning) {
         currentTime = time.elapsed();
         if(firstStep) {
-            _dt = 0;
+            m_dt = 0;
             firstStep = false;
         } else {
-            _dt = (currentTime - lastFrameTime) / 1000.0;
+            m_dt = timeFactor() * (currentTime - lastFrameTime) / 1000.0;
         }
         QGraphicsScene::advance();
         lastFrameTime = currentTime;
+
+        if(gameMode() == ModeParty) {
+            foreach(QGraphicsItem *item, items()) {
+                if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
+                    if(currentTime - particle->createdTime() > 10000 &&
+                            (particle->particleType() == Particle::ParticleSimple ||
+                            particle->particleType() == Particle::ParticleSlowMotion)
+                            ) {
+                        if(particle->particleType() == Particle::ParticleSimple) {
+                            if(particle->charge() > 0) {
+                                remainingPositiveCharges++;
+                            } else {
+                                remainingNegativeCharges++;
+                            }
+                        }
+                        removeItem(particle);
+                        delete particle;
+                    }
+                }
+            }
+
+            if(currentTime - lastSpecialSpawnTime > 5000) {
+                qDebug() << "Spawning special!";
+                Particle *particle = new Particle();
+                addItem(particle);
+                particle->setParticleType(Particle::ParticleSlowMotion);
+                particle->setCharge(0);
+                particle->setScale(2.0);
+                qreal xrand = (qreal)qrand()/(qreal)RAND_MAX;
+                qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
+                particle->setPosition(QVector2D(xrand * gameRectF().width(), yrand * gameRectF().height()));
+                lastSpecialSpawnTime = currentTime;
+            }
+        }
     }
 }
 
@@ -594,8 +677,8 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 float GameScene::dt() {
-    if(_dt < 0.05)
-        return _dt;
+    if(m_dt < 0.05)
+        return m_dt;
     else
         return 0.05;
 }
@@ -664,4 +747,16 @@ void GameScene::toggleInstructionText() {
         }
         instructionNumber++;
     }
+}
+
+void GameScene::setGameMode(GameScene::GameMode gameMode)
+{
+    m_gameMode = gameMode;
+    emit gameModeChanged(gameMode);
+    if(gameMode == GameScene::ModeClassic) {
+        setLevel(settings.value("highestLevel", 1).toInt());
+    } else {
+        setLevel(settings.value("highestLevelParty", 1).toInt());
+    }
+    setHighestLevel(level());
 }
