@@ -6,6 +6,7 @@
 #include <QtDeclarative/QDeclarativeEngine>
 #include <QtDeclarative/QDeclarativeComponent>
 #include <QtDeclarative/QDeclarativeContext>
+#include <QtDeclarative>
 
 #ifdef Q_WS_MAEMO_5
 #include <QtDBus/QtDBus>
@@ -62,6 +63,10 @@ const qreal instructionTextFontSize = 7;
 GameScene::GameScene(QObject *parent) :
     QGraphicsScene(parent)
 {
+#ifdef Q_OS_ANDROID
+    qDebug() << "Force syncing settings";
+    settings.sync();
+#endif
     if(isDemo()) {
         qDebug() << "This is the demo version";
     } else {
@@ -87,7 +92,7 @@ GameScene::GameScene(QObject *parent) :
     playerOverchargedImage = QImage(":/images/particle-player-overcharged.png");
     enemyImage = QImage(":/images/particle-enemy.png");
 
-    setSceneRect(0, 0, 400, 300); // just for init
+    setSceneRect(0, 0, 800, 600); // just for init
     setItemIndexMethod(QGraphicsScene::NoIndex);
 
     // timer text (level time left)
@@ -102,7 +107,7 @@ GameScene::GameScene(QObject *parent) :
     instructionText->hide();
     // end add in-game menu
 
-//    menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
+    //    menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
     //    menuBackgroundBlur.setBlurRadius(toFp(2));
     //    menuBackgroundRect->setGraphicsEffect(&menuBackgroundBlur);
 
@@ -117,6 +122,10 @@ GameScene::GameScene(QObject *parent) :
 
     // Main menu
     QDeclarativeEngine *engine = new QDeclarativeEngine;
+#ifdef Q_OS_ANDROID
+    qDebug() << "Setting base URL for Android to /";
+    engine->setBaseUrl(QUrl::fromLocalFile("/"));
+#endif
     QDeclarativeComponent mainMenuComponent(engine, QUrl::fromLocalFile(adjustPath("qml/MainMenu.qml")));
 
     engine->rootContext()->setContextProperty("gameScene", this);
@@ -173,19 +182,21 @@ GameScene::GameScene(QObject *parent) :
 
 QString GameScene::adjustPath(const QString &path)
 {
+#ifdef Q_OS_ANDROID
+    return path;
+#endif
 #ifdef Q_OS_UNIX
 #ifdef Q_OS_MAC
     if (!QDir::isAbsolutePath(path))
         return QCoreApplication::applicationDirPath()
                 + QLatin1String("/../Resources/") + path;
 #else
-    const QString pathInInstallDir = QCoreApplication::applicationDirPath()
-        + QLatin1String("/../") + path;
-    if (pathInInstallDir.contains(QLatin1String("opt"))
-            && pathInInstallDir.contains(QLatin1String("bin"))
-            && QFileInfo(pathInInstallDir).exists()) {
+    QString pathInInstallDir;
+    const QString applicationDirPath = QCoreApplication::applicationDirPath();
+    pathInInstallDir = QString::fromAscii("%1/../%2").arg(applicationDirPath, path);
+
+    if (QFileInfo(pathInInstallDir).exists())
         return pathInInstallDir;
-    }
 #endif
 #endif
     return path;
@@ -196,11 +207,11 @@ bool GameScene::isDemo() {
     // should use the define check everywhere instead of letting crackers
     // easily modify this variable in memory. But hey, this is an open source game.
     // They could just have rebuilt the source if they wanted to :)
-    #ifdef ISDEMO
+#ifdef ISDEMO
     return true;
-    #else
+#else
     return false;
-    #endif
+#endif
 }
 
 void GameScene::resized() {
@@ -225,9 +236,16 @@ void GameScene::updateTime() {
         } else {
             startLevel(m_level + 1);
         }
+        if(highestLevel() < level()) {
+            setHighestLevel(level());
+        }
         if(settings.value("highestLevel", 1).toInt() < m_level) {
             settings.setValue("highestLevel", m_level);
         }
+#ifdef Q_OS_ANDROID
+    qDebug() << "Force syncing settings";
+    settings.sync();
+#endif
     }
 }
 
@@ -275,7 +293,7 @@ void GameScene::pauseGame() {
     instructionTimer->stop();
 
 #ifndef OS_IS_HARMATTAN
-//    exitButton->show();
+    //    exitButton->show();
 #endif
 
 #ifdef Q_WS_MAEMO_5
