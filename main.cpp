@@ -3,7 +3,10 @@
 #include <QDebug>
 #include <QDeclarativeEngine>
 #include <QDeclarativeComponent>
+// OpenGL
+#ifndef NO_OPENGL
 #include <QGLWidget>
+#endif
 // Symbian
 #ifdef Q_WS_S60
 #include <eikenv.h>
@@ -23,7 +26,7 @@ int main(int argc, char *argv[])
 //#ifdef Q_WS_S60
 //    QApplication::setGraphicsSystem("openvg");
 //#endif
-    qDebug() << "Starting app";
+    qDebug() << "Starting app now with no OpenGL...";
     QApplication a(argc, argv);
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
@@ -54,7 +57,7 @@ int main(int argc, char *argv[])
     qDebug() << "landscape loaded second run";
 
     // Font loading
-#ifndef OS_IS_ANDROID
+#ifndef Q_OS_ANDROID
     qDebug() << "Starting database";
     QFontDatabase database;
     if(!database.addApplicationFont(":/fonts/novasquare/NovaSquare.ttf")) {
@@ -64,10 +67,15 @@ int main(int argc, char *argv[])
 #endif
 
 //#if defined(Q_WS_MAEMO_5) || defined(Q_OS_LINUX)
-#ifndef OS_IS_ANDROID
+#ifndef NO_OPENGL
     qDebug() << "Using OpenGL";
     QGLWidget *glwidget = new QGLWidget();
-    view.setViewport(glwidget); // IMPORTANT: Disabling this makes animations with images sluggish. Disable only if enteriely necessary, and try to find another option to draw smooth animations first.
+    glwidget->showFullScreen();
+    // IMPORTANT: Disabling this makes animations with images sluggish.
+    // Disable only if enteriely necessary, and try to find another option to draw smooth animations first
+    view.setViewport(glwidget);
+#else
+    qDebug() << "Not using OpenGL";
 #endif
     //#endif
     qDebug() << "setViewport";
@@ -84,6 +92,9 @@ int main(int argc, char *argv[])
 #elif defined(OS_IS_DESKTOP_LINUX)
     qDebug() << "Is Destkop Linux";
     view.show();
+#elif defined(Q_OS_ANDROID)
+    qDebug() << "Is Android!";
+    view.showFullScreen();
 #else
     qDebug() << "Is some unknown OS!";
     view.show();
