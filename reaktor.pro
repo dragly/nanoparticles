@@ -37,7 +37,7 @@ maemo5 {
 
 message(Target: $$TARGET)
 
-VERSION = 1.0.1
+VERSION = 1.99.1
 TEMPLATE = app
 
 SOURCES += main.cpp \

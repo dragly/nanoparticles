@@ -126,6 +126,17 @@ Item {
             font.pixelSize: root.height * 0.1
         }
 
+        Text {
+            id: modeText
+            text: {
+                if(gameScene.gameMode == gameScene.ModeClassic) {
+                    return "classic"
+                } else {
+                    return "party"
+                }
+            }
+        }
+
         Timer {
             id: continueTimer
             interval: 500; running: false; repeat: false
@@ -233,7 +244,6 @@ Item {
                 aboutDialog.opacity = 1.0
             }
             source: "qrc:/images/button-info.png"
-
         }
     }
     Behavior on level {

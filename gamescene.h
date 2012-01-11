@@ -15,11 +15,14 @@ class GameScene : public QGraphicsScene
     Q_PROPERTY(int highestLevel READ highestLevel WRITE setHighestLevel NOTIFY highestLevelChanged)
     Q_PROPERTY(int level READ level WRITE setLevel NOTIFY levelChanged)
     Q_PROPERTY(int levelTime READ levelTime WRITE setLevelTime NOTIFY levelTimeChanged)
+    Q_PROPERTY(int gameState READ gameState WRITE setGameState)
+    Q_PROPERTY(GameMode gameMode READ gameMode WRITE setGameMode)
 public:
     explicit GameScene(QObject *parent = 0);
 
     enum GameState{GameStarted, GameRunning, GamePaused, GameOver, GameInstructionPause};
     enum ParticleType{ParticleNegative, ParticlePositive};
+    enum GameMode{ ModeClassic, ModeParty };
 
     int currentTime;
     int lastFrameTime;
@@ -36,7 +39,12 @@ public:
     double fromFp(double number, bool useSmallest = false) const;
     void resized();
     void setGameState(int gameState);
-    int gameState() {return _gameState;}
+    int gameState() {return m_gameState;}
+
+    GameMode gameMode() { return m_gameMode; }
+    void setGameMode(GameMode gameMode) {
+        m_gameMode = gameMode;
+    }
 
     QString adjustPath(const QString &path);
 
@@ -104,7 +112,8 @@ private:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     int m_level;
     int instructionNumber;
-    int _gameState;
+    int m_gameState;
+    GameMode m_gameMode;
     int selectedParticleType;
     float _dt; // time difference in seconds
 
@@ -159,5 +168,7 @@ private:
     QSettings settings;
 
 };
+
+Q_DECLARE_METATYPE(GameScene::GameMode)
 
 #endif // GAMESCENE_H

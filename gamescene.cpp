@@ -13,25 +13,19 @@
 #endif
 
 /* TODO.
-    // Finishing
-    - Add copyright/version window.
-    - Publish to Ovi Store
-    - Add window focus lost event for Symbian
-
-    // Demo version (1.1)
-    - Add link to Ovi Store when demo is over.
-
-    // To be tested (1.5)
-    - Test with Meego SDK
-    - Test with Android NDK (what about OpenGL? - how is the performance without it?)
-    - Draw using FullViewPortUpdate - does it give any performance improvements?
-
     // Enhanced version (2.0)
+    - Add copyright/version window.
     - New particles to play with
     - New enemy particles (megacharges)
     - Dummy particles (just in the way and sticky, but not dangerous)
     - Make it possible to place particles that are sticky after level 15 (or something)
     - Use health bar instead immediate death.
+
+    // Demo version (2.1)
+    - Add link to Ovi Store when demo is over.
+
+    // To be tested (2.5)
+    - Draw using FullViewPortUpdate - does it give any performance improvements?
 */
 // scaling
 const qreal globalScale = 2.5;
@@ -77,6 +71,7 @@ const qreal timerTextY = 75;
 GameScene::GameScene(QObject *parent) :
     QGraphicsScene(parent)
 {
+    qRegisterMetaType("GameScene::GameMode");
 #ifdef Q_OS_ANDROID
     qDebug() << "Force syncing settings";
     settings.sync();
@@ -86,7 +81,7 @@ GameScene::GameScene(QObject *parent) :
     } else {
         qDebug() << "This is the full version";
     }
-    _gameState = GameRunning;
+    m_gameState = GameRunning;
     _dt = 0;
     firstStep = true;
 
@@ -95,6 +90,7 @@ GameScene::GameScene(QObject *parent) :
     // load settings
     setLevel(settings.value("highestLevel", 1).toInt());
     setHighestLevel(m_level);
+    setGameMode((GameMode)settings.value("gameMode", ModeClassic).toInt());
     qDebug() << "Highest level is" << m_level;
 
     // load images
@@ -392,7 +388,7 @@ void GameScene::clickedPositiveButton() {
 }
 
 void GameScene::setGameState(int gameState) {
-    this->_gameState = gameState;
+    this->m_gameState = gameState;
     if(gameState == GameStarted) {
         pauseGame();
     }
