@@ -57,21 +57,7 @@ const int zMainMenu = 101;
 const int zMainMenuBackground = 100;
 
 // in game gui
-const QVector2D positiveButtonPosition(92,35);
-const QVector2D negativeButtonPosition(92,55);
-const QVector2D pauseGameButtonPosition(92,10);
-const QVector2D retryButtonPosition(70,50);
-
-const QVector2D exitButtonPosition(92,10);
-const QVector2D dashboardButtonPosition(8,10);
-const QVector2D prevLevelButtonPosition(60,75);
-const QVector2D nextLevelButtonPosition(40,75);
-const qreal negativeButtonY = 55;
-const qreal timerTextFontSize = 8;
 const qreal instructionTextFontSize = 7;
-const qreal chargesLeftFontSize = 6;
-const qreal timerTextY = 75;
-
 
 GameScene::GameScene(QObject *parent) :
     QGraphicsScene(parent)
@@ -177,7 +163,7 @@ GameScene::GameScene(QObject *parent) :
     resized();
 
     // Start level and start timers
-    startLevel(m_level);
+    startLevel(level());
 
     QObject::connect(&timer, SIGNAL(timeout()), SLOT(advance()));
     timer.start(10);
@@ -215,13 +201,6 @@ bool GameScene::isDemo() {
     #else
     return false;
     #endif
-}
-
-void GameScene::prepareButton(Button *button) {
-    addItem(button);
-    button->setScale(16);
-    button->setZValue(zMainMenu);
-    button->setButtonType(Button::StandardButton);
 }
 
 void GameScene::resized() {
@@ -262,7 +241,7 @@ void GameScene::continueGame() {
     setGameState(GameRunning);
 
 #ifdef Q_WS_MAEMO_5
-    dashboardButton->hide();
+    // TODO: Reimplement dashboard button hiding in QML
 #endif
 
     // start timer
@@ -326,14 +305,15 @@ void GameScene::exitGame() {
     QApplication::quit();
 }
 
-#ifdef Q_WS_MAEMO_5
 void GameScene::minimizeToDashboard() {
+#ifdef Q_WS_MAEMO_5
     QDBusConnection connection = QDBusConnection::sessionBus();
     QDBusMessage message = QDBusMessage::createSignal("/","com.nokia.hildon_desktop","exit_app_view");
     connection.send(message);
-}
-
+#else
+    qDebug() << "This function is not implemented on anything but Maemo5.";
 #endif
+}
 
 void GameScene::clickedNextLevelButton() {
     startLevel(m_level + 1);

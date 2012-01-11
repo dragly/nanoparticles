@@ -99,7 +99,7 @@ Item {
 
         Rectangle{
             color: "#000000"
-            opacity: 0.8
+            opacity: 0.6
             anchors.fill: parent
         }
 
@@ -264,7 +264,7 @@ Item {
     }
 
     Rectangle {
-        opacity: 0.8
+        opacity: 0.7
         color: "black"
         anchors.right: parent.right
         anchors.top: parent.top
