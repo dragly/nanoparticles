@@ -29,6 +29,12 @@
 */
 // scaling
 const qreal globalScale = 2.5;
+const qreal playerScale = 1.3;
+const qreal enemyScale = 1.35;
+const qreal simpleScale = 1.2;
+const qreal slowMotionScale = 2.0;
+const qreal repellentScale = 1.1;
+
 // charges
 const qreal enemyCharge = -7.8;
 const qreal playerCharge = 7.5;
@@ -49,6 +55,10 @@ const int baseTimeParty = 30;
 const qreal timeIncrementParty = 5;
 const qreal normalTimeFactor = 1.0;
 const qreal slowMotionTimeFactor = 0.4;
+
+// party mode settings
+const int partyDisintegrationTime = 10000;
+const int partyDisintegrationTimeDecrement = 100;
 
 // z values
 const int zInGameMenu = 91;
@@ -88,6 +98,7 @@ GameScene::GameScene(QObject *parent) :
     playerImage = QImage(":/images/particle-player.png");
     playerOverchargedImage = QImage(":/images/particle-player-overcharged.png");
     enemyImage = QImage(":/images/particle-enemy.png");
+    slowMotionImage = QImage(":/images/particle-slow-motion.png");
 
     setSceneRect(0, 0, 800, 480); // just for init, should be chosen by the platform
     setItemIndexMethod(QGraphicsScene::NoIndex);
@@ -437,7 +448,7 @@ void GameScene::setLevel(int level) {
     player->setCharge(playerCharge * (1 + levelChargeFactor * pow((double)level,2)));
     player->setParticleType(Particle::ParticlePlayer);
     player->setPosition(QVector2D(gameRectF().width() / 2,gameRectF().height() / 2));
-    player->setScale(1.3 * globalScale);
+    player->setScale(playerScale * globalScale);
 
     // add enemies
     addEnemies();
@@ -546,14 +557,19 @@ void GameScene::addEnemies() {
         qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
         enemy->setPosition(QVector2D(spawnRect.left() + xrand*spawnRect.width(),spawnRect.top() + yrand*spawnRect.height()));
         enemy->setParticleType(Particle::ParticleEnemy);
-        if(level() < 7) {
-            enemy->setSticky(true);
-        } else if(level() < 15) {
-            enemy->setElectroSticky(true);
+        if(gameMode() == ModeClassic) {
+            if(level() < 7) {
+                enemy->setSticky(true);
+            } else if(level() < 15) {
+                enemy->setElectroSticky(true);
+            }
+        } else {
+            enemy->setSticky(false);
+            enemy->setElectroSticky(false);
         }
         enemy->setMass(26.0);
         enemy->setCharge(enemyChargeLevel);
-        enemy->setScale(1.35 * globalScale);
+        enemy->setScale(enemyScale * globalScale);
         areaNumber++;
         if(areaNumber > 12) {
             areaNumber = 1;
@@ -578,11 +594,25 @@ void GameScene::advance() {
         lastFrameTime = currentTime;
 
         if(gameMode() == ModeParty) {
+            int dueTime = partyDisintegrationTime - partyDisintegrationTimeDecrement * level();
             foreach(QGraphicsItem *item, items()) {
                 if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
+                    qreal timeDiff = currentTime - particle->createdTime();
+                    // Scale all
+                    if(particle->particleType() == Particle::ParticleSimple) {
+                        particle->setScale(globalScale * simpleScale * (dueTime - timeDiff) / dueTime);
+                    }
+                    if(particle->particleType() == Particle::ParticleSlowMotion) {
+                        particle->setScale(globalScale * slowMotionScale * (dueTime - timeDiff) / dueTime);
+                    }
+                    if(particle->particleType() == Particle::ParticleRepellent) {
+                        particle->setScale(globalScale * repellentScale * (dueTime - timeDiff) / dueTime);
+                    }
+                    // Remove overdue charges
                     if(currentTime - particle->createdTime() > 10000 &&
                             (particle->particleType() == Particle::ParticleSimple ||
-                            particle->particleType() == Particle::ParticleSlowMotion)
+                             particle->particleType() == Particle::ParticleSlowMotion ||
+                             particle->particleType() == Particle::ParticleRepellent)
                             ) {
                         if(particle->particleType() == Particle::ParticleSimple) {
                             if(particle->charge() > 0) {
@@ -601,9 +631,19 @@ void GameScene::advance() {
                 qDebug() << "Spawning special!";
                 Particle *particle = new Particle();
                 addItem(particle);
-                particle->setParticleType(Particle::ParticleSlowMotion);
+                int particleType = (int)(2*(qreal)qrand()/(qreal)RAND_MAX);
+                qDebug() << "Spawning type " << particleType;
+                switch(particleType) {
+                case 0:
+                    particle->setParticleType(Particle::ParticleRepellent);
+                    particle->setSticky(true);
+                    break;
+                case 1:
+                    particle->setParticleType(Particle::ParticleSlowMotion);
+                    break;
+                }
                 particle->setCharge(0);
-                particle->setScale(2.0);
+                particle->setScale(globalScale * slowMotionScale);
                 qreal xrand = (qreal)qrand()/(qreal)RAND_MAX;
                 qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
                 particle->setPosition(QVector2D(xrand * gameRectF().width(), yrand * gameRectF().height()));
@@ -662,7 +702,7 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                 QVector2D position = QVector2D(fromFp(event->scenePos().x()),fromFp(event->scenePos().y()));
                 particle->setPosition(position);
                 particle->setCharge((fortegn * simpleCharge * (1 + levelChargeFactor * pow((double)m_level,2))));
-                particle->setScale(1.2 * globalScale);
+                particle->setScale(simpleScale * globalScale);
                 // update the UI text showing number of remaining charges
                 updateRemainingChargeText();
             }
@@ -752,6 +792,7 @@ void GameScene::toggleInstructionText() {
 void GameScene::setGameMode(GameScene::GameMode gameMode)
 {
     m_gameMode = gameMode;
+    settings.setValue("gameMode", gameMode);
     emit gameModeChanged(gameMode);
     if(gameMode == GameScene::ModeClassic) {
         setLevel(settings.value("highestLevel", 1).toInt());
