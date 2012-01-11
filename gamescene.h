@@ -95,9 +95,7 @@ public slots:
     void updateTime();
     void gameOver();
     void toggleInstructionText();
-#ifdef Q_WS_MAEMO_5
     void minimizeToDashboard();
-#endif
 
 private:
     int m_highestLevel;
@@ -110,33 +108,10 @@ private:
 
     void startLevel(int m_level);
 
-    void prepareButton(Button* button);
-
     QTimer timer;
 
     bool firstStep;
     bool firstResize;
-
-    // right menu buttons
-    Button* positiveButton;
-    Button* negativeButton;
-    Button* pauseGameButton;
-
-    // menu buttons
-    Button* continueButton;
-    Button* retryButton;
-    Button* aboutDialogButton;
-    Button* exitButton;
-    Button* nextLevelButton;
-    Button* prevLevelButton;
-#ifdef Q_WS_MAEMO_5
-    Button* dashboardButton;
-#endif
-
-    // menu background and effect
-    QGraphicsPixmapItem *menuBackgroundRect;
-    QGraphicsBlurEffect menuBackgroundBlur;
-    QGraphicsRectItem *gameMenuBackgroundRect;
 
     QGraphicsTextItem *timerText;
     QGraphicsTextItem *levelText;

@@ -58,10 +58,10 @@ Rectangle {
         anchors.top: parent.top
 
         id: image1
-        width: 0.12 * parent.width
-        height: 0.12 * parent.width
-        anchors.rightMargin: 0.02 * root.height
-        anchors.topMargin: 0.02 * root.height
+        width: 0.1 * parent.width
+        height: 0.1 * parent.width
+        anchors.rightMargin: 0.02 * root.width
+        anchors.topMargin: 0.02 * root.width
         source: "qrc:/images/button-exit.png"
         MouseArea {
             anchors.fill: parent
