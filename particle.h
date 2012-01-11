@@ -11,7 +11,12 @@ public:
     Particle();
 
     enum { Type = UserType + 1 };
-    enum ParticleType { ParticleSimple, ParticlePlayer, ParticleEnemy, ParticleSlowMotion };
+    enum ParticleType { ParticleSimple,
+                        ParticlePlayer,
+                        ParticleEnemy,
+                        ParticleSlowMotion,
+                        ParticleRepellent
+                      };
 
     int type() const
     {

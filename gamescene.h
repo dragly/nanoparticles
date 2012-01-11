@@ -52,6 +52,7 @@ public:
     QImage negativeImage;
     QImage positiveImage;
     QImage neutralImage;
+    QImage slowMotionImage;
     QImage enemyImage;
     QImage playerImage;
     QImage playerOverchargedImage;

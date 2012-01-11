@@ -30,5 +30,6 @@
         <file>images/button-positive-charge-selected.svg</file>
         <file>images/selector-game-mode-spinner.png</file>
         <file>images/selector-game-mode-top.png</file>
+        <file>images/particle-slow-motion.png</file>
     </qresource>
 </RCC>

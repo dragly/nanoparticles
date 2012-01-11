@@ -17,6 +17,10 @@ const qreal particleMass = 1.3;
 const qreal forceByLengthSquaredFactor = 0.4;
 const qreal forceByLengthFactor = 0.9;
 
+// special particles
+const qreal repellentCharge = -100;
+const qreal repellentDechargeRate = 30;
+
 Particle::Particle() :
     GameObject() ,
     m_charge(0),
@@ -65,7 +69,9 @@ void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     } else if(particleType() == ParticleEnemy) {
         painter->drawImage(realsize(),gameScene()->enemyImage);
     } else if(particleType() == ParticleSlowMotion) {
-        painter->drawImage(realsize(),gameScene()->neutralImage);
+        painter->drawImage(realsize(),gameScene()->slowMotionImage);
+    } else if(particleType() == ParticleRepellent) {
+        painter->drawImage(realsize(),gameScene()->playerOverchargedImage);
     }
 }
 
@@ -80,6 +86,13 @@ void Particle::advance(int step) {
     }
     setPosition(nextPosition); // we calculated our next position in the last timestep, now, lets use it
     float dt = gameScene()->dt();
+    // Special charges
+    if(particleType() == ParticleRepellent) {
+        if(charge() < 0) {
+            setCharge(charge() + dt * repellentDechargeRate);
+        }
+    }
+    // Calculate forces
     QVector2D F;
     if(!sticky()) { // only calculate forces if the particle isn't sticky
         QList<QGraphicsItem *> items= gameScene()->items();
@@ -98,7 +111,9 @@ void Particle::advance(int step) {
                     QVector2D F_e;
                     QVector2D F_r;
                     if(length > particleDistances) { // force calculation
-                        if(!electroSticky()) { // only calculate electromagnetic forces if the particle isn't electrosticky
+                        if(!electroSticky() && // only calculate electromagnetic forces if the particle isn't electrosticky
+                                !matchParticles(this, particle, ParticlePlayer, ParticleRepellent) && // repellent only acts on enemy charges
+                                !matchParticles(this, particle, ParticleSimple, ParticleRepellent)) {
                             F_e += rn * forceByLengthSquaredFactor * (q1q2/(lengthSquared));
                             F_e += rn * forceByLengthFactor * (q1q2/(length));
                         }
@@ -114,6 +129,12 @@ void Particle::advance(int step) {
                                 particle->collidingWithPlayer = true;
                             }
                         }
+                        // Collision between player and repellent particle
+                        if(this->particleType() == ParticlePlayer && particle->particleType() == ParticleRepellent) {
+                            if(particle->charge() >= 0) {
+                                particle->setCharge(repellentCharge);
+                            }
+                        }
                         // Collision between player and enemy
                         if(matchParticles(this, particle, ParticlePlayer, ParticleEnemy)) { // Player-enemy crash - Game Over
                             gameScene()->gameOver();
@@ -121,7 +142,10 @@ void Particle::advance(int step) {
                         // Charge exchange
                         double chargediff = fabs(m_charge - particle->m_charge); // charge difference
                         qreal dechargeRateTotal = fabs(length - particleDistances) * dechargeRate * springConstant / 60.0; // including the spring constant to avoid changing the decharge rate when the spring constant is changed
-                        if(particleType() != ParticleEnemy && particle->particleType() != ParticleEnemy) { // do not decharge enemies
+                        if( particleType() != ParticleEnemy && particle->particleType() != ParticleEnemy &&
+                                particleType() != ParticleSlowMotion && particle->particleType() != ParticleSlowMotion &&
+                                particleType() != ParticleRepellent && particle->particleType() != ParticleRepellent
+                                ) { // do not decharge enemies
                             if(particleType() == ParticlePlayer) { // if either particles are the player
                                 m_charge += fabs(particle->m_charge) * dt * dechargeRateTotal; // it gets some of the other's charge
                                 particle->m_charge -= particle->m_charge * dt * dechargeRateTotal; // that the  other particle loses
