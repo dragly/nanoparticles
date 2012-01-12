@@ -1,6 +1,5 @@
 #include "gamescene.h"
 #include "particle.h"
-#include "button.h"
 
 #include <QDebug>
 #include <QtDeclarative/QDeclarativeEngine>
@@ -47,14 +46,15 @@ const qreal gameWidth = 84;
 const qreal incrementChargeNum = 1.1; // will be converted to int after multiplication with level number
 const qreal incrementChargeNumParty = 0.5; // will be converted to int after multiplication with level number
 const int baseChargeNum = 4;
-const int baseChargeNumParty = 10;
+const int baseChargeNumPositiveParty = 20;
+const int baseChargeNumNegativeParty = 1;
 // time
 const int baseTime = 10;
 const qreal timeIncrement = 0.9;
 const int baseTimeParty = 30;
 const qreal timeIncrementParty = 5;
 const qreal normalTimeFactor = 1.0;
-const qreal slowMotionTimeFactor = 0.4;
+const qreal slowMotionTimeFactor = 0.3;
 
 // party mode settings
 const int partyDisintegrationTime = 10000;
@@ -369,11 +369,6 @@ void GameScene::minimizeToDashboard() {
 #endif
 }
 
-void GameScene::stopSlowMotion()
-{
-    setSlowMotion(false, 0);
-}
-
 void GameScene::clickedNextLevelButton() {
     setLevel(m_level + 1);
     pauseGame();
@@ -422,19 +417,19 @@ void GameScene::setLevel(int level) {
         instructionNumber = 1; // if there are instructions, start with the first one
         instructionTimer->setInterval(2000);
 
-        remainingPositiveCharges = 20;
-        remainingNegativeCharges = 20;
+        setRemainingPositiveCharges(20);
+        setRemainingNegativeCharges(20);
 
         // reset time
         setLevelTime(50);
     } else if(gameMode() == ModeClassic) {
         setLevelTime(baseTime + (int)(timeIncrement * level));
-        remainingPositiveCharges = baseChargeNum + (int)(incrementChargeNum * level);
-        remainingNegativeCharges = baseChargeNum + (int)(incrementChargeNum * level);
+        setRemainingPositiveCharges(baseChargeNum + (int)(incrementChargeNum * level));
+        setRemainingNegativeCharges(baseChargeNum + (int)(incrementChargeNum * level));
     } else if(gameMode() == ModeParty) {
         setLevelTime(baseTimeParty + (int)(timeIncrementParty * level));
-        remainingPositiveCharges = baseChargeNumParty + (int)(incrementChargeNumParty * level);
-        remainingNegativeCharges = baseChargeNumParty + (int)(incrementChargeNumParty * level);
+        setRemainingPositiveCharges(baseChargeNumPositiveParty + (int)(incrementChargeNumParty * level));
+        setRemainingNegativeCharges(baseChargeNumNegativeParty + (int)(incrementChargeNumParty * level));
     } else {
         qWarning() << "Some unknown mode is set!";
     }
@@ -443,7 +438,7 @@ void GameScene::setLevel(int level) {
     updateRemainingChargeText();
 
     // add player
-    Particle *player = new Particle();
+    Particle *player = new Particle(this);
     addItem(player);
     player->setCharge(playerCharge * (1 + levelChargeFactor * pow((double)level,2)));
     player->setParticleType(Particle::ParticlePlayer);
@@ -454,22 +449,23 @@ void GameScene::setLevel(int level) {
     addEnemies();
 }
 
-void GameScene::setSlowMotion(bool on, int time)
+void GameScene::enableSlowMotion(int time)
 {
-    if(on) {
-        qDebug() << "Slow motion enabled";
-        QTimer::singleShot(time, this, SLOT(stopSlowMotion()));
-        timeFactorAnimation->setDuration(1000);
-        timeFactorAnimation->setStartValue(normalTimeFactor);
-        timeFactorAnimation->setEndValue(slowMotionTimeFactor);
-        timeFactorAnimation->start();
-    } else {
-        qDebug() << "Slow motion disabled";
-        timeFactorAnimation->setDuration(1000);
-        timeFactorAnimation->setStartValue(slowMotionTimeFactor);
-        timeFactorAnimation->setEndValue(normalTimeFactor);
-        timeFactorAnimation->start();
-    }
+    qDebug() << "Slow motion enabled";
+    QTimer::singleShot(time, this, SLOT(disableSlowMotion()));
+    timeFactorAnimation->setDuration(1000);
+    timeFactorAnimation->setStartValue(normalTimeFactor);
+    timeFactorAnimation->setEndValue(slowMotionTimeFactor);
+    timeFactorAnimation->start();
+}
+
+void GameScene::disableSlowMotion()
+{
+    qDebug() << "Slow motion disabled";
+    timeFactorAnimation->setDuration(1000);
+    timeFactorAnimation->setStartValue(slowMotionTimeFactor);
+    timeFactorAnimation->setEndValue(normalTimeFactor);
+    timeFactorAnimation->start();
 }
 
 void GameScene::addEnemies() {
@@ -488,10 +484,10 @@ void GameScene::addEnemies() {
     if(gameMode() == ModeClassic) {
         numberOfEnemies = level();
     } else if(gameMode() == ModeParty) {
-        numberOfEnemies = level();
+        numberOfEnemies = 3 + level();
     }
     for(int i=0; i<numberOfEnemies; i++) { // 1 new enemy per level
-        Particle *enemy = new Particle();
+        Particle *enemy = new Particle(this);
         addItem(enemy);
         // should the particle spawn at the topleft, topright, bottomleft or bottomright?
         int left = 0;
@@ -555,7 +551,7 @@ void GameScene::addEnemies() {
         // now, let's find a random position within this region
         qreal xrand = (qreal)qrand()/(qreal)RAND_MAX;
         qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
-        enemy->setPosition(QVector2D(spawnRect.left() + xrand*spawnRect.width(),spawnRect.top() + yrand*spawnRect.height()));
+        enemy->setPosition(QVector2D(spawnRect.left() + xrand*spawnRect.width(), spawnRect.top() + yrand*spawnRect.height()));
         enemy->setParticleType(Particle::ParticleEnemy);
         if(gameMode() == ModeClassic) {
             if(level() < 7) {
@@ -590,81 +586,80 @@ void GameScene::advance() {
         } else {
             m_dt = timeFactor() * (currentTime - lastFrameTime) / 1000.0;
         }
-        QGraphicsScene::advance();
-        lastFrameTime = currentTime;
 
         if(gameMode() == ModeParty) {
-            int dueTime = partyDisintegrationTime - partyDisintegrationTimeDecrement * level();
-            foreach(QGraphicsItem *item, items()) {
-                if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
-                    qreal timeDiff = currentTime - particle->createdTime();
-                    // Scale all
-                    if(particle->particleType() == Particle::ParticleSimple) {
-                        particle->setScale(globalScale * simpleScale * (dueTime - timeDiff) / dueTime);
-                    }
-                    if(particle->particleType() == Particle::ParticleSlowMotion) {
-                        particle->setScale(globalScale * slowMotionScale * (dueTime - timeDiff) / dueTime);
-                    }
-                    if(particle->particleType() == Particle::ParticleRepellent) {
-                        particle->setScale(globalScale * repellentScale * (dueTime - timeDiff) / dueTime);
-                    }
-                    // Remove overdue charges
-                    if(currentTime - particle->createdTime() > 10000 &&
-                            (particle->particleType() == Particle::ParticleSimple ||
-                             particle->particleType() == Particle::ParticleSlowMotion ||
-                             particle->particleType() == Particle::ParticleRepellent)
-                            ) {
-                        if(particle->particleType() == Particle::ParticleSimple) {
-                            if(particle->charge() > 0) {
-                                remainingPositiveCharges++;
-                            } else {
-                                remainingNegativeCharges++;
-                            }
-                        }
-                        removeItem(particle);
-                        delete particle;
-                    }
-                }
-            }
+            checkAddSpecialParticle();
+        }
+        QGraphicsScene::advance();
+        lastFrameTime = currentTime;
+    }
+}
 
-            if(currentTime - lastSpecialSpawnTime > 5000) {
-                qDebug() << "Spawning special!";
-                Particle *particle = new Particle();
-                addItem(particle);
-                int particleType = (int)(2*(qreal)qrand()/(qreal)RAND_MAX);
-                qDebug() << "Spawning type " << particleType;
-                switch(particleType) {
-                case 0:
-                    particle->setParticleType(Particle::ParticleRepellent);
-                    particle->setSticky(true);
-                    break;
-                case 1:
-                    particle->setParticleType(Particle::ParticleSlowMotion);
-                    break;
+void GameScene::checkAddSpecialParticle() {
+    int dueTime = partyDisintegrationTime - partyDisintegrationTimeDecrement * level();
+    foreach(QGraphicsItem *item, items()) {
+        if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
+            qreal timeDiff = currentTime - particle->createdTime();
+            // Scale all
+            if(particle->particleType() == Particle::ParticleSimple) {
+                particle->setScale(globalScale * simpleScale * (dueTime - timeDiff) / dueTime);
+            }
+            if(particle->particleType() == Particle::ParticleSlowMotion) {
+                particle->setScale(globalScale * slowMotionScale * (dueTime - timeDiff) / dueTime);
+            }
+            if(particle->particleType() == Particle::ParticleRepellent) {
+                particle->setScale(globalScale * repellentScale * (dueTime - timeDiff) / dueTime);
+            }
+            // Remove overdue charges
+            if(currentTime - particle->createdTime() > 10000 &&
+                    (particle->particleType() == Particle::ParticleSimple ||
+                     particle->particleType() == Particle::ParticleSlowMotion ||
+                     particle->particleType() == Particle::ParticleRepellent)
+                    ) {
+                if(particle->particleType() == Particle::ParticleSimple) {
+                    if(particle->charge() > 0) {
+                        setRemainingPositiveCharges(remainingPositiveCharges()+1);
+                    } else {
+                        setRemainingNegativeCharges(remainingNegativeCharges()+1);
+                    }
                 }
-                particle->setCharge(0);
-                particle->setScale(globalScale * slowMotionScale);
-                qreal xrand = (qreal)qrand()/(qreal)RAND_MAX;
-                qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
-                particle->setPosition(QVector2D(xrand * gameRectF().width(), yrand * gameRectF().height()));
-                lastSpecialSpawnTime = currentTime;
+                removeItem(particle);
+                delete particle;
             }
         }
+    }
+
+    if(currentTime - lastSpecialSpawnTime > 5000) {
+        qDebug() << "Spawning special!";
+        Particle *particle = new Particle(this);
+        addItem(particle);
+        int particleType = (int)(2*(qreal)qrand()/(qreal)RAND_MAX);
+        qDebug() << "Spawning type " << particleType;
+        switch(particleType) {
+        case 0:
+            particle->setParticleType(Particle::ParticleRepellent);
+            particle->setElectroSticky(true);
+            break;
+        case 1:
+            particle->setParticleType(Particle::ParticleSlowMotion);
+            break;
+        }
+        particle->setCharge(0);
+        particle->setScale(globalScale * slowMotionScale);
+        qreal xrand = (qreal)qrand()/(qreal)RAND_MAX;
+        qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
+
+        particle->setPosition(QVector2D(xrand * gameRectF().width(), yrand * gameRectF().height()));
+        lastSpecialSpawnTime = currentTime;
     }
 }
 
 void GameScene::removeNegativeCharge() {
-    remainingNegativeCharges--;
-    if(remainingNegativeCharges < 1) {
-
-    }
+    setRemainingNegativeCharges(remainingNegativeCharges() - 1);
 }
 
 void GameScene::removePositiveCharge() {
-    remainingPositiveCharges--;
-    if(remainingPositiveCharges < 1) {
-
-    }
+    setRemainingPositiveCharges(remainingPositiveCharges() - 1);
 }
 
 void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
@@ -686,9 +681,9 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                 fortegn = -1;
             }
             bool okayInsert = false;
-            if(fortegn == -1 && remainingNegativeCharges > 0) {
+            if(fortegn == -1 && remainingNegativeCharges() > 0) {
                 okayInsert = true;
-            } else if(fortegn == 1 && remainingPositiveCharges > 0){
+            } else if(fortegn == 1 && remainingPositiveCharges() > 0){
                 okayInsert = true;
             }
             if(okayInsert) {
@@ -697,7 +692,7 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                 } else {
                     removePositiveCharge();
                 }
-                Particle *particle = new Particle();
+                Particle *particle = new Particle(this);
                 addItem(particle);
                 QVector2D position = QVector2D(fromFp(event->scenePos().x()),fromFp(event->scenePos().y()));
                 particle->setPosition(position);

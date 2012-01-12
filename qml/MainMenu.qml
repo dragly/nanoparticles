@@ -1,5 +1,6 @@
 import QtQuick 1.0
 import Nanoparticles 1.0
+import Qt.labs.particles 1.0
 
 
 Item {
@@ -7,6 +8,8 @@ Item {
     property int level
     property int gameMode
     property int gameState
+    property int remainingNegativeCharges
+    property int remainingPositiveCharges
     // The contextGameScene object is passed to this QML object through the GameScene initialization in C++
     // We then set it to our internal property gameScene
     property GameScene gameScene
@@ -19,6 +22,8 @@ Item {
     level: gameScene.level
     gameMode: gameScene.gameMode
     gameState: gameScene.gameState
+    remainingPositiveCharges: gameScene.remainingPositiveCharges
+    remainingNegativeCharges: gameScene.remainingNegativeCharges
 
     onGameStateChanged: {
         if(gameState == GameScene.GameStarted) {
@@ -36,6 +41,17 @@ Item {
         } else if(gameState == GameScene.GameRunning) {
             state = "running"
             console.log("Game runninga")
+        }
+    }
+
+    onRemainingNegativeChargesChanged: {
+        console.log(remainingNegativeCharges)
+        if(remainingNegativeCharges < 1) {
+            negativeCharges.source = "qrc:/images/button-empty-charge.png"
+            negativeCharges.selectedSource = "qrc:/images/button-empty-charge-selected.png"
+        } else {
+            negativeCharges.source = "qrc:/images/button-negative-charge.png"
+            negativeCharges.selectedSource = "qrc:/images/button-negative-charge-selected.png"
         }
     }
 
