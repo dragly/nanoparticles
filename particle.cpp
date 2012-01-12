@@ -4,10 +4,11 @@
 #include <QDebug>
 #include <QVector2D>
 
+#include <math.h>
+
 #include "particle.h"
 #include "gamescene.h"
-
-#include <math.h>
+#include "utils.h"
 
 const qreal dechargeRate = 0.2;
 const qreal springConstant = 75.0;
@@ -21,8 +22,8 @@ const qreal forceByLengthSquaredFactor = 0.4;
 const qreal forceByLengthFactor = 0.9;
 
 // special particles
-const qreal repellentCharge = -1000;
-const qreal repellentDechargeRate = 300;
+const qreal repellentCharge = -500;
+const qreal repellentDechargeRate = 200;
 
 Particle::Particle(GameScene *gameScene) :
     GameObject(gameScene) ,
@@ -32,7 +33,7 @@ Particle::Particle(GameScene *gameScene) :
     _particleType(ParticleSimple),
     _mass(particleMass),
     _electroSticky(false),
-    collidingWithPlayer(false),
+    hasCollidedWithPlayer(false),
     m_createdTime(0)
 {
     setCreatedTime(gameScene->currentTime);
@@ -76,6 +77,10 @@ void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
         painter->drawImage(realsize(),gameScene()->slowMotionImage);
     } else if(particleType() == ParticleRepellent) {
         painter->drawImage(realsize(),gameScene()->playerOverchargedImage);
+    } else if(particleType() == ParticleGlowing) {
+        painter->drawImage(realsize(),gameScene()->glowingImage);
+    } else if(particleType() == ParticleTransfer) {
+        painter->drawImage(realsize(),gameScene()->neutralImage);
     }
 }
 
@@ -112,28 +117,57 @@ void Particle::advance(int step) {
                     QVector2D F_e;
                     QVector2D F_r;
                     if(length > particleDistances) { // force calculation
-                        if(!electroSticky() && // only calculate electromagnetic forces if the particle isn't electrosticky
+                        if(!electroSticky() && q1q2 != 0 &&// only calculate electromagnetic forces if the particle isn't electrosticky
                                 !matchParticles(this, particle, ParticlePlayer, ParticleRepellent) && // repellent only acts on enemy charges
                                 !matchParticles(this, particle, ParticleSimple, ParticleRepellent)) {
                             F_e += rn * forceByLengthSquaredFactor * (q1q2/(lengthSquared));
                             F_e += rn * forceByLengthFactor * (q1q2/(length));
                         }
-                        if(this->particleType() == ParticlePlayer && particle->particleType() == ParticleSlowMotion) {
-                            particle->collidingWithPlayer = false;
+                        if(this->particleType() == ParticlePlayer) {
+                            particle->hasCollidedWithPlayer = false;
+                            particle->hasCollidedWithPlayer = false;
                         }
                     } else { // collision
-                        F_r = -rn * springConstant * (length - particleDistances);
+                        // No collision between effects and player
+                        if(!matchParticles(this, particle, ParticlePlayer, ParticleGlowing) &&
+                                !matchParticles(this, particle, ParticleGlowing, ParticleGlowing)) {
+                            F_r = -rn * springConstant * (length - particleDistances);
+                        }
                         // Collision between player and slow motion particle
                         if(this->particleType() == ParticlePlayer && particle->particleType() == ParticleSlowMotion) {
-                            if(!particle->collidingWithPlayer) {
-                                gameScene()->enableSlowMotion(7000);
-                                particle->collidingWithPlayer = true;
+                            if(!particle->hasCollidedWithPlayer) {
+                                gameScene()->enableSlowMotion(3500);
+                                particle->hasCollidedWithPlayer = true;
+                            }
+                        }
+                        // Collision between player and transfer particle
+                        if(this->particleType() == ParticlePlayer && particle->particleType() == ParticleTransfer) {
+                            if(!particle->hasCollidedWithPlayer) {
+                                gameScene()->addTransferParticle();
+                                particle->hasCollidedWithPlayer = true;
                             }
                         }
                         // Collision between player and repellent particle
                         if(this->particleType() == ParticlePlayer && particle->particleType() == ParticleRepellent) {
                             if(particle->charge() >= 0) {
+                                qDebug() << "Crashed with repellent charge";
                                 particle->setCharge(repellentCharge);
+                                int nEffectParticles = 32;
+                                for(int i = 0; i < nEffectParticles; i++) {
+                                    Particle *particleEffect = new Particle(gameScene());
+                                    gameScene()->addItem(particleEffect);
+                                    // Spread particles out in a circle around the repellent
+                                    qreal xpos = particle->position().x() + 1 + (1 + ran0() * 0.1) * (particle->scale() + scale()) * cos(2*M_PI * i / nEffectParticles);
+                                    qreal ypos = particle->position().y() + 1 + (1 + ran0() * 0.1) * (particle->scale() + scale()) * sin(2*M_PI * i / nEffectParticles);
+                                    qreal xvel = (7 + ran0() * 3) * cos(2*M_PI * i / nEffectParticles);
+                                    qreal yvel = (7 + ran0() * 3) * sin(2*M_PI * i / nEffectParticles);
+                                    particleEffect->setPosition(QVector2D(xpos,ypos));
+                                    particleEffect->setVelocity(QVector2D(xvel,yvel));
+                                    particleEffect->setScale(3);
+                                    particleEffect->setMass(10);
+                                    particleEffect->setCharge(0);
+                                    particleEffect->setParticleType(ParticleGlowing);
+                                }
                             }
                         }
                         // Collision between player and enemy
@@ -141,27 +175,23 @@ void Particle::advance(int step) {
                             gameScene()->gameOver();
                         }
                         // Charge exchange
-                        if(gameScene()->gameMode() == GameScene::ModeClassic) {
-                            double chargediff = fabs(m_charge - particle->m_charge); // charge difference
-                            qreal dechargeRateTotal = fabs(length - particleDistances) * dechargeRate * springConstant / 60.0; // including the spring constant to avoid changing the decharge rate when the spring constant is changed
-                            if( particleType() != ParticleEnemy && particle->particleType() != ParticleEnemy &&
-                                    particleType() != ParticleSlowMotion && particle->particleType() != ParticleSlowMotion &&
-                                    particleType() != ParticleRepellent && particle->particleType() != ParticleRepellent
-                                    ) { // do not decharge enemies
-                                if(particleType() == ParticlePlayer) { // if either particles are the player
-                                    m_charge += fabs(particle->m_charge) * dt * dechargeRateTotal; // it gets some of the other's charge
-                                    particle->m_charge -= particle->m_charge * dt * dechargeRateTotal; // that the  other particle loses
-                                } else if(particle->particleType() == ParticlePlayer) { // if either particles are the player
-                                    particle->m_charge += fabs(m_charge) * dt * dechargeRateTotal; // it gets some of the other's charge
-                                    m_charge -= m_charge * dt * dechargeRateTotal; // that the other particle loses
-                                } else {
-                                    if(m_charge > particle->m_charge) { // the one with most charge loses charge, the other gains
-                                        m_charge -= chargediff * dt * dechargeRateTotal;
-                                        particle->m_charge += chargediff * dt * dechargeRateTotal;
-                                    } else if(m_charge < particle->m_charge) {
-                                        m_charge += chargediff* dt * dechargeRateTotal;
-                                        particle->m_charge -= chargediff * dt * dechargeRateTotal;
-                                    }
+                        double chargediff = fabs(m_charge - particle->m_charge); // charge difference
+                        qreal dechargeRateTotal = fabs(length - particleDistances) * dechargeRate * springConstant / 60.0; // including the spring constant to avoid changing the decharge rate when the spring constant is changed
+                        if(matchParticles(this, particle, ParticleSimple, ParticlePlayer) ||
+                                matchParticles(this, particle, ParticleSimple, ParticleSimple)) { // do not decharge enemies
+                            if(particleType() == ParticlePlayer) { // if either particles are the player
+                                m_charge += fabs(particle->m_charge) * dt * dechargeRateTotal; // it gets some of the other's charge
+                                particle->m_charge -= particle->m_charge * dt * dechargeRateTotal; // that the  other particle loses
+                            } else if(particle->particleType() == ParticlePlayer) { // if either particles are the player
+                                particle->m_charge += fabs(m_charge) * dt * dechargeRateTotal; // it gets some of the other's charge
+                                m_charge -= m_charge * dt * dechargeRateTotal; // that the other particle loses
+                            } else {
+                                if(m_charge > particle->m_charge) { // the one with most charge loses charge, the other gains
+                                    m_charge -= chargediff * dt * dechargeRateTotal;
+                                    particle->m_charge += chargediff * dt * dechargeRateTotal;
+                                } else if(m_charge < particle->m_charge) {
+                                    m_charge += chargediff* dt * dechargeRateTotal;
+                                    particle->m_charge -= chargediff * dt * dechargeRateTotal;
                                 }
                             }
                         }

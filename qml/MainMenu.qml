@@ -10,6 +10,8 @@ Item {
     property int gameState
     property int remainingNegativeCharges
     property int remainingPositiveCharges
+    property int remainingSpecialCharges
+    property int selectedType
     // The contextGameScene object is passed to this QML object through the GameScene initialization in C++
     // We then set it to our internal property gameScene
     property GameScene gameScene
@@ -22,8 +24,23 @@ Item {
     level: gameScene.level
     gameMode: gameScene.gameMode
     gameState: gameScene.gameState
+    selectedType: gameScene.selectedType
     remainingPositiveCharges: gameScene.remainingPositiveCharges
     remainingNegativeCharges: gameScene.remainingNegativeCharges
+    remainingSpecialCharges: gameScene.remainingSpecialCharges
+
+    onSelectedTypeChanged: {
+        positiveCharges.selected = false
+        negativeCharges.selected = false
+        specialCharges.selected = false
+        if(selectedType == GameScene.ParticlePositive) {
+            positiveCharges.selected = true
+        } else if(selectedType == GameScene.ParticleNegative) {
+            negativeCharges.selected = true
+        } else if(selectedType == GameScene.ParticleSpecial) {
+            specialCharges.selected = true
+        }
+    }
 
     onGameStateChanged: {
         if(gameState == GameScene.GameStarted) {
@@ -44,16 +61,6 @@ Item {
         }
     }
 
-    onRemainingNegativeChargesChanged: {
-        console.log(remainingNegativeCharges)
-        if(remainingNegativeCharges < 1) {
-            negativeCharges.source = "qrc:/images/button-empty-charge.png"
-            negativeCharges.selectedSource = "qrc:/images/button-empty-charge-selected.png"
-        } else {
-            negativeCharges.source = "qrc:/images/button-negative-charge.png"
-            negativeCharges.selectedSource = "qrc:/images/button-negative-charge-selected.png"
-        }
-    }
 
     states: [
         State {
@@ -71,6 +78,7 @@ Item {
             AnchorChanges { target: pause; anchors.right: undefined;  anchors.left: parent.right }
             AnchorChanges { target: positiveCharges; anchors.right: undefined;  anchors.left: parent.right }
             AnchorChanges { target: negativeCharges; anchors.right: undefined;  anchors.left: parent.right }
+            AnchorChanges { target: specialCharges; anchors.right: undefined;  anchors.left: parent.right }
         }
     ]
 
@@ -91,7 +99,7 @@ Item {
                     }
                 }
                 AnchorAnimation {
-                    targets: [ pause, positiveCharges, negativeCharges, timeLeft ]
+                    targets: [ pause, positiveCharges, negativeCharges, specialCharges, timeLeft ]
                     duration: 500
                     easing.type: Easing.OutBack
                 }
@@ -114,8 +122,10 @@ Item {
     onGameModeChanged: {
         if(gameMode == GameScene.ModeClassic) {
             spinner.state = "classic"
+            specialCharges.visible = false
         } else {
             spinner.state = "party"
+            specialCharges.visible = true
         }
     }
 
@@ -131,9 +141,11 @@ Item {
 
         Text {
             id: levelText
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-            anchors.topMargin: parent.height * 0.1
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: parent.top
+                topMargin: parent.height * 0.1
+            }
             color: "white"
             text: "Level " + level
             font.family: "NovaSquare"
@@ -143,9 +155,11 @@ Item {
 
         Text {
             id: statusText
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-            anchors.topMargin: parent.height * 0.18
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: parent.top
+                topMargin: parent.height * 0.18
+            }
             color: "white"
             text: ""
             font.family: "NovaSquare"
@@ -155,10 +169,12 @@ Item {
         SelectorSpinner {
             id: spinner
 
-            anchors.left: parent.left
-            anchors.leftMargin: parent.width * 0.02
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: parent.width * 0.02
+            anchors {
+                left: parent.left
+                leftMargin: parent.width * 0.02
+                bottom: parent.bottom
+                bottomMargin: parent.width * 0.02
+            }
             width: parent.width * 0.25
             height: parent.width * 0.25
             MouseArea {
@@ -181,9 +197,11 @@ Item {
 
         ImageButton {
             id: continu
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-            anchors.topMargin: parent.height * 0.3
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: parent.top
+                topMargin: parent.height * 0.3
+            }
             source: "qrc:/images/button-continue.png"
             width: parent.width * 0.22
             height: parent.width * 0.22
@@ -205,9 +223,11 @@ Item {
             source: "qrc:/images/button-retry.png"
             width: parent.width * 0.1
             height: parent.width * 0.1
-            anchors.verticalCenter: continu.verticalCenter
-            anchors.left: continu.right
-            anchors.leftMargin: parent.width * 0.01
+            anchors {
+                verticalCenter: continu.verticalCenter
+                left: continu.right
+                leftMargin: parent.width * 0.01
+            }
             onClicked: {
                 retryTimer.start()
             }
@@ -215,13 +235,15 @@ Item {
 
         ImageButton {
             id: levelUp
-            anchors.left: continu.right
-            anchors.top: continu.bottom
-            anchors.leftMargin: -parent.width * 0.05
+            anchors {
+                left: continu.right
+                top: continu.bottom
+                leftMargin: -parent.width * 0.05
+            }
             width: parent.width * 0.1
             height: parent.width * 0.1
             onClicked: {
-                gameScene.clickedNextLevelButton()
+                gameScene.level = gameScene.level + 1
             }
             source: "qrc:/images/button-levelup.png"
             anchors.horizontalCenterOffset: 53
@@ -234,14 +256,16 @@ Item {
 
         ImageButton {
             id: levelDown
-            anchors.right: continu.left
-            anchors.top: continu.bottom
-            anchors.rightMargin: -parent.width * 0.05
+            anchors {
+                right: continu.left
+                top: continu.bottom
+                rightMargin: -parent.width * 0.05
+            }
             width: parent.width * 0.1
             height: parent.width * 0.1
 
             onClicked: {
-                gameScene.clickedPrevLevelButton()
+                gameScene.level = gameScene.level - 1
             }
             source: "qrc:/images/button-leveldown.png"
             opacity: gameScene.level > 1
@@ -252,10 +276,12 @@ Item {
 
         ImageButton {
             id: exit
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.rightMargin: parent.width * 0.02
-            anchors.topMargin: parent.width * 0.02
+            anchors {
+                right: parent.right
+                top: parent.top
+                rightMargin: parent.width * 0.02
+                topMargin: parent.width * 0.02
+            }
             width: parent.width * 0.1
             height: parent.width * 0.1
             onClicked: {
@@ -268,10 +294,12 @@ Item {
 
         ImageButton {
             id: about
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.rightMargin: parent.width * 0.02
-            anchors.topMargin: parent.width * 0.22
+            anchors {
+                right: parent.right
+                top: parent.top
+                rightMargin: parent.width * 0.02
+                topMargin: parent.width * 0.22
+            }
             width: parent.width * 0.1
             height: parent.width * 0.1
             onClicked: {
@@ -319,10 +347,12 @@ Item {
 
     ImageButton {
         id: pause
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.rightMargin: parent.width * 0.02
-        anchors.topMargin: parent.width * 0.02
+        anchors {
+            right: parent.right
+            top: parent.top
+            rightMargin: parent.width * 0.02
+            topMargin: parent.width * 0.02
+        }
         width: parent.width * 0.1
         height: parent.width * 0.1
         onClicked: {
@@ -334,17 +364,17 @@ Item {
 
     ImageButton {
         id: positiveCharges
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.rightMargin: parent.width * 0.02
-        anchors.topMargin: parent.height * 0.25
+        anchors {
+            right: parent.right
+            top: parent.top
+            rightMargin: parent.width * 0.02
+            topMargin: parent.height * 0.25
+        }
         width: parent.width * 0.1
         height: parent.width * 0.1
         selected: true
         onClicked: {
-            gameScene.clickedPositiveButton()
-            selected = true
-            negativeCharges.selected = false
+            gameScene.selectedType = GameScene.ParticlePositive
         }
         source: "qrc:/images/button-positive-charge.png"
         selectedSource: "qrc:/images/button-positive-charge-selected.png"
@@ -352,32 +382,82 @@ Item {
 
     ImageButton {
         id: negativeCharges
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.rightMargin: parent.width * 0.02
-        anchors.topMargin: parent.height * 0.45
+        anchors {
+            right: parent.right
+            top: positiveCharges.bottom
+            rightMargin: parent.width * 0.02
+            topMargin: parent.height * 0.02
+        }
         width: parent.width * 0.1
         height: parent.width * 0.1
         selected: false
         onClicked: {
-            gameScene.clickedNegativeButton()
-            selected = true
-            positiveCharges.selected = false
+            gameScene.selectedType = GameScene.ParticleNegative
         }
         source: "qrc:/images/button-negative-charge.png"
         selectedSource: "qrc:/images/button-negative-charge-selected.png"
     }
 
+    ImageButton {
+        id: specialCharges
+        anchors{
+            right: parent.right
+            top: negativeCharges.bottom
+            rightMargin: parent.width * 0.02
+            topMargin: parent.height * 0.02
+        }
+        width: parent.width * 0.1
+        height: parent.width * 0.1
+        selected: false
+        onClicked: {
+            gameScene.selectedType = GameScene.ParticleSpecial
+        }
+    }
+
     Text {
         id: timeLeft
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.rightMargin: parent.width * 0.03
-        anchors.bottomMargin: parent.width * 0.04
+        anchors {
+            right: parent.right
+            bottom: parent.bottom
+            rightMargin: parent.width * 0.03
+            bottomMargin: parent.width * 0.04
+        }
         text: gameScene.levelTime
         color: "white"
         font.pixelSize: parent.width * 0.07
         font.family: "NovaSquare"
+    }
+
+    onRemainingNegativeChargesChanged: {
+        if(remainingNegativeCharges < 1) {
+            negativeCharges.source = "qrc:/images/button-empty-charge.png"
+            negativeCharges.selectedSource = "qrc:/images/button-empty-charge-selected.png"
+            gameScene.selectedType = GameScene.ParticlePositive
+        } else {
+            negativeCharges.source = "qrc:/images/button-negative-charge.png"
+            negativeCharges.selectedSource = "qrc:/images/button-negative-charge-selected.png"
+        }
+    }
+
+    onRemainingPositiveChargesChanged: {
+        if(remainingPositiveCharges < 1) {
+            positiveCharges.source = "qrc:/images/button-empty-charge.png"
+            positiveCharges.selectedSource = "qrc:/images/button-empty-charge-selected.png"
+            gameScene.selectedType = GameScene.ParticleNegative
+        } else {
+            positiveCharges.source = "qrc:/images/button-positive-charge.png"
+            positiveCharges.selectedSource = "qrc:/images/button-positive-charge-selected.png"
+        }
+    }
+    onRemainingSpecialChargesChanged: {
+        if(remainingSpecialCharges < 1) {
+            specialCharges.source = "qrc:/images/button-empty-charge.png"
+            specialCharges.selectedSource = "qrc:/images/button-empty-charge-selected.png"
+            gameScene.selectedType = GameScene.ParticlePositive
+        } else {
+            specialCharges.source = "qrc:/images/button-special-charge.png"
+            specialCharges.selectedSource = "qrc:/images/button-special-charge-selected.png"
+        }
     }
 
 }

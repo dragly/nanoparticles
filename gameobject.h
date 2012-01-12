@@ -2,7 +2,8 @@
 #define GAMEOBJECT_H
 
 #include <QGraphicsObject>
-#include "gamescene.h"
+#include <QVector2D>
+class GameScene;
 
 class GameObject : public QGraphicsObject
 {

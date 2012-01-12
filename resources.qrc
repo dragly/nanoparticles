@@ -29,5 +29,8 @@
         <file>images/particle-slow-motion.png</file>
         <file>images/button-empty-charge-selected.png</file>
         <file>images/button-empty-charge.png</file>
+        <file>images/particle-glowing.png</file>
+        <file>images/button-special-charge-selected.png</file>
+        <file>images/button-special-charge.png</file>
     </qresource>
 </RCC>
