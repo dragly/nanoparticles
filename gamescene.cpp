@@ -14,17 +14,16 @@
 /* TODO.
     // Enhanced version (2.0)
     - Add copyright/version window.
-    - New particles to play with
     - New enemy particles (megacharges)
-    - Dummy particles (just in the way and sticky, but not dangerous)
+    - Instructions for party mode
     - Make it possible to place particles that are sticky after level 15 (or something)
-    - Use health bar instead immediate death.
 
     // Demo version (2.1)
     - Add link to Ovi Store when demo is over.
 
     // To be tested (2.5)
     - Draw using FullViewPortUpdate - does it give any performance improvements?
+    - Use health bar instead immediate death.
 */
 // scaling
 const qreal globalScale = 2.5;
@@ -52,13 +51,13 @@ const int baseChargeNumNegativeParty = 1;
 const int baseTime = 10;
 const qreal timeIncrement = 0.9;
 const int baseTimeParty = 30;
-const qreal timeIncrementParty = 5;
+const qreal timeIncrementParty = 2;
 const qreal normalTimeFactor = 1.0;
 const qreal slowMotionTimeFactor = 0.3;
 
 // party mode settings
 const int partyDisintegrationTime = 10000;
-const int partyDisintegrationTimeDecrement = 100;
+const int partyDisintegrationEffectTime = 2000;
 
 // z values
 const int zInGameMenu = 91;
@@ -88,7 +87,7 @@ GameScene::GameScene(QObject *parent) :
     m_dt = 0;
     firstStep = true;
 
-    selectedParticleType = ParticlePositive;
+    setSelectedType(ParticlePositive);
 
     // load images
     selectionImage = QImage(":/images/selection-overlay.png");
@@ -97,6 +96,7 @@ GameScene::GameScene(QObject *parent) :
     neutralImage = QImage(":/images/particle-neutral.png");
     playerImage = QImage(":/images/particle-player.png");
     playerOverchargedImage = QImage(":/images/particle-player-overcharged.png");
+    glowingImage = QImage(":/images/particle-glowing.png");
     enemyImage = QImage(":/images/particle-enemy.png");
     slowMotionImage = QImage(":/images/particle-slow-motion.png");
 
@@ -147,6 +147,7 @@ GameScene::GameScene(QObject *parent) :
     // Connect the QML back to this class
     addItem(mainMenu);
     mainMenu->setZValue(1000);
+    m_specialParticles = new QList<int>;
 
 #ifdef OS_IS_HARMATTAN
     mainMenu->setProperty("exit.visible", false);
@@ -290,10 +291,14 @@ void GameScene::continueGame() {
     if(gameState() == GameOver) {
         setLevel(m_level);
     }
-    if(gameMode() == ModeClassic && level() == 1) {
-        instructionTimer->start();
-    }
     setGameState(GameRunning);
+    if(gameMode() == ModeClassic && level() == 1) {
+        toggleInstructionText();
+    } else if(gameMode() == ModeParty && level() == 7) {
+        toggleInstructionText();
+    } else if(gameMode() == ModeParty && level() == 14) {
+        toggleInstructionText();
+    }
 
 #ifdef Q_WS_MAEMO_5
     // TODO: Reimplement dashboard button hiding in QML
@@ -369,26 +374,6 @@ void GameScene::minimizeToDashboard() {
 #endif
 }
 
-void GameScene::clickedNextLevelButton() {
-    setLevel(m_level + 1);
-    pauseGame();
-}
-
-void GameScene::clickedPrevLevelButton() {
-    setLevel(m_level - 1);
-    pauseGame();
-}
-
-void GameScene::clickedNegativeButton() {
-    selectedParticleType = ParticleNegative;
-    qDebug() << "Clicked negative";
-}
-
-void GameScene::clickedPositiveButton() {
-    qDebug() << "Clicked positive";
-    selectedParticleType = ParticlePositive;
-}
-
 void GameScene::setGameState(GameState gameState) {
     this->m_gameState = gameState;
     if(gameState == GameStarted) {
@@ -413,9 +398,12 @@ void GameScene::setLevel(int level) {
 
 
     // Start instructions if on level 1
-    if(gameMode() == ModeClassic && level == 1) {
+    if((gameMode() == ModeClassic && level == 1) || (gameMode() == ModeParty && (level == 1 || level == 7 || level == 14))) {
+        instructionTimer->setInterval(500);
         instructionNumber = 1; // if there are instructions, start with the first one
-        instructionTimer->setInterval(2000);
+    }
+
+    if(gameMode() == ModeClassic && level == 1) {
 
         setRemainingPositiveCharges(20);
         setRemainingNegativeCharges(20);
@@ -430,6 +418,11 @@ void GameScene::setLevel(int level) {
         setLevelTime(baseTimeParty + (int)(timeIncrementParty * level));
         setRemainingPositiveCharges(baseChargeNumPositiveParty + (int)(incrementChargeNumParty * level));
         setRemainingNegativeCharges(baseChargeNumNegativeParty + (int)(incrementChargeNumParty * level));
+        specialParticles()->clear();
+        if(level == 14) {
+            specialParticles()->append(Particle::ParticleTransfer);
+        }
+        setRemainingSpecialCharges(specialParticles()->count());
     } else {
         qWarning() << "Some unknown mode is set!";
     }
@@ -438,7 +431,7 @@ void GameScene::setLevel(int level) {
     updateRemainingChargeText();
 
     // add player
-    Particle *player = new Particle(this);
+    player = new Particle(this);
     addItem(player);
     player->setCharge(playerCharge * (1 + levelChargeFactor * pow((double)level,2)));
     player->setParticleType(Particle::ParticlePlayer);
@@ -573,6 +566,11 @@ void GameScene::addEnemies() {
     }
 }
 
+void GameScene::addTransferParticle() {
+    specialParticles()->append(Particle::ParticleTransfer);
+    setRemainingSpecialCharges(specialParticles()->count());
+}
+
 void GameScene::updateRemainingChargeText() {
 
 }
@@ -596,7 +594,7 @@ void GameScene::advance() {
 }
 
 void GameScene::checkAddSpecialParticle() {
-    int dueTime = partyDisintegrationTime - partyDisintegrationTimeDecrement * level();
+    int dueTime = partyDisintegrationTime;
     foreach(QGraphicsItem *item, items()) {
         if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
             qreal timeDiff = currentTime - particle->createdTime();
@@ -610,11 +608,23 @@ void GameScene::checkAddSpecialParticle() {
             if(particle->particleType() == Particle::ParticleRepellent) {
                 particle->setScale(globalScale * repellentScale * (dueTime - timeDiff) / dueTime);
             }
+            if(particle->particleType() == Particle::ParticleTransfer) {
+                particle->setScale(globalScale * slowMotionScale * (dueTime - timeDiff) / dueTime);
+            }
+            if(particle->particleType() == Particle::ParticleGlowing) {
+                int dueEffectTime = partyDisintegrationEffectTime;
+                particle->setScale(globalScale * repellentScale * (dueEffectTime - timeDiff) / dueEffectTime);
+            }
             // Remove overdue charges
-            if(currentTime - particle->createdTime() > 10000 &&
+            int timeSinceCreation = currentTime - particle->createdTime();
+            if(timeSinceCreation > partyDisintegrationTime &&
                     (particle->particleType() == Particle::ParticleSimple ||
                      particle->particleType() == Particle::ParticleSlowMotion ||
-                     particle->particleType() == Particle::ParticleRepellent)
+                     particle->particleType() == Particle::ParticleRepellent ||
+                     particle->particleType() == Particle::ParticleTransfer)
+                    ||
+                    (timeSinceCreation > partyDisintegrationEffectTime &&
+                     particle->particleType() == Particle::ParticleGlowing)
                     ) {
                 if(particle->particleType() == Particle::ParticleSimple) {
                     if(particle->charge() > 0) {
@@ -633,81 +643,40 @@ void GameScene::checkAddSpecialParticle() {
         qDebug() << "Spawning special!";
         Particle *particle = new Particle(this);
         addItem(particle);
-        int particleType = (int)(2*(qreal)qrand()/(qreal)RAND_MAX);
+        int maxParticleType;
+        if(level() < 7) {
+            maxParticleType = 1;
+        } else if (level() < 14) {
+            maxParticleType = 2;
+        } else {
+            maxParticleType = 3;
+        }
+
+        int particleType = (int) ( maxParticleType * (qreal)qrand()/(qreal)RAND_MAX);
         qDebug() << "Spawning type " << particleType;
         switch(particleType) {
         case 0:
             particle->setParticleType(Particle::ParticleRepellent);
-            particle->setElectroSticky(true);
+            particle->setSticky(true);
             break;
         case 1:
             particle->setParticleType(Particle::ParticleSlowMotion);
             break;
+        case 2:
+            particle->setParticleType(Particle::ParticleTransfer);
+            particle->setSticky(true);
+            break;
         }
         particle->setCharge(0);
         particle->setScale(globalScale * slowMotionScale);
-        qreal xrand = (qreal)qrand()/(qreal)RAND_MAX;
-        qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
-
-        particle->setPosition(QVector2D(xrand * gameRectF().width(), yrand * gameRectF().height()));
+        QVector2D position = player->position();
+        while((position - player->position()).lengthSquared() < player->size().width() * 3) {
+            qreal xrand = (qreal)qrand()/(qreal)RAND_MAX;
+            qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
+            position = QVector2D(xrand * gameRectF().width(),yrand * gameRectF().height());
+        }
+        particle->setPosition(position);
         lastSpecialSpawnTime = currentTime;
-    }
-}
-
-void GameScene::removeNegativeCharge() {
-    setRemainingNegativeCharges(remainingNegativeCharges() - 1);
-}
-
-void GameScene::removePositiveCharge() {
-    setRemainingPositiveCharges(remainingPositiveCharges() - 1);
-}
-
-void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    //Create particles
-    if(gameState() == GameInstructionPause) {
-        if(instructionTime.elapsed() > 500) {
-            toggleInstructionText();
-        }
-    } else if(gameState() == GameRunning){
-        if(fromFp(event->scenePos().x()) < gameRectF().right()) {
-            int fortegn = -1;
-            if(event->button() == Qt::LeftButton) {
-                if(event->modifiers() & Qt::ShiftModifier || selectedParticleType == ParticleNegative) {
-                    fortegn = -1;
-                } else {
-                    fortegn = 1;
-                }
-            } else if(event->button() == Qt::RightButton) {
-                fortegn = -1;
-            }
-            bool okayInsert = false;
-            if(fortegn == -1 && remainingNegativeCharges() > 0) {
-                okayInsert = true;
-            } else if(fortegn == 1 && remainingPositiveCharges() > 0){
-                okayInsert = true;
-            }
-            if(okayInsert) {
-                if(fortegn == -1) {
-                    removeNegativeCharge();
-                } else {
-                    removePositiveCharge();
-                }
-                Particle *particle = new Particle(this);
-                addItem(particle);
-                QVector2D position = QVector2D(fromFp(event->scenePos().x()),fromFp(event->scenePos().y()));
-                particle->setPosition(position);
-                particle->setCharge((fortegn * simpleCharge * (1 + levelChargeFactor * pow((double)m_level,2))));
-                particle->setScale(simpleScale * globalScale);
-                // update the UI text showing number of remaining charges
-                updateRemainingChargeText();
-            }
-        } else {
-            QGraphicsScene::mousePressEvent(event);
-        }
-    } else {
-        if(menuTime.elapsed() > 500) { // make sure we don't let the user hit any buttons before the timer has run out
-            QGraphicsScene::mousePressEvent(event);
-        }
     }
 }
 
@@ -746,8 +715,22 @@ double GameScene::fromFp(double number, bool useSmallest) const {
     }
 }
 
+void GameScene::setGameMode(GameScene::GameMode gameMode)
+{
+    m_gameMode = gameMode;
+    settings.setValue("gameMode", gameMode);
+    emit gameModeChanged(gameMode);
+    if(gameMode == GameScene::ModeClassic) {
+        setLevel(settings.value("highestLevel", 1).toInt());
+    } else {
+        setLevel(settings.value("highestLevelParty", 1).toInt());
+    }
+    setHighestLevel(level());
+}
+
 void GameScene::toggleInstructionText() {
     qDebug() << "Showing instructions";
+    instructionTimer->start();
     if(gameState() == GameInstructionPause) {
         qDebug() << "Showing pause";
         setGameState(GameRunning);
@@ -761,38 +744,127 @@ void GameScene::toggleInstructionText() {
         setGameState(GameInstructionPause);
         instructionText->show();
         instructionTimer->setInterval(10000);
-        if(m_level == 1) {
-            switch(instructionNumber) {
-            case 1:
-                instructionText->setHtml(tr("<center><p>Welcome!</p><p>You are the green charge.<br>Avoid hitting the purple charges,<br>they are deadly to the green one.<br>Try to move the green charge by placing<br>other charges anywhere on the map.</p></center>"));
-                break;
-            case 2:
-                instructionText->setHtml(tr("<center>You can also select blue charges<br>by clicking on the blue button to the right.<br>The red charges push away the green one,<br>while the blue charges attract it.</center>"));
-                break;
-            case 3:
-                instructionText->setHtml(tr("<center>The time is shown in the lower right corner.<br>When the time runs out,<br/>you will move on to the next quantum state!<br/>You might call them levels if you like.</center>"));
-                setLevelTime(5);
-                break;
-            default:
-                instructionText->setHtml("");
-                instructionTimer->stop();
-                toggleInstructionText();
-                break;
+        if(gameMode() == ModeClassic) {
+            if(m_level == 1) {
+                switch(instructionNumber) {
+                case 1:
+                    instructionText->setHtml(tr("<center><p>Welcome!</p><p>You are the green charge.<br>Avoid hitting the purple charges,<br>they are deadly to the green one.<br>Try to move the green charge by placing<br>other charges anywhere on the map.</p></center>"));
+                    break;
+                case 2:
+                    instructionText->setHtml(tr("<center>You can also select blue charges<br>by clicking on the blue button to the right.<br>The red charges push away the green one,<br>while the blue charges attract it.</center>"));
+                    break;
+                case 3:
+                    instructionText->setHtml(tr("<center>The time is shown in the lower right corner.<br>When the time runs out,<br/>you will move on to the next quantum state!<br/>You might call them levels if you like.</center>"));
+                    setLevelTime(5);
+                    break;
+                default:
+                    instructionText->setHtml("");
+                    instructionTimer->stop();
+                    toggleInstructionText();
+                    break;
+                }
             }
+        } else if (gameMode() == ModeParty) {
+            if(m_level == 1) {
+                switch(instructionNumber) {
+                case 1:
+                    instructionText->setHtml(tr("<center><p>Welcome to party mode!</p><p>New particles awaits you. Collide with the yellow particles to repel all enemies.</p></center>"));
+                    break;
+                default:
+                    instructionText->setHtml("");
+                    instructionTimer->stop();
+                    toggleInstructionText();
+                    break;
+                }
+            } else if(level() == 7) {
+                switch(instructionNumber) {
+                case 1:
+                    instructionText->setHtml(tr("<center><p>The clocks are ticking.</p><p>Let's make everybody slow down.</p></center>"));
+                    break;
+                default:
+                    instructionText->setHtml("");
+                    instructionTimer->stop();
+                    toggleInstructionText();
+                    break;
+                }
+
+            } else if(level() == 14) {
+                switch(instructionNumber) {
+                case 1:
+                    instructionText->setHtml(tr("<center><p>Teleport away!</p><p>Wouldn't it be nice if we could just go to a different place?</p><p>Hint: Use the button to the right.</p></center>"));
+                    break;
+                default:
+                    instructionText->setHtml("");
+                    instructionTimer->stop();
+                    toggleInstructionText();
+                    break;
+                }
+
+            }
+            instructionNumber++;
         }
-        instructionNumber++;
     }
 }
 
-void GameScene::setGameMode(GameScene::GameMode gameMode)
-{
-    m_gameMode = gameMode;
-    settings.setValue("gameMode", gameMode);
-    emit gameModeChanged(gameMode);
-    if(gameMode == GameScene::ModeClassic) {
-        setLevel(settings.value("highestLevel", 1).toInt());
+void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    //Create particles
+    if(gameState() == GameInstructionPause) {
+        if(instructionTime.elapsed() > 500) {
+            toggleInstructionText();
+        }
+    } else if(gameState() == GameRunning){
+        if(fromFp(event->scenePos().x()) < gameRectF().right()) {
+            QVector2D clickPosition = QVector2D(fromFp(event->scenePos().x()),fromFp(event->scenePos().y()));
+            if(selectedType() == ParticlePositive || selectedType() == ParticleNegative) {
+                int fortegn = -1;
+                if(event->button() == Qt::LeftButton) {
+                    if(event->modifiers() & Qt::ShiftModifier || selectedType() == ParticleNegative) {
+                        fortegn = -1;
+                    } else {
+                        fortegn = 1;
+                    }
+                } else if(event->button() == Qt::RightButton) {
+                    fortegn = -1;
+                }
+                bool okayInsert = false;
+                if(fortegn == -1 && remainingNegativeCharges() > 0) {
+                    okayInsert = true;
+                } else if(fortegn == 1 && remainingPositiveCharges() > 0){
+                    okayInsert = true;
+                }
+                if(okayInsert) {
+                    if(fortegn == -1) {
+                        setRemainingNegativeCharges(remainingNegativeCharges() - 1);
+                    } else {
+                        setRemainingPositiveCharges(remainingPositiveCharges() - 1);
+                    }
+                    Particle *particle = new Particle(this);
+                    addItem(particle);
+                    particle->setPosition(clickPosition);
+                    particle->setCharge((fortegn * simpleCharge * (1 + levelChargeFactor * pow((double)m_level,2))));
+                    particle->setScale(simpleScale * globalScale);
+                    // update the UI text showing number of remaining charges
+                    updateRemainingChargeText();
+                }
+            } else if (selectedType() == ParticleSpecial) {
+                qDebug() << specialParticles()->count();
+                if(!specialParticles()->isEmpty()) {
+                    Particle::ParticleType particleType = (Particle::ParticleType)specialParticles()->first();
+                    specialParticles()->removeFirst();
+                    if(particleType == Particle::ParticleTransfer) {
+                        player->setPosition(clickPosition);
+                        player->setVelocity(QVector2D());
+                    }
+                    m_remainingSpecialCharges = specialParticles()->count();
+                    emit remainingSpecialChargesChanged(m_remainingSpecialCharges);
+                }
+            }
+        } else {
+            QGraphicsScene::mousePressEvent(event);
+        }
     } else {
-        setLevel(settings.value("highestLevelParty", 1).toInt());
+        if(menuTime.elapsed() > 500) { // make sure we don't let the user hit any buttons before the timer has run out
+            QGraphicsScene::mousePressEvent(event);
+        }
     }
-    setHighestLevel(level());
 }

@@ -15,7 +15,9 @@ public:
                         ParticlePlayer,
                         ParticleEnemy,
                         ParticleSlowMotion,
-                        ParticleRepellent
+                        ParticleRepellent,
+                        ParticleGlowing,
+                        ParticleTransfer
                       };
 
     int type() const
@@ -52,7 +54,7 @@ public:
     QRectF boundingRect() const;
 
     bool matchParticles(Particle *particle1, Particle *particle2, ParticleType type1, ParticleType type2);
-    bool collidingWithPlayer;
+    bool hasCollidedWithPlayer;
     int createdTime() {
         return m_createdTime;
     }

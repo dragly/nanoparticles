@@ -7,6 +7,8 @@
 #include <QTimer>
 #include <QTime>
 
+class Particle;
+
 class GameScene : public QGraphicsScene
 {
     Q_OBJECT
@@ -18,8 +20,12 @@ class GameScene : public QGraphicsScene
     Q_PROPERTY(GameMode gameMode READ gameMode WRITE setGameMode NOTIFY gameModeChanged)
     Q_PROPERTY(int remainingPositiveCharges READ remainingPositiveCharges WRITE setRemainingPositiveCharges NOTIFY remainingPositiveChargesChanged)
     Q_PROPERTY(int remainingNegativeCharges READ remainingNegativeCharges WRITE setRemainingNegativeCharges NOTIFY remainingNegativeChargesChanged)
+    Q_PROPERTY(int remainingSpecialCharges READ remainingSpecialCharges NOTIFY remainingSpecialChargesChanged)
+    Q_PROPERTY(QList<int> *specialParticles READ specialParticles)
+    Q_PROPERTY(Selection selectedType READ selectedType WRITE setSelectedType NOTIFY selectedTypeChanged)
     Q_ENUMS(GameMode)
     Q_ENUMS(GameState)
+    Q_ENUMS(Selection)
 public:
     explicit GameScene(QObject *parent = 0);
 
@@ -33,8 +39,8 @@ public:
         GameOver,    /*! The level was failed */
         GameInstructionPause /*! The game is running, but we are showing instructions on screen */
     };
-    enum ParticleType{ParticleNegative, ParticlePositive};
-    enum GameMode{ ModeClassic, ModeParty };
+    enum Selection { ParticleNegative, ParticlePositive, ParticleSpecial };
+    enum GameMode { ModeClassic, ModeParty };
 
     //Time variables
     int currentTime;
@@ -56,6 +62,7 @@ public:
     QImage enemyImage;
     QImage playerImage;
     QImage playerOverchargedImage;
+    QImage glowingImage;
     QImage selectionImage;
     QRectF gameRectF();
     double toFp(double number, bool useSmallest = false) const;
@@ -101,7 +108,6 @@ public:
     }
 
 
-    void enableSlowMotion(int time);
     QPropertyAnimation *timeFactorAnimation;
 
 
@@ -116,7 +122,22 @@ public:
         return m_remainingNegativeCharges;
     }
 
-    void disableSlowMotion();
+    QList<int> *specialParticles() const
+    {
+        return m_specialParticles;
+    }
+
+    int remainingSpecialCharges() const
+    {
+        return m_remainingSpecialCharges;
+    }
+
+    void addTransferParticle();
+    Selection selectedType() const
+    {
+        return m_selectedType;
+    }
+
 signals:
     void highestLevelChanged(int);
     void levelChanged(int);
@@ -128,16 +149,18 @@ signals:
 
     void remainingNegativeChargesChanged(int arg);
 
+    void remainingSpecialChargesChanged(int arg);
+
+    void selectedTypeChanged(Selection arg);
+
 public slots:
+    void enableSlowMotion(int time);
+    void disableSlowMotion();
     void advance();
-    void clickedPositiveButton();
-    void clickedNegativeButton();
     void continueGame();
     void pauseGame();
     void retryGame();
     void exitGame();
-    void clickedNextLevelButton();
-    void clickedPrevLevelButton();
     void updateTime();
     void gameOver();
     void toggleInstructionText();
@@ -159,6 +182,22 @@ public slots:
         }
     }
 
+    void setRemainingSpecialCharges(int arg)
+    {
+        if (m_remainingSpecialCharges != arg) {
+            m_remainingSpecialCharges = arg;
+            emit remainingSpecialChargesChanged(arg);
+        }
+    }
+
+    void setSelectedType(Selection arg)
+    {
+        if (m_selectedType != arg) {
+            m_selectedType = arg;
+            emit selectedTypeChanged(arg);
+        }
+    }
+
 private:
     void addEnemies();
     int m_highestLevel;
@@ -167,7 +206,6 @@ private:
     int instructionNumber;
     GameState m_gameState;
     GameMode m_gameMode;
-    int selectedParticleType;
     float m_dt; // time difference in seconds
     double m_timeFactor;
 
@@ -189,20 +227,24 @@ private:
     QGraphicsObject *aboutDialog;
     QGraphicsObject *mainMenu;
 
+    // Particles
+    Particle *player;
+
     // charges
     int m_remainingPositiveCharges;
     int m_remainingNegativeCharges;
-
-    void removeNegativeCharge();
-    void removePositiveCharge();
 
     void updateRemainingChargeText();
 
     QSettings settings;
 
+    QList<int> *m_specialParticles;
+    int m_remainingSpecialCharges;
+    Selection m_selectedType;
 };
 Q_DECLARE_METATYPE(GameScene::GameMode)
 Q_DECLARE_METATYPE(GameScene::GameState)
+Q_DECLARE_METATYPE(GameScene::Selection)
 
 
 #endif // GAMESCENE_H

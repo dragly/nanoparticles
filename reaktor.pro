@@ -50,7 +50,8 @@ HEADERS  += \
     particle.h \
     gamescene.h \
     gameview.h \
-    gameobject.h
+    gameobject.h \
+    utils.h
 
 FORMS    +=
 
