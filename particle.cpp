@@ -12,17 +12,20 @@
 const qreal dechargeRate = 0.2;
 const qreal springConstant = 75.0;
 const qreal minimumCharge = 2.5;
+const qreal edgeBounceDampParty = 0.25;
+// friction
 const qreal dampingFactor = 0.18; // a scaling of the damping force
+const qreal dampingFactorParty = 0.4; // a scaling of the damping force
 const qreal particleMass = 1.3;
 const qreal forceByLengthSquaredFactor = 0.4;
 const qreal forceByLengthFactor = 0.9;
 
 // special particles
-const qreal repellentCharge = -100;
-const qreal repellentDechargeRate = 30;
+const qreal repellentCharge = -1000;
+const qreal repellentDechargeRate = 300;
 
-Particle::Particle() :
-    GameObject() ,
+Particle::Particle(GameScene *gameScene) :
+    GameObject(gameScene) ,
     m_charge(0),
     _velocity(0,0),
     _sticky(false),
@@ -32,6 +35,7 @@ Particle::Particle() :
     collidingWithPlayer(false),
     m_createdTime(0)
 {
+    setCreatedTime(gameScene->currentTime);
 }
 
 void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
@@ -81,9 +85,6 @@ void Particle::advance(int step) {
         qWarning() << "Particle::advance(): Cannot advance without gameScene";
         return;
     }
-    if(createdTime() == 0) {
-        setCreatedTime(gameScene()->currentTime);
-    }
     setPosition(nextPosition); // we calculated our next position in the last timestep, now, lets use it
     float dt = gameScene()->dt();
     // Special charges
@@ -125,7 +126,7 @@ void Particle::advance(int step) {
                         // Collision between player and slow motion particle
                         if(this->particleType() == ParticlePlayer && particle->particleType() == ParticleSlowMotion) {
                             if(!particle->collidingWithPlayer) {
-                                gameScene()->setSlowMotion(true, 3000);
+                                gameScene()->enableSlowMotion(7000);
                                 particle->collidingWithPlayer = true;
                             }
                         }
@@ -140,25 +141,27 @@ void Particle::advance(int step) {
                             gameScene()->gameOver();
                         }
                         // Charge exchange
-                        double chargediff = fabs(m_charge - particle->m_charge); // charge difference
-                        qreal dechargeRateTotal = fabs(length - particleDistances) * dechargeRate * springConstant / 60.0; // including the spring constant to avoid changing the decharge rate when the spring constant is changed
-                        if( particleType() != ParticleEnemy && particle->particleType() != ParticleEnemy &&
-                                particleType() != ParticleSlowMotion && particle->particleType() != ParticleSlowMotion &&
-                                particleType() != ParticleRepellent && particle->particleType() != ParticleRepellent
-                                ) { // do not decharge enemies
-                            if(particleType() == ParticlePlayer) { // if either particles are the player
-                                m_charge += fabs(particle->m_charge) * dt * dechargeRateTotal; // it gets some of the other's charge
-                                particle->m_charge -= particle->m_charge * dt * dechargeRateTotal; // that the  other particle loses
-                            } else if(particle->particleType() == ParticlePlayer) { // if either particles are the player
-                                particle->m_charge += fabs(m_charge) * dt * dechargeRateTotal; // it gets some of the other's charge
-                                m_charge -= m_charge * dt * dechargeRateTotal; // that the other particle loses
-                            } else {
-                                if(m_charge > particle->m_charge) { // the one with most charge loses charge, the other gains
-                                    m_charge -= chargediff * dt * dechargeRateTotal;
-                                    particle->m_charge += chargediff * dt * dechargeRateTotal;
-                                } else if(m_charge < particle->m_charge) {
-                                    m_charge += chargediff* dt * dechargeRateTotal;
-                                    particle->m_charge -= chargediff * dt * dechargeRateTotal;
+                        if(gameScene()->gameMode() == GameScene::ModeClassic) {
+                            double chargediff = fabs(m_charge - particle->m_charge); // charge difference
+                            qreal dechargeRateTotal = fabs(length - particleDistances) * dechargeRate * springConstant / 60.0; // including the spring constant to avoid changing the decharge rate when the spring constant is changed
+                            if( particleType() != ParticleEnemy && particle->particleType() != ParticleEnemy &&
+                                    particleType() != ParticleSlowMotion && particle->particleType() != ParticleSlowMotion &&
+                                    particleType() != ParticleRepellent && particle->particleType() != ParticleRepellent
+                                    ) { // do not decharge enemies
+                                if(particleType() == ParticlePlayer) { // if either particles are the player
+                                    m_charge += fabs(particle->m_charge) * dt * dechargeRateTotal; // it gets some of the other's charge
+                                    particle->m_charge -= particle->m_charge * dt * dechargeRateTotal; // that the  other particle loses
+                                } else if(particle->particleType() == ParticlePlayer) { // if either particles are the player
+                                    particle->m_charge += fabs(m_charge) * dt * dechargeRateTotal; // it gets some of the other's charge
+                                    m_charge -= m_charge * dt * dechargeRateTotal; // that the other particle loses
+                                } else {
+                                    if(m_charge > particle->m_charge) { // the one with most charge loses charge, the other gains
+                                        m_charge -= chargediff * dt * dechargeRateTotal;
+                                        particle->m_charge += chargediff * dt * dechargeRateTotal;
+                                    } else if(m_charge < particle->m_charge) {
+                                        m_charge += chargediff* dt * dechargeRateTotal;
+                                        particle->m_charge -= chargediff * dt * dechargeRateTotal;
+                                    }
                                 }
                             }
                         }
@@ -174,7 +177,13 @@ void Particle::advance(int step) {
             }
         }
     }
-    QVector2D F_d = - dampingFactor * velocity(); //damping
+    qreal localDampingFactor = 0.0;
+    if(gameScene()->gameMode() == GameScene::ModeClassic) {
+        localDampingFactor = dampingFactor;
+    } else if(gameScene()->gameMode() == GameScene::ModeParty) {
+        localDampingFactor = dampingFactorParty;
+    }
+    QVector2D F_d = - localDampingFactor * velocity(); //damping
     F += F_d;
     QVector2D a = F / mass();
     _velocity += a * dt;
@@ -182,25 +191,31 @@ void Particle::advance(int step) {
     nextPosition = position() + velocity() * dt;
 
     // restrain edges
+    qreal edgeBounceDamp = 0.0;
+    if(gameScene()->gameMode() == GameScene::ModeClassic) {
+        edgeBounceDamp = 1.0;
+    } else if(gameScene()->gameMode() == GameScene::ModeParty) {
+        edgeBounceDamp = edgeBounceDampParty;
+    }
     double minx = gameScene()->gameRectF().left() + size().width() * scale() / 2;
     if(position().x() < minx) {
         setPosition(QVector2D(minx,position().y()));
-        _velocity.setX(-_velocity.x());
+        _velocity.setX(-_velocity.x() * edgeBounceDamp);
     }
     double miny = gameScene()->gameRectF().top() + size().width() * scale() / 2;
     if(position().y() < miny) {
         setPosition(QVector2D(position().x(),miny));
-        _velocity.setY(-_velocity.y());
+        _velocity.setY(-_velocity.y() * edgeBounceDamp);
     }
     double maxx = gameScene()->gameRectF().right() - size().width() * scale() / 2;
     if(position().x() > maxx) {
         setPosition(QVector2D(maxx,position().y()));
-        _velocity.setX(-_velocity.x());
+        _velocity.setX(-_velocity.x() * edgeBounceDamp);
     }
     double maxy = gameScene()->gameRectF().bottom() - size().width() * scale() / 2;
     if(position().y() > maxy) {
         setPosition(QVector2D(position().x(),maxy));
-        _velocity.setY(-_velocity.y());
+        _velocity.setY(-_velocity.y() * edgeBounceDamp);
     }
 }
 

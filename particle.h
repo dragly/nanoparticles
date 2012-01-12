@@ -8,7 +8,7 @@
 class Particle : public GameObject
 {
 public:
-    Particle();
+    Particle(GameScene *gameScene);
 
     enum { Type = UserType + 1 };
     enum ParticleType { ParticleSimple,

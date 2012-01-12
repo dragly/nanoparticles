@@ -7,8 +7,6 @@
 #include <QTimer>
 #include <QTime>
 
-class Button;
-
 class GameScene : public QGraphicsScene
 {
     Q_OBJECT
@@ -18,6 +16,8 @@ class GameScene : public QGraphicsScene
     Q_PROPERTY(int levelTime READ levelTime WRITE setLevelTime NOTIFY levelTimeChanged)
     Q_PROPERTY(GameState gameState READ gameState WRITE setGameState NOTIFY gameStateChanged)
     Q_PROPERTY(GameMode gameMode READ gameMode WRITE setGameMode NOTIFY gameModeChanged)
+    Q_PROPERTY(int remainingPositiveCharges READ remainingPositiveCharges WRITE setRemainingPositiveCharges NOTIFY remainingPositiveChargesChanged)
+    Q_PROPERTY(int remainingNegativeCharges READ remainingNegativeCharges WRITE setRemainingNegativeCharges NOTIFY remainingNegativeChargesChanged)
     Q_ENUMS(GameMode)
     Q_ENUMS(GameState)
 public:
@@ -70,8 +70,6 @@ public:
 
     void showGameMenu();
 
-    int remainingNegativeCharges;
-    int remainingPositiveCharges;
     QTime time;
     int m_levelTime;
     QTimer *levelTimer;
@@ -101,16 +99,34 @@ public:
     int levelTime() {
         return m_levelTime;
     }
-    void setSlowMotion(bool on, int time);
+
+
+    void enableSlowMotion(int time);
     QPropertyAnimation *timeFactorAnimation;
 
 
+    void checkAddSpecialParticle();
+    int remainingPositiveCharges() const
+    {
+        return m_remainingPositiveCharges;
+    }
+
+    int remainingNegativeCharges() const
+    {
+        return m_remainingNegativeCharges;
+    }
+
+    void disableSlowMotion();
 signals:
     void highestLevelChanged(int);
     void levelChanged(int);
     void levelTimeChanged(int);
     void gameStateChanged(GameState);
     void gameModeChanged(GameMode);
+
+    void remainingPositiveChargesChanged(int arg);
+
+    void remainingNegativeChargesChanged(int arg);
 
 public slots:
     void advance();
@@ -126,7 +142,22 @@ public slots:
     void gameOver();
     void toggleInstructionText();
     void minimizeToDashboard();
-    void stopSlowMotion();
+
+    void setRemainingNegativeCharges(int arg)
+    {
+        if (m_remainingNegativeCharges != arg) {
+            m_remainingNegativeCharges = arg;
+            emit remainingNegativeChargesChanged(arg);
+        }
+    }
+
+    void setRemainingPositiveCharges(int arg)
+    {
+        if (m_remainingPositiveCharges != arg) {
+            m_remainingPositiveCharges = arg;
+            emit remainingPositiveChargesChanged(arg);
+        }
+    }
 
 private:
     void addEnemies();
@@ -157,6 +188,10 @@ private:
     // QML Components
     QGraphicsObject *aboutDialog;
     QGraphicsObject *mainMenu;
+
+    // charges
+    int m_remainingPositiveCharges;
+    int m_remainingNegativeCharges;
 
     void removeNegativeCharge();
     void removePositiveCharge();

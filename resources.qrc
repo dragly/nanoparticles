@@ -20,16 +20,14 @@
         <file>images/button-dashboard.png</file>
         <file>images/background-harmattan.png</file>
         <file>images/button-negative-charge.png</file>
-        <file>images/button-negative-charge.svg</file>
         <file>images/button-negative-charge-selected.png</file>
-        <file>images/button-negative-charge-selected.svg</file>
-        <file>images/button-pause.svg</file>
         <file>images/button-positive-charge.png</file>
-        <file>images/button-positive-charge.svg</file>
         <file>images/button-positive-charge-selected.png</file>
         <file>images/button-positive-charge-selected.svg</file>
         <file>images/selector-game-mode-spinner.png</file>
         <file>images/selector-game-mode-top.png</file>
         <file>images/particle-slow-motion.png</file>
+        <file>images/button-empty-charge-selected.png</file>
+        <file>images/button-empty-charge.png</file>
     </qresource>
 </RCC>
