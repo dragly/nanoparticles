@@ -32,7 +32,7 @@ Rectangle {
         Text {
             id: text1
             color: "#ffffff"
-            text: "Nanoparticles v1.0.1"
+            text: "Nanoparticles v1.99.1"
             anchors.left: parent.left
             anchors.top: parent.top
             font.pixelSize: 0.09 * root.height

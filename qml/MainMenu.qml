@@ -1,6 +1,5 @@
 import QtQuick 1.0
 import Nanoparticles 1.0
-import Qt.labs.particles 1.0
 
 
 Item {

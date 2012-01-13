@@ -69,6 +69,7 @@ DEPLOYMENTFOLDERS = folder_01
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH =
 
+# Icon settings
 symbian {
     ICON = nanoparticles.svg
 
@@ -80,6 +81,8 @@ symbian {
     #TARGET.CAPABILITY += ReadUserData WriteUserData UserEnvironment NetworkServices # added to avoid crash
     # cone.lib, eikcore.lib and avkon.lib Symbian libraries
     LIBS += -lcone -leikcore -lavkon
+} else:macx {
+    ICON = nanoparticles.icns
 }
 
 RESOURCES += \
