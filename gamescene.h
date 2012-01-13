@@ -28,6 +28,7 @@ class GameScene : public QGraphicsScene
     Q_PROPERTY(int remainingSpecialCharges READ remainingSpecialCharges NOTIFY remainingSpecialChargesChanged)
     Q_PROPERTY(QList<int> *specialParticles READ specialParticles)
     Q_PROPERTY(Selection selectedType READ selectedType WRITE setSelectedType NOTIFY selectedTypeChanged)
+    Q_PROPERTY(bool levelUpgrade READ levelUpgrade WRITE setLevelUpgrade NOTIFY levelUpgradeChanged)
     Q_ENUMS(GameMode)
     Q_ENUMS(GameState)
     Q_ENUMS(Selection)
@@ -153,6 +154,11 @@ public:
         return m_viewMode;
     }
 
+    bool levelUpgrade() const
+    {
+        return m_levelUpgrade;
+    }
+
 signals:
     void highestLevelChanged(int);
     void levelChanged(int);
@@ -171,6 +177,8 @@ signals:
     void versionChanged(QString arg);
 
     void viewModeChanged(ViewMode arg);
+
+    void levelUpgradeChanged(bool arg);
 
 public slots:
     void enableSlowMotion(int time);
@@ -219,6 +227,14 @@ public slots:
     }
     void setViewMode(ViewMode arg);
 
+    void setLevelUpgrade(bool arg)
+    {
+        if (m_levelUpgrade != arg) {
+            m_levelUpgrade = arg;
+            emit levelUpgradeChanged(arg);
+        }
+    }
+
 private:
     void addEnemies();
     int m_highestLevel;
@@ -261,6 +277,7 @@ private:
     Selection m_selectedType;
     QString m_version;
     ViewMode m_viewMode;
+    bool m_levelUpgrade;
 };
 Q_DECLARE_METATYPE(GameScene::GameMode)
 Q_DECLARE_METATYPE(GameScene::GameState)

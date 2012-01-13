@@ -226,6 +226,7 @@ void GameScene::resized() {
 void GameScene::updateLevelTime() {
     setLevelTime(levelTime() - 1);
     if(levelTime() < 1) {
+        setLevelUpgrade(true);
         setGameState(GamePaused);
         if(isDemo() && m_level >= 8) {
 
@@ -317,6 +318,10 @@ void GameScene::levelDown()
 
 void GameScene::setGameState(GameState gameState) {
     qDebug() << "Game state set " << gameState;
+    // If the gameState was game over, restart the level
+    if(m_gameState == GameOver && gameState == GameRunning) {
+        setLevel(level());
+    }
     this->m_gameState = gameState;
     if(gameState == GameStarted) {
         pauseGame();
@@ -328,6 +333,7 @@ void GameScene::setGameState(GameState gameState) {
         pauseGame();
     }
     if(gameState == GameRunning) {
+        setLevelUpgrade(false);
         continueGame();
     }
     if(gameState == GameInstructionPause) {

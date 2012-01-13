@@ -117,7 +117,11 @@ Item {
             state = "paused"
             console.log("Game starteda")
         } else if(gameState == GameScene.GamePaused) {
-            statusText.text = "Paused"
+            if(gameScene.levelUpgrade) {
+                statusText.text = "Level up!"
+            } else {
+                statusText.text = "Paused"
+            }
             state = "paused"
             console.log("Game pauseda")
         } else if(gameState == GameScene.GameOver) {

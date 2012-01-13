@@ -52,7 +52,7 @@ void GameView::changeEvent(QEvent *event) {
     qDebug() << "Some event happened" << event->type();
     if(event->type()==QEvent::ActivationChange) {
         if(!isActiveWindow()) {
-            gameScene.pauseGame();
+            gameScene->setGameState(GameScene::GamePaused);
         }
     }
 #endif
