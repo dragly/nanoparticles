@@ -15,19 +15,23 @@ GameView::GameView() :
     qDebug() << "Setting scene";
     setScene(&gameScene);
     qDebug() << "Scene set";
+//#ifndef Q_OS_ANDROID
     setRenderHint(QPainter::HighQualityAntialiasing,true);
     setRenderHint(QPainter::SmoothPixmapTransform,true);
-#ifdef OS_IS_HARMATTAN
-    setBackgroundBrush(QImage(":/images/background-harmattan.png"));
-#else
-    setBackgroundBrush(QImage(":/images/background.png"));
-#endif
+//#endif
+//#ifdef OS_IS_HARMATTAN
+//    setBackgroundBrush(QImage(":/images/background-harmattan.png"));
+//#else
+//    setBackgroundBrush(QImage(":/images/background.png"));
+//#endif
     setCacheMode(QGraphicsView::CacheBackground);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     setWindowTitle(QT_TRANSLATE_NOOP(QGraphicsView, "Nanoparticles"));
+#ifndef Q_OS_MAC
     setStyleSheet("QGraphicsView { border-style: none; }");
+#endif
     setInteractive(true);
     setFrameShape(QFrame::NoFrame);
     qDebug() << "View setup done";

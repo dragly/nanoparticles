@@ -8,10 +8,17 @@
 class Particle : public GameObject
 {
 public:
-    Particle();
+    Particle(GameScene *gameScene);
 
     enum { Type = UserType + 1 };
-    enum { ParticleSimple, ParticlePlayer, ParticleEnemy };
+    enum ParticleType { ParticleSimple,
+                        ParticlePlayer,
+                        ParticleEnemy,
+                        ParticleSlowMotion,
+                        ParticleRepellent,
+                        ParticleGlowing,
+                        ParticleTransfer
+                      };
 
     int type() const
     {
@@ -21,7 +28,8 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                     QWidget *widget);
-    void setCharge(float charge) {this->charge = charge; originalCharge = charge;}
+    double charge() {return m_charge; }
+    void setCharge(float charge) {this->m_charge = charge; originalCharge = charge;}
     void setVelocity(QVector2D velocity) {this->_velocity = velocity;}
     QVector2D velocity() {return _velocity;}
 
@@ -45,11 +53,20 @@ public:
 
     QRectF boundingRect() const;
 
+    bool matchParticles(Particle *particle1, Particle *particle2, ParticleType type1, ParticleType type2);
+    bool hasCollidedWithPlayer;
+    int createdTime() {
+        return m_createdTime;
+    }
+    void setCreatedTime(int createdTime) {
+        m_createdTime = createdTime;
+    }
+
 protected:
     void advance(int step);
 
 private:
-    double charge;
+    double m_charge;
     QVector2D _velocity;
     QImage negativeImage;
     QImage positiveImage;
@@ -59,6 +76,7 @@ private:
     bool _electroSticky;
     bool _sticky;
     qreal originalCharge;
+    int m_createdTime;
 
 };
 
