@@ -19,5 +19,18 @@
         <file>images/button-info.png</file>
         <file>images/button-dashboard.png</file>
         <file>images/background-harmattan.png</file>
+        <file>images/button-negative-charge.png</file>
+        <file>images/button-negative-charge-selected.png</file>
+        <file>images/button-positive-charge.png</file>
+        <file>images/button-positive-charge-selected.png</file>
+        <file>images/button-positive-charge-selected.svg</file>
+        <file>images/selector-game-mode-spinner.png</file>
+        <file>images/selector-game-mode-top.png</file>
+        <file>images/particle-slow-motion.png</file>
+        <file>images/button-empty-charge-selected.png</file>
+        <file>images/button-empty-charge.png</file>
+        <file>images/particle-glowing.png</file>
+        <file>images/button-special-charge-selected.png</file>
+        <file>images/button-special-charge.png</file>
     </qresource>
 </RCC>

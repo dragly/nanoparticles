@@ -1,38 +1,38 @@
 #include "gamescene.h"
 #include "particle.h"
-#include "button.h"
 
 #include <QDebug>
 #include <QtDeclarative/QDeclarativeEngine>
 #include <QtDeclarative/QDeclarativeComponent>
+#include <QtDeclarative/QDeclarativeContext>
+#include <QtDeclarative>
 
 #ifdef Q_WS_MAEMO_5
 #include <QtDBus/QtDBus>
 #endif
 
 /* TODO.
-    // Finishing
+    // Enhanced version (2.0)
     - Add copyright/version window.
-    - Publish to Ovi Store
-    - Add window focus lost event for Symbian
+    - New enemy particles (megacharges)
+    - Instructions for party mode
+    - Make it possible to place particles that are sticky after level 15 (or something)
 
-    // Demo version (1.1)
+    // Demo version (2.1)
     - Add link to Ovi Store when demo is over.
 
-    // To be tested (1.5)
-    - Test with Meego SDK
-    - Test with Android NDK (what about OpenGL? - how is the performance without it?)
+    // To be tested (2.5)
     - Draw using FullViewPortUpdate - does it give any performance improvements?
-
-    // Enhanced version (2.0)
-    - New particles to play with
-    - New enemy particles (megacharges)
-    - Dummy particles (just in the way and sticky, but not dangerous)
-    - Make it possible to place particles that are sticky after level 15 (or something)
     - Use health bar instead immediate death.
 */
 // scaling
 const qreal globalScale = 2.5;
+const qreal playerScale = 1.3;
+const qreal enemyScale = 1.35;
+const qreal simpleScale = 1.2;
+const qreal slowMotionScale = 2.0;
+const qreal repellentScale = 1.1;
+
 // charges
 const qreal enemyCharge = -7.8;
 const qreal playerCharge = 7.5;
@@ -43,10 +43,21 @@ const qreal levelChargeFactor = 0.00036;
 const qreal gameWidth = 84;
 
 const qreal incrementChargeNum = 1.1; // will be converted to int after multiplication with level number
+const qreal incrementChargeNumParty = 0.5; // will be converted to int after multiplication with level number
 const int baseChargeNum = 4;
+const int baseChargeNumPositiveParty = 20;
+const int baseChargeNumNegativeParty = 1;
 // time
 const int baseTime = 10;
 const qreal timeIncrement = 0.9;
+const int baseTimeParty = 30;
+const qreal timeIncrementParty = 2;
+const qreal normalTimeFactor = 1.0;
+const qreal slowMotionTimeFactor = 0.3;
+
+// party mode settings
+const int partyDisintegrationTime = 10000;
+const int partyDisintegrationEffectTime = 2000;
 
 // z values
 const int zInGameMenu = 91;
@@ -56,46 +67,27 @@ const int zMainMenu = 101;
 const int zMainMenuBackground = 100;
 
 // in game gui
-const QVector2D positiveButtonPosition(92,35);
-const QVector2D negativeButtonPosition(92,55);
-const QVector2D pauseGameButtonPosition(92,10);
-const QVector2D continueButtonPosition(50,50);
-const QVector2D retryButtonPosition(70,50);
-
-#ifdef OS_IS_HARMATTAN
-const QVector2D aboutDialogButtonPosition(92,10);
-#else
-const QVector2D aboutDialogButtonPosition(92,35);
-#endif
-
-const QVector2D exitButtonPosition(92,10);
-const QVector2D dashboardButtonPosition(8,10);
-const QVector2D prevLevelButtonPosition(60,75);
-const QVector2D nextLevelButtonPosition(40,75);
-const qreal negativeButtonY = 55;
-const qreal timerTextFontSize = 8;
 const qreal instructionTextFontSize = 7;
-const qreal chargesLeftFontSize = 6;
-const qreal timerTextY = 75;
-
 
 GameScene::GameScene(QObject *parent) :
     QGraphicsScene(parent)
 {
+    qRegisterMetaType<GameScene::GameMode>("GameMode");
+    qRegisterMetaType<GameScene::GameState>("GameState");
+#ifdef Q_OS_ANDROID
+    qDebug() << "Force syncing settings";
+    settings.sync();
+#endif
     if(isDemo()) {
         qDebug() << "This is the demo version";
     } else {
         qDebug() << "This is the full version";
     }
-    _gameState = GameRunning;
-    _dt = 0;
+    m_gameState = GameRunning;
+    m_dt = 0;
     firstStep = true;
 
-    selectedParticleType = ParticlePositive;
-
-    // load settings
-    level = settings.value("highestLevel", 1).toInt();
-    qDebug() << "Highest level is" << level;
+    setSelectedType(ParticlePositive);
 
     // load images
     selectionImage = QImage(":/images/selection-overlay.png");
@@ -104,97 +96,29 @@ GameScene::GameScene(QObject *parent) :
     neutralImage = QImage(":/images/particle-neutral.png");
     playerImage = QImage(":/images/particle-player.png");
     playerOverchargedImage = QImage(":/images/particle-player-overcharged.png");
+    glowingImage = QImage(":/images/particle-glowing.png");
     enemyImage = QImage(":/images/particle-enemy.png");
+    slowMotionImage = QImage(":/images/particle-slow-motion.png");
 
-    setSceneRect(0, 0, 400, 300); // just for init
+    setSceneRect(0, 0, 800, 480); // just for init, should be chosen by the platform
     setItemIndexMethod(QGraphicsScene::NoIndex);
-    // Add in-game menu
-    positiveButton = new Button();
-    addItem(positiveButton);
-    positiveButton->setPosition(positiveButtonPosition);
-    positiveButton->setScale(16);
-    positiveButton->setButtonType(Button::ButtonPositive);
-    positiveButton->setZValue(zInGameMenu);
-    positiveButton->setSelected(true);
-
-    negativeButton = new Button();
-    addItem(negativeButton);
-    negativeButton->setScale(16);
-    negativeButton->setPosition(negativeButtonPosition);
-    negativeButton->setButtonType(Button::ButtonNegative);
-    negativeButton->setZValue(zInGameMenu);
-
-    pauseGameButton = new Button();
-    prepareButton(pauseGameButton);
-    pauseGameButton->setScale(15);
-    pauseGameButton->setPosition(pauseGameButtonPosition);
-    pauseGameButton->setImage(":/images/button-pause.png");
-    pauseGameButton->setZValue(zInGameMenu);
 
     // timer text (level time left)
     QFont font;
 #ifndef OS_IS_ANDROID
     font.setFamily("NovaSquare");
 #endif
-    timerText = addText("",font);
-    timerText->setDefaultTextColor(QColor(250,250,250,220));
-    timerText->setZValue(zInGameMenu);
     // instruction text
     instructionText = addText("",font);
     instructionText->setDefaultTextColor(QColor(250,250,250,220));
     instructionText->setZValue(zMainMenu);
     instructionText->hide();
-    // instruction text
-    levelText = addText("",font);
-    levelText->setDefaultTextColor(QColor(250,250,250,220));
-    levelText->setZValue(zMainMenu);
-    levelText->hide();
-
-    remainingPositiveChargesText = addText("",font);
-    remainingPositiveChargesText->setDefaultTextColor(QColor(250,250,250,220));
-    remainingPositiveChargesText->setZValue(zInGameMenu);
-
-    remainingNegativeChargesText = addText("",font);
-    remainingNegativeChargesText->setDefaultTextColor(QColor(250,250,250,220));
-    remainingNegativeChargesText->setZValue(zInGameMenu);
     // end add in-game menu
 
-    // Game menu background
-    gameMenuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
-    gameMenuBackgroundRect->show();
-    gameMenuBackgroundRect->setOpacity(0.7);
-    gameMenuBackgroundRect->setZValue(zInGameBackground);
-    // Main menu background
-    QPixmap menuBackgroundPixmap(":/images/blackback.png");
-    menuBackgroundRect = addPixmap(menuBackgroundPixmap);
-    menuBackgroundRect->setScale(1000);
-
-//    menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
-    menuBackgroundRect->show();
-    menuBackgroundRect->setOpacity(0.7);
-    menuBackgroundRect->setZValue(zMainMenuBackground);
+    //    menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
     //    menuBackgroundBlur.setBlurRadius(toFp(2));
     //    menuBackgroundRect->setGraphicsEffect(&menuBackgroundBlur);
 
-    continueButton = new Button();
-    prepareButton(continueButton);
-    continueButton->setScale(30);
-    continueButton->setPosition(continueButtonPosition);
-    continueButton->setImage(":/images/button-continue.png");
-
-    retryButton = new Button();
-    prepareButton(retryButton);
-    retryButton->setPosition(retryButtonPosition);
-    retryButton->setScale(14);
-    retryButton->hide();
-    retryButton->setImage(":/images/button-retry.png");
-
-    aboutDialogButton = new Button();
-    prepareButton(aboutDialogButton);
-    aboutDialogButton->setPosition(aboutDialogButtonPosition);
-    aboutDialogButton->setScale(14);
-    aboutDialogButton->hide();
-    aboutDialogButton->setImage(":/images/button-info.png");
 
 #ifdef Q_WS_MAEMO_5
     dashboardButton = new Button();
@@ -204,62 +128,42 @@ GameScene::GameScene(QObject *parent) :
     dashboardButton->setScale(14);
 #endif
 
-    exitButton = new Button();
-    prepareButton(exitButton);
-    exitButton->setPosition(exitButtonPosition);
-    exitButton->setImage(":/images/button-exit.png");
+    // Background image
+    QPixmap backgroundPixmap(":/images/background.png");
+    backgroundImage = this->addPixmap(backgroundPixmap);
+
+    // Main menu
+    QDeclarativeEngine *engine = new QDeclarativeEngine;
+#ifdef Q_OS_ANDROID
+    qDebug() << "Setting base URL for Android to /";
+    engine->setBaseUrl(QUrl::fromLocalFile("/"));
+#endif
+    QDeclarativeComponent mainMenuComponent(engine, QUrl::fromLocalFile(adjustPath("qml/MainMenu.qml")));
+
+    engine->rootContext()->setContextProperty("contextGameScene", this);
+    mainMenu = qobject_cast<QGraphicsObject *>(mainMenuComponent.create());
+    qDebug() << "Component errors:\n" << mainMenuComponent.errors();
+    qDebug() << "End component errors";
+    // Connect the QML back to this class
+    addItem(mainMenu);
+    mainMenu->setZValue(1000);
+    m_specialParticles = new QList<int>;
 
 #ifdef OS_IS_HARMATTAN
-    exitButton->hide();
+    mainMenu->setProperty("exit.visible", false);
 #endif
-    // next/prev level
-    prevLevelButton = new Button();
-    if(level <= 1) {
-        prevLevelButton->hide();
-    }
-    prepareButton(prevLevelButton);
-    prevLevelButton->setPosition(prevLevelButtonPosition);
-    prevLevelButton->setImage(":/images/button-leveldown.png");
 
-    nextLevelButton = new Button();
-    nextLevelButton->hide();
-    prepareButton(nextLevelButton);
-    nextLevelButton->setPosition(nextLevelButtonPosition);
-    nextLevelButton->setImage(":/images/button-levelup.png");
-
-    // About dialog
-    QDeclarativeEngine *engine = new QDeclarativeEngine;
-    QDeclarativeComponent component(engine, QUrl::fromLocalFile(adjustPath("qml/AboutDialog.qml")));
-    aboutDialog = qobject_cast<QGraphicsObject *>(component.create());
-    qDebug() << "Component errors:\n" << component.errors();
-    qDebug() << "End component errors";
-    addItem(aboutDialog);
-    aboutDialog->hide();
-    aboutDialog->setProperty("opacity", 0);
-    aboutDialog->setZValue(10000);
+#ifdef OS_IS_SYMBIAN
     qreal screenWidth = QApplication::desktop()->screenGeometry().width();
     qreal screenHeight = QApplication::desktop()->screenGeometry().height();
     if(screenWidth  > screenHeight) { // Symbian hack
-        aboutDialog->setProperty("width", screenWidth);
-        aboutDialog->setProperty("height", screenHeight);
+        mainMenu->setProperty("width", screenWidth);
+        mainMenu->setProperty("height", screenHeight);
     } else {
-        aboutDialog->setProperty("width", screenHeight);
-        aboutDialog->setProperty("height", screenWidth);
+        mainMenu->setProperty("width", screenHeight);
+        mainMenu->setProperty("height", screenWidth);
     }
-    // menu text
-    QFont menuFont;
-    QColor menuFontColor(250,250,250,245);
-    menuFont.setFamily("NovaSquare");
-    // menu title text
-    if(isDemo()) {
-        menuTitleText = addText("<center>Nanoparticles demo</center>", menuFont);
-    } else {
-        menuTitleText = addText("<center>Nanoparticles</center>", menuFont);
-    }
-    menuTitleText->setHtml("<center>Nanoparticles</center>");
-    menuTitleText->setDefaultTextColor(menuFontColor);
-    menuTitleText->setZValue(zMainMenu);
-    // end add menu
+#endif
 
     // set up timer
     levelTimer = new QTimer(this);
@@ -270,30 +174,25 @@ GameScene::GameScene(QObject *parent) :
     connect(instructionTimer, SIGNAL(timeout()), SLOT(toggleInstructionText()));
     // end set up timers
 
+    // Set up animations
+    timeFactorAnimation = new QPropertyAnimation(this, "timeFactor");
+
+    // load settings
+    setGameMode((GameMode)settings.value("gameMode", ModeClassic).toInt());
+    qDebug() << "Highest level is" << m_level;
+
     setGameState(GameStarted);
 
-    // add button signal connections
-    connect(positiveButton, SIGNAL(clicked()), SLOT(clickedPositiveButton()));
-    connect(negativeButton, SIGNAL(clicked()), SLOT(clickedNegativeButton()));
-    connect(continueButton, SIGNAL(clicked()), SLOT(continueGame()));
-    connect(pauseGameButton, SIGNAL(clicked()), SLOT(pauseGame()));
-    connect(retryButton, SIGNAL(clicked()), SLOT(retryGame()));
-    connect(aboutDialogButton, SIGNAL(clicked()), SLOT(showAboutDialog()));
-    connect(exitButton, SIGNAL(clicked()), SLOT(exitGame()));
 #ifdef Q_WS_MAEMO_5
     connect(dashboardButton, SIGNAL(clicked()), SLOT(minimizeToDashboard()));
 #endif
-    // next/prev level
-    connect(nextLevelButton, SIGNAL(clicked()), SLOT(clickedNextLevelButton()));
-    connect(prevLevelButton, SIGNAL(clicked()), SLOT(clickedPrevLevelButton()));
-
     // just init all in the resize() function
     resized();
 
     // Start level and start timers
-    startLevel(level);
+    //    startLevel(level());
 
-    QObject::connect(&timer, SIGNAL(timeout()), SLOT(advance()));
+    connect(&timer, SIGNAL(timeout()), SLOT(advance()));
     timer.start(10);
     time.start();
     qDebug() << "Timers started!";
@@ -301,19 +200,21 @@ GameScene::GameScene(QObject *parent) :
 
 QString GameScene::adjustPath(const QString &path)
 {
+#ifdef Q_OS_ANDROID
+    return path;
+#endif
 #ifdef Q_OS_UNIX
 #ifdef Q_OS_MAC
     if (!QDir::isAbsolutePath(path))
         return QCoreApplication::applicationDirPath()
                 + QLatin1String("/../Resources/") + path;
 #else
-    const QString pathInInstallDir = QCoreApplication::applicationDirPath()
-        + QLatin1String("/../") + path;
-    if (pathInInstallDir.contains(QLatin1String("opt"))
-            && pathInInstallDir.contains(QLatin1String("bin"))
-            && QFileInfo(pathInInstallDir).exists()) {
+    QString pathInInstallDir;
+    const QString applicationDirPath = QCoreApplication::applicationDirPath();
+    pathInInstallDir = QString::fromAscii("%1/../%2").arg(applicationDirPath, path);
+
+    if (QFileInfo(pathInInstallDir).exists())
         return pathInInstallDir;
-    }
 #endif
 #endif
     return path;
@@ -324,117 +225,84 @@ bool GameScene::isDemo() {
     // should use the define check everywhere instead of letting crackers
     // easily modify this variable in memory. But hey, this is an open source game.
     // They could just have rebuilt the source if they wanted to :)
-    #ifdef ISDEMO
+#ifdef ISDEMO
     return true;
-    #else
+#else
     return false;
-    #endif
-}
-
-void GameScene::prepareButton(Button *button) {
-    addItem(button);
-    button->setScale(16);
-    button->setZValue(zMainMenu);
-    button->setButtonType(Button::StandardButton);
+#endif
 }
 
 void GameScene::resized() {
-    foreach(QGraphicsItem* item, items()) {
-        if(GameObject* button = (GameObject*)item) {
-            if(button == negativeButton || button == positiveButton || button == pauseGameButton || button == exitButton) {
-                button->setPos(toFp(button->position().x(),false),toFp(button->position().y(),true));
-            } else {
-                button->setPos(toFp(button->position().x()),toFp(button->position().y(),true));
-            }
-        }
-    }
     //menuBackgroundRect->setRect(toFp(0), toFp(0), toFp(100), toFp(100));
-    gameMenuBackgroundRect->setRect(toFp(gameWidth), toFp(0), toFp(100 - gameWidth), toFp(100));
-    timerText->setPos(toFp(gameWidth,false),toFp(timerTextY,true));
-    timerText->setTextWidth(toFp(100 - gameWidth));
+    mainMenu->setProperty("width", width());
+    mainMenu->setProperty("height", height());
+
     instructionText->setPos(toFp(5),toFp(5));
     instructionText->setTextWidth(toFp(gameWidth));
-    remainingPositiveChargesText->setPos(toFp(gameWidth,false),toFp(positiveButtonPosition.y() - chargesLeftFontSize * 0.8,true));
-    remainingPositiveChargesText->setTextWidth(toFp(100 - gameWidth));
-    remainingNegativeChargesText->setPos(toFp(gameWidth,false),toFp(negativeButtonPosition.y() - chargesLeftFontSize * 0.8,true));
-    remainingNegativeChargesText->setTextWidth(toFp(100 - gameWidth));
-    // Reisze gui font
-    QFont timerFont = menuTitleText->font();
-    timerFont.setPixelSize((int)toFp(timerTextFontSize,true));
-    timerText->setFont(timerFont);
+
+    QPixmap backgroundPixmap(":/images/background.png");
+    QPixmap scaledBackgroundPixmap;
+    // check the ratio of the pixmap against the ratio of our scene
+    if(backgroundPixmap.width() / backgroundPixmap.height() > width() / height()) {
+        scaledBackgroundPixmap = backgroundPixmap.scaledToHeight(height());
+    } else {
+        scaledBackgroundPixmap = backgroundPixmap.scaledToWidth(width());
+    }
+    this->removeItem(backgroundImage);
+    delete backgroundImage;
+    backgroundImage = addPixmap(scaledBackgroundPixmap);
+    backgroundImage->setZValue(-1000);
+
     // Reisze gui font
     QFont instructionFont = instructionText->font();
     instructionFont.setPixelSize((int)toFp(instructionTextFontSize,true));
     instructionText->setFont(instructionFont);
-    QFont chargesLeftFont = menuTitleText->font();
-    chargesLeftFont.setPixelSize((int)toFp(chargesLeftFontSize,true));
-    remainingPositiveChargesText->setFont(chargesLeftFont);
-    remainingNegativeChargesText->setFont(chargesLeftFont);
-    // Menu title
-    menuTitleText->setPos(0,toFp(15,true));
-    menuTitleText->setTextWidth(toFp(100));
-    QFont menuFont = menuTitleText->font();
-    menuFont.setPixelSize((int)toFp(10,true));
-    menuTitleText->setFont(menuFont);
-    // Level text
-    levelText->setPos(toFp(0),toFp(5));
-    levelText->setTextWidth(toFp(100));
-    QFont levelFont = levelText->font();
-    levelFont.setPixelSize((int)toFp(6,true));
-    levelText->setFont(levelFont);
 }
 
 void GameScene::updateTime() {
-    levelTime--;
-    timerText->setHtml("<center>" + QString::number(levelTime) + "</center>");
-    if(levelTime < 1) {
+    setLevelTime(levelTime() - 1);
+    if(levelTime() < 1) {
         pauseGame();
-        if(isDemo() && level >= 8) {
-            menuTitleText->setHtml("<center>End of demo.</center>");
-            levelText->setHtml("<center>Buy game in <a href='http://ovi.com'>Ovi Store</a></center>");
-            continueButton->hide();
-            nextLevelButton->hide();
+        if(isDemo() && m_level >= 8) {
+
         } else {
-            menuTitleText->setHtml("<center>Level up!</center>");
-            startLevel(level + 1);
+            setLevel(m_level + 1);
         }
-        menuTitleText->show();
-        if(settings.value("highestLevel", 1).toInt() < level) {
-            settings.setValue("highestLevel", level);
+        if(highestLevel() < level()) {
+            setHighestLevel(level());
         }
+        if(gameMode() == GameScene::ModeClassic) {
+            if(settings.value("highestLevel", 1).toInt() < level()) {
+                settings.setValue("highestLevel", level());
+            }
+        } else {
+            if(settings.value("highestLevelParty", 1).toInt() < level()) {
+                settings.setValue("highestLevelParty", level());
+            }
+        }
+#ifdef Q_OS_ANDROID
+        qDebug() << "Force syncing settings";
+        settings.sync();
+#endif
     }
 }
 
 void GameScene::continueGame() {
-    timerText->setHtml("<center>" + QString::number(levelTime) + "</center>");
     if(gameState() == GameOver) {
-        startLevel(level);
-    }
-    if(level == 1) {
-        instructionTimer->start();
+        setLevel(m_level);
     }
     setGameState(GameRunning);
-    // show pause button
-    pauseGameButton->show();
-    negativeButton->show();
-    positiveButton->show();
-    timerText->show();
-    remainingPositiveChargesText->show();
-    remainingNegativeChargesText->show();
-    // hide main menu
-    aboutDialogButton->hide();
-    levelText->hide();
-    menuBackgroundRect->hide();
-    continueButton->hide();
-    retryButton->hide();
-    exitButton->hide();
+    if(gameMode() == ModeClassic && level() == 1) {
+        toggleInstructionText();
+    } else if(gameMode() == ModeParty && level() == 7) {
+        toggleInstructionText();
+    } else if(gameMode() == ModeParty && level() == 14) {
+        toggleInstructionText();
+    }
+
 #ifdef Q_WS_MAEMO_5
-    dashboardButton->hide();
+    // TODO: Reimplement dashboard button hiding in QML
 #endif
-    nextLevelButton->hide();
-    prevLevelButton->hide();
-    // hide main menu text
-    menuTitleText->hide();
 
     // start timer
     levelTimer->start();
@@ -452,40 +320,21 @@ void GameScene::pauseGame() {
         menuTime.restart(); // start the timer that will avoid clicking on the quit button after level up or failed
         wasGameRunning = true;
         setGameState(GamePaused);
-        menuTitleText->setHtml("<center>Paused</center>");
-        menuTitleText->show();
+        // show main menu
+        mainMenu->show();
+        mainMenu->setProperty("state", "paused");
     }
     if(gameState() != GameStarted) {
-        retryButton->show();
+
     }
-    if(gameState() != GameOver) {
-        continueButton->show();
+    if(gameState() == GameOver) {
+        // show main menu
+        mainMenu->show();
     }
     instructionTimer->stop();
-    menuBackgroundRect->show();
-    // hide pause button
-    pauseGameButton->hide();
-    negativeButton->hide();
-    positiveButton->hide();
-//    timerText->hide();
-    remainingPositiveChargesText->hide();
-    remainingNegativeChargesText->hide();
 
-    // show main menu
-    levelText->show();
-    if(settings.value("highestLevel",1).toInt() > level) {
-        nextLevelButton->show();
-    } else {
-        nextLevelButton->hide();
-    }
-    if(level > 1) {
-        prevLevelButton->show();
-    } else {
-        prevLevelButton->hide();
-    }
-    aboutDialogButton->show();
 #ifndef OS_IS_HARMATTAN
-    exitButton->show();
+    //    exitButton->show();
 #endif
 
 #ifdef Q_WS_MAEMO_5
@@ -494,34 +343,20 @@ void GameScene::pauseGame() {
     // pause timer
     levelTimer->stop();
     qDebug() << "Game paused";
-    // Animation
-    // avoid animation if we are just changing levels. I.e., only animate if the game was running earlier.
-    if(wasGameRunning) {
-        animateMenuIn();
-    }
     // Stop the timer to save CPU power (hopefully this won't lock up anything else)
     timer.stop();
     // end animation
 }
 
-void GameScene::showAboutDialog() {
-    aboutDialog->show();
-    aboutDialog->setProperty("opacity", 1);
-}
-
 void GameScene::gameOver() {
-    animateMenuIn();
     setGameState(GameOver);
-    menuBackgroundRect->show();
-    menuTitleText->setHtml("<center>Level Failed!</center>");
-    menuTitleText->show();
     pauseGame();
 
     qDebug() << "Game over";
 }
 
 void GameScene::retryGame() {
-    startLevel(level);
+    setLevel(m_level);
     continueGame();
 }
 
@@ -529,80 +364,31 @@ void GameScene::exitGame() {
     QApplication::quit();
 }
 
-#ifdef Q_WS_MAEMO_5
 void GameScene::minimizeToDashboard() {
+#ifdef Q_WS_MAEMO_5
     QDBusConnection connection = QDBusConnection::sessionBus();
     QDBusMessage message = QDBusMessage::createSignal("/","com.nokia.hildon_desktop","exit_app_view");
     connection.send(message);
-}
-
+#else
+    qDebug() << "This function is not implemented on anything but Maemo5.";
 #endif
-
-void GameScene::animateMenuIn() {
-    QList<QObject*> animatedObjectsIn;
-    animatedObjectsIn.append(exitButton);
-#ifdef Q_WS_MAEMO_5
-    animatedObjectsIn.append(dashboardButton);
-#endif
-    animatedObjectsIn.append(nextLevelButton);
-    animatedObjectsIn.append(prevLevelButton);
-    //    animatedObjectsIn.append(menuBackgroundRect);
-    animatedObjectsIn.append(menuTitleText);
-    animatedObjectsIn.append(retryButton);
-    animatedObjectsIn.append(continueButton);
-    animatedObjectsIn.append(levelText);
-    animatedObjectsIn.append(aboutDialogButton);
-    QList<QObject*> animatedObjectsOut;
-
-    foreach(QObject* animObject, animatedObjectsIn) {
-        QPropertyAnimation *animation = new QPropertyAnimation(animObject, "opacity", this);
-        animation->setStartValue(0);
-        animation->setEndValue(1);
-        animation->setDuration(800);
-        animation->setEasingCurve(QEasingCurve::InOutSine);
-        animation->start(QAbstractAnimation::DeleteWhenStopped);
-    }
 }
 
-void GameScene::clickedNextLevelButton() {
-    startLevel(level + 1);
-    pauseGame();
-}
-
-void GameScene::clickedPrevLevelButton() {
-    startLevel(level - 1);
-    pauseGame();
-}
-
-void GameScene::clickedNegativeButton() {
-    selectedParticleType = ParticleNegative;
-    qDebug() << "Clicked negative";
-    positiveButton->setSelected(false);
-    negativeButton->setSelected(true);
-}
-
-void GameScene::clickedPositiveButton() {
-    qDebug() << "Clicked positive";
-    selectedParticleType = ParticlePositive;
-    positiveButton->setSelected(true);
-    negativeButton->setSelected(false);
-}
-
-void GameScene::setGameState(int gameState) {
-    this->_gameState = gameState;
+void GameScene::setGameState(GameState gameState) {
+    this->m_gameState = gameState;
     if(gameState == GameStarted) {
         pauseGame();
     }
+    emit gameStateChanged(gameState);
 }
 
-void GameScene::startLevel(int level) {
+void GameScene::setLevel(int level) {
+    m_level = level;
+    emit levelChanged(level);
     qDebug() << "Starting level" << level;
 
-    qreal enemyChargeLevel = enemyCharge * (1 + levelChargeFactor * pow((double)level,2));
-
-    instructionNumber = 1; // if there are instructions, start with the first one
-
-    this->level = level;
+    lastSpecialSpawnTime = 0;
+    setTimeFactor(normalTimeFactor);
 
     foreach(QGraphicsItem *item, items()) {
         if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
@@ -610,44 +396,72 @@ void GameScene::startLevel(int level) {
         }
     }
 
-    // reset buttons
-    positiveButton->setEnabled(true);
-    negativeButton->setEnabled(true);
-
-    // set level text
-    levelText->setHtml("<center>Level " + QString::number(level) + "</center>");
 
     // Start instructions if on level 1
-    if(level == 1) {
-        instructionTimer->setInterval(2000);
+    if((gameMode() == ModeClassic && level == 1) || (gameMode() == ModeParty && (level == 1 || level == 7 || level == 14))) {
+        instructionTimer->setInterval(500);
+        instructionNumber = 1; // if there are instructions, start with the first one
     }
 
-    // set number of charges to use
-    if(level == 1) {
-        remainingPositiveCharges = 20;
-        remainingNegativeCharges = 20;
+    if(gameMode() == ModeClassic && level == 1) {
+
+        setRemainingPositiveCharges(20);
+        setRemainingNegativeCharges(20);
 
         // reset time
-        levelTime = 50;
+        setLevelTime(50);
+    } else if(gameMode() == ModeClassic) {
+        setLevelTime(baseTime + (int)(timeIncrement * level));
+        setRemainingPositiveCharges(baseChargeNum + (int)(incrementChargeNum * level));
+        setRemainingNegativeCharges(baseChargeNum + (int)(incrementChargeNum * level));
+    } else if(gameMode() == ModeParty) {
+        setLevelTime(baseTimeParty + (int)(timeIncrementParty * level));
+        setRemainingPositiveCharges(baseChargeNumPositiveParty + (int)(incrementChargeNumParty * level));
+        setRemainingNegativeCharges(baseChargeNumNegativeParty + (int)(incrementChargeNumParty * level));
+        specialParticles()->clear();
+        if(level == 14) {
+            specialParticles()->append(Particle::ParticleTransfer);
+        }
+        setRemainingSpecialCharges(specialParticles()->count());
     } else {
-        // reset time
-        levelTime = baseTime + (int)(timeIncrement * level);
-        remainingPositiveCharges = baseChargeNum + (int)(incrementChargeNum * level);
-        remainingNegativeCharges = baseChargeNum + (int)(incrementChargeNum * level);
+        qWarning() << "Some unknown mode is set!";
     }
 
     // set text of remaining charges
     updateRemainingChargeText();
 
     // add player
-    Particle *player = new Particle();
+    player = new Particle(this);
     addItem(player);
     player->setCharge(playerCharge * (1 + levelChargeFactor * pow((double)level,2)));
     player->setParticleType(Particle::ParticlePlayer);
     player->setPosition(QVector2D(gameRectF().width() / 2,gameRectF().height() / 2));
-    player->setScale(1.3 * globalScale);
+    player->setScale(playerScale * globalScale);
 
     // add enemies
+    addEnemies();
+}
+
+void GameScene::enableSlowMotion(int time)
+{
+    qDebug() << "Slow motion enabled";
+    QTimer::singleShot(time, this, SLOT(disableSlowMotion()));
+    timeFactorAnimation->setDuration(1000);
+    timeFactorAnimation->setStartValue(normalTimeFactor);
+    timeFactorAnimation->setEndValue(slowMotionTimeFactor);
+    timeFactorAnimation->start();
+}
+
+void GameScene::disableSlowMotion()
+{
+    qDebug() << "Slow motion disabled";
+    timeFactorAnimation->setDuration(1000);
+    timeFactorAnimation->setStartValue(slowMotionTimeFactor);
+    timeFactorAnimation->setEndValue(normalTimeFactor);
+    timeFactorAnimation->start();
+}
+
+void GameScene::addEnemies() {
     /*
      Available regions. The player starts in the center, and all the "touching" regions are not allowed for enemies. Only the edges are available to the enemies.
      _____________
@@ -658,8 +472,15 @@ void GameScene::startLevel(int level) {
 
      */
     int areaNumber = 1;
-    for(int i=0; i<level; i++) { // 1 new enemy per level
-        Particle *enemy = new Particle();
+    int numberOfEnemies = 1;
+    qreal enemyChargeLevel = enemyCharge * (1 + levelChargeFactor * pow((double)level(),2));
+    if(gameMode() == ModeClassic) {
+        numberOfEnemies = level();
+    } else if(gameMode() == ModeParty) {
+        numberOfEnemies = 3 + level();
+    }
+    for(int i=0; i<numberOfEnemies; i++) { // 1 new enemy per level
+        Particle *enemy = new Particle(this);
         addItem(enemy);
         // should the particle spawn at the topleft, topright, bottomleft or bottomright?
         int left = 0;
@@ -716,20 +537,28 @@ void GameScene::startLevel(int level) {
         }
 
         // make sure that no enemies spawn in the middle region (close to the player)
-        QRectF spawnRect(gameRectF().left() + gameRectF().width()/4.0 * left, gameRectF().top() + gameRectF().height()/4.0 * top, gameRectF().width()/4.0, gameRectF().height()/4.0);
+        QRectF spawnRect(gameRectF().left() + gameRectF().width()/4.0 * left,
+                         gameRectF().top() + gameRectF().height()/4.0 * top,
+                         gameRectF().width()/4.0,
+                         gameRectF().height()/4.0);
         // now, let's find a random position within this region
         qreal xrand = (qreal)qrand()/(qreal)RAND_MAX;
         qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
-        enemy->setPosition(QVector2D(spawnRect.left() + xrand*spawnRect.width(),spawnRect.top() + yrand*spawnRect.height()));
+        enemy->setPosition(QVector2D(spawnRect.left() + xrand*spawnRect.width(), spawnRect.top() + yrand*spawnRect.height()));
         enemy->setParticleType(Particle::ParticleEnemy);
-        if(level < 7) {
-            enemy->setSticky(true);
-        } else if(level < 15) {
-            enemy->setElectroSticky(true);
+        if(gameMode() == ModeClassic) {
+            if(level() < 7) {
+                enemy->setSticky(true);
+            } else if(level() < 15) {
+                enemy->setElectroSticky(true);
+            }
+        } else {
+            enemy->setSticky(false);
+            enemy->setElectroSticky(false);
         }
         enemy->setMass(26.0);
         enemy->setCharge(enemyChargeLevel);
-        enemy->setScale(1.35 * globalScale);
+        enemy->setScale(enemyScale * globalScale);
         areaNumber++;
         if(areaNumber > 12) {
             areaNumber = 1;
@@ -737,91 +566,123 @@ void GameScene::startLevel(int level) {
     }
 }
 
+void GameScene::addTransferParticle() {
+    specialParticles()->append(Particle::ParticleTransfer);
+    setRemainingSpecialCharges(specialParticles()->count());
+}
+
 void GameScene::updateRemainingChargeText() {
-    remainingNegativeChargesText->setHtml("<center>" + QString::number(remainingNegativeCharges) + "</center>");
-    remainingPositiveChargesText->setHtml("<center>" + QString::number(remainingPositiveCharges) + "</center>");
+
 }
 
 void GameScene::advance() {
     if(gameState() == GameRunning) {
         currentTime = time.elapsed();
         if(firstStep) {
-            _dt = 0;
+            m_dt = 0;
             firstStep = false;
         } else {
-            _dt = (currentTime - lastFrameTime) / 1000.0;
+            m_dt = timeFactor() * (currentTime - lastFrameTime) / 1000.0;
+        }
+
+        if(gameMode() == ModeParty) {
+            checkAddSpecialParticle();
         }
         QGraphicsScene::advance();
         lastFrameTime = currentTime;
     }
 }
 
-void GameScene::removeNegativeCharge() {
-    remainingNegativeCharges--;
-    if(remainingNegativeCharges < 1) {
-        negativeButton->update();
-    }
-}
-
-void GameScene::removePositiveCharge() {
-    remainingPositiveCharges--;
-    if(remainingPositiveCharges < 1) {
-        positiveButton->update();
-    }
-}
-
-void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    //Create particles
-    if(gameState() == GameInstructionPause) {
-        if(instructionTime.elapsed() > 500) {
-            toggleInstructionText();
+void GameScene::checkAddSpecialParticle() {
+    int dueTime = partyDisintegrationTime;
+    foreach(QGraphicsItem *item, items()) {
+        if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
+            qreal timeDiff = currentTime - particle->createdTime();
+            // Scale all
+            if(particle->particleType() == Particle::ParticleSimple) {
+                particle->setScale(globalScale * simpleScale * (dueTime - timeDiff) / dueTime);
+            }
+            if(particle->particleType() == Particle::ParticleSlowMotion) {
+                particle->setScale(globalScale * slowMotionScale * (dueTime - timeDiff) / dueTime);
+            }
+            if(particle->particleType() == Particle::ParticleRepellent) {
+                particle->setScale(globalScale * repellentScale * (dueTime - timeDiff) / dueTime);
+            }
+            if(particle->particleType() == Particle::ParticleTransfer) {
+                particle->setScale(globalScale * slowMotionScale * (dueTime - timeDiff) / dueTime);
+            }
+            if(particle->particleType() == Particle::ParticleGlowing) {
+                int dueEffectTime = partyDisintegrationEffectTime;
+                particle->setScale(globalScale * repellentScale * (dueEffectTime - timeDiff) / dueEffectTime);
+            }
+            // Remove overdue charges
+            int timeSinceCreation = currentTime - particle->createdTime();
+            if(timeSinceCreation > partyDisintegrationTime &&
+                    (particle->particleType() == Particle::ParticleSimple ||
+                     particle->particleType() == Particle::ParticleSlowMotion ||
+                     particle->particleType() == Particle::ParticleRepellent ||
+                     particle->particleType() == Particle::ParticleTransfer)
+                    ||
+                    (timeSinceCreation > partyDisintegrationEffectTime &&
+                     particle->particleType() == Particle::ParticleGlowing)
+                    ) {
+                if(particle->particleType() == Particle::ParticleSimple) {
+                    if(particle->charge() > 0) {
+                        setRemainingPositiveCharges(remainingPositiveCharges()+1);
+                    } else {
+                        setRemainingNegativeCharges(remainingNegativeCharges()+1);
+                    }
+                }
+                removeItem(particle);
+                delete particle;
+            }
         }
-    } else if(gameState() == GameRunning){
-        if(fromFp(event->scenePos().x()) < gameRectF().right()) {
-            int fortegn = -1;
-            if(event->button() == Qt::LeftButton) {
-                if(event->modifiers() & Qt::ShiftModifier || selectedParticleType == ParticleNegative) {
-                    fortegn = -1;
-                } else {
-                    fortegn = 1;
-                }
-            } else if(event->button() == Qt::RightButton) {
-                fortegn = -1;
-            }
-            bool okayInsert = false;
-            if(fortegn == -1 && remainingNegativeCharges > 0) {
-                okayInsert = true;
-            } else if(fortegn == 1 && remainingPositiveCharges > 0){
-                okayInsert = true;
-            }
-            if(okayInsert) {
-                if(fortegn == -1) {
-                    removeNegativeCharge();
-                } else {
-                    removePositiveCharge();
-                }
-                Particle *particle = new Particle();
-                addItem(particle);
-                QVector2D position = QVector2D(fromFp(event->scenePos().x()),fromFp(event->scenePos().y()));
-                particle->setPosition(position);
-                particle->setCharge((fortegn * simpleCharge * (1 + levelChargeFactor * pow((double)level,2))));
-                particle->setScale(1.2 * globalScale);
-                // update the UI text showing number of remaining charges
-                updateRemainingChargeText();
-            }
+    }
+
+    if(currentTime - lastSpecialSpawnTime > 5000) {
+        qDebug() << "Spawning special!";
+        Particle *particle = new Particle(this);
+        addItem(particle);
+        int maxParticleType;
+        if(level() < 7) {
+            maxParticleType = 1;
+        } else if (level() < 14) {
+            maxParticleType = 2;
         } else {
-            QGraphicsScene::mousePressEvent(event);
+            maxParticleType = 3;
         }
-    } else {
-        if(menuTime.elapsed() > 500) { // make sure we don't let the user hit any buttons before the timer has run out
-            QGraphicsScene::mousePressEvent(event);
+
+        int particleType = (int) ( maxParticleType * (qreal)qrand()/(qreal)RAND_MAX);
+        qDebug() << "Spawning type " << particleType;
+        switch(particleType) {
+        case 0:
+            particle->setParticleType(Particle::ParticleRepellent);
+            particle->setSticky(true);
+            break;
+        case 1:
+            particle->setParticleType(Particle::ParticleSlowMotion);
+            break;
+        case 2:
+            particle->setParticleType(Particle::ParticleTransfer);
+            particle->setSticky(true);
+            break;
         }
+        particle->setCharge(0);
+        particle->setScale(globalScale * slowMotionScale);
+        QVector2D position = player->position();
+        while((position - player->position()).lengthSquared() < player->size().width() * 3) {
+            qreal xrand = (qreal)qrand()/(qreal)RAND_MAX;
+            qreal yrand = (qreal)qrand()/(qreal)RAND_MAX;
+            position = QVector2D(xrand * gameRectF().width(),yrand * gameRectF().height());
+        }
+        particle->setPosition(position);
+        lastSpecialSpawnTime = currentTime;
     }
 }
 
 float GameScene::dt() {
-    if(_dt < 0.05)
-        return _dt;
+    if(m_dt < 0.05)
+        return m_dt;
     else
         return 0.05;
 }
@@ -854,42 +715,156 @@ double GameScene::fromFp(double number, bool useSmallest) const {
     }
 }
 
+void GameScene::setGameMode(GameScene::GameMode gameMode)
+{
+    m_gameMode = gameMode;
+    settings.setValue("gameMode", gameMode);
+    emit gameModeChanged(gameMode);
+    if(gameMode == GameScene::ModeClassic) {
+        setLevel(settings.value("highestLevel", 1).toInt());
+    } else {
+        setLevel(settings.value("highestLevelParty", 1).toInt());
+    }
+    setHighestLevel(level());
+}
+
 void GameScene::toggleInstructionText() {
     qDebug() << "Showing instructions";
+    instructionTimer->start();
     if(gameState() == GameInstructionPause) {
         qDebug() << "Showing pause";
         setGameState(GameRunning);
         instructionText->hide();
         levelTimer->start();
-        menuBackgroundRect->hide();
         instructionTimer->setInterval(8000);
     } else  {
-        qDebug() << "Showing running" << level << instructionNumber;
+        qDebug() << "Showing running" << m_level << instructionNumber;
         instructionTime.restart();
         levelTimer->stop();
         setGameState(GameInstructionPause);
         instructionText->show();
-        menuBackgroundRect->show();
         instructionTimer->setInterval(10000);
-        if(level == 1) {
-            switch(instructionNumber) {
-            case 1:
-                instructionText->setHtml(tr("<center><p>Welcome!</p><p>You are the green charge.<br>Avoid hitting the purple charges,<br>they are deadly to the green one.<br>Try to move the green charge by placing<br>other charges anywhere on the map.</p></center>"));
-                break;
-            case 2:
-                instructionText->setHtml(tr("<center>You can also select blue charges<br>by clicking on the blue button to the right.<br>The red charges push away the green one,<br>while the blue charges attract it.</center>"));
-                break;
-            case 3:
-                instructionText->setHtml(tr("<center>The time is shown in the lower right corner.<br>When the time runs out,<br/>you will move on to the next quantum state!<br/>You might call them levels if you like.</center>"));
-                levelTime = 5;
-                break;
-            default:
-                instructionText->setHtml("");
-                instructionTimer->stop();
-                toggleInstructionText();
-                break;
+        if(gameMode() == ModeClassic) {
+            if(m_level == 1) {
+                switch(instructionNumber) {
+                case 1:
+                    instructionText->setHtml(tr("<center><p>Welcome!</p><p>You are the green charge.<br>Avoid hitting the purple charges,<br>they are deadly to the green one.<br>Try to move the green charge by placing<br>other charges anywhere on the map.</p></center>"));
+                    break;
+                case 2:
+                    instructionText->setHtml(tr("<center>You can also select blue charges<br>by clicking on the blue button to the right.<br>The red charges push away the green one,<br>while the blue charges attract it.</center>"));
+                    break;
+                case 3:
+                    instructionText->setHtml(tr("<center>The time is shown in the lower right corner.<br>When the time runs out,<br/>you will move on to the next quantum state!<br/>You might call them levels if you like.</center>"));
+                    setLevelTime(5);
+                    break;
+                default:
+                    instructionText->setHtml("");
+                    instructionTimer->stop();
+                    toggleInstructionText();
+                    break;
+                }
             }
+        } else if (gameMode() == ModeParty) {
+            if(m_level == 1) {
+                switch(instructionNumber) {
+                case 1:
+                    instructionText->setHtml(tr("<center><p>Welcome to party mode!</p><p>New particles awaits you. Collide with the yellow particles to repel all enemies.</p></center>"));
+                    break;
+                default:
+                    instructionText->setHtml("");
+                    instructionTimer->stop();
+                    toggleInstructionText();
+                    break;
+                }
+            } else if(level() == 7) {
+                switch(instructionNumber) {
+                case 1:
+                    instructionText->setHtml(tr("<center><p>The clocks are ticking.</p><p>Let's make everybody slow down.</p></center>"));
+                    break;
+                default:
+                    instructionText->setHtml("");
+                    instructionTimer->stop();
+                    toggleInstructionText();
+                    break;
+                }
+
+            } else if(level() == 14) {
+                switch(instructionNumber) {
+                case 1:
+                    instructionText->setHtml(tr("<center><p>Teleport away!</p><p>Wouldn't it be nice if we could just go to a different place?</p><p>Hint: Use the button to the right.</p></center>"));
+                    break;
+                default:
+                    instructionText->setHtml("");
+                    instructionTimer->stop();
+                    toggleInstructionText();
+                    break;
+                }
+
+            }
+            instructionNumber++;
         }
-        instructionNumber++;
+    }
+}
+
+void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    //Create particles
+    if(gameState() == GameInstructionPause) {
+        if(instructionTime.elapsed() > 500) {
+            toggleInstructionText();
+        }
+    } else if(gameState() == GameRunning){
+        if(fromFp(event->scenePos().x()) < gameRectF().right()) {
+            QVector2D clickPosition = QVector2D(fromFp(event->scenePos().x()),fromFp(event->scenePos().y()));
+            if(selectedType() == ParticlePositive || selectedType() == ParticleNegative) {
+                int fortegn = -1;
+                if(event->button() == Qt::LeftButton) {
+                    if(event->modifiers() & Qt::ShiftModifier || selectedType() == ParticleNegative) {
+                        fortegn = -1;
+                    } else {
+                        fortegn = 1;
+                    }
+                } else if(event->button() == Qt::RightButton) {
+                    fortegn = -1;
+                }
+                bool okayInsert = false;
+                if(fortegn == -1 && remainingNegativeCharges() > 0) {
+                    okayInsert = true;
+                } else if(fortegn == 1 && remainingPositiveCharges() > 0){
+                    okayInsert = true;
+                }
+                if(okayInsert) {
+                    if(fortegn == -1) {
+                        setRemainingNegativeCharges(remainingNegativeCharges() - 1);
+                    } else {
+                        setRemainingPositiveCharges(remainingPositiveCharges() - 1);
+                    }
+                    Particle *particle = new Particle(this);
+                    addItem(particle);
+                    particle->setPosition(clickPosition);
+                    particle->setCharge((fortegn * simpleCharge * (1 + levelChargeFactor * pow((double)m_level,2))));
+                    particle->setScale(simpleScale * globalScale);
+                    // update the UI text showing number of remaining charges
+                    updateRemainingChargeText();
+                }
+            } else if (selectedType() == ParticleSpecial) {
+                qDebug() << specialParticles()->count();
+                if(!specialParticles()->isEmpty()) {
+                    Particle::ParticleType particleType = (Particle::ParticleType)specialParticles()->first();
+                    specialParticles()->removeFirst();
+                    if(particleType == Particle::ParticleTransfer) {
+                        player->setPosition(clickPosition);
+                        player->setVelocity(QVector2D());
+                    }
+                    m_remainingSpecialCharges = specialParticles()->count();
+                    emit remainingSpecialChargesChanged(m_remainingSpecialCharges);
+                }
+            }
+        } else {
+            QGraphicsScene::mousePressEvent(event);
+        }
+    } else {
+        if(menuTime.elapsed() > 500) { // make sure we don't let the user hit any buttons before the timer has run out
+            QGraphicsScene::mousePressEvent(event);
+        }
     }
 }
