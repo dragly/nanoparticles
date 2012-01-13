@@ -1,5 +1,6 @@
 #include "gamescene.h"
 #include "particle.h"
+#include "gameview.h"
 
 #include <QDebug>
 #include <QtDeclarative/QDeclarativeEngine>
@@ -69,8 +70,9 @@ const int zMainMenuBackground = 100;
 // in game gui
 const qreal instructionTextFontSize = 7;
 
-GameScene::GameScene(QObject *parent) :
-    QGraphicsScene(parent)
+GameScene::GameScene(GameView *parent) :
+    QGraphicsScene(parent),
+    nResizes(0)
 {
     qRegisterMetaType<GameScene::GameMode>("GameMode");
     qRegisterMetaType<GameScene::GameState>("GameState");
@@ -168,7 +170,7 @@ GameScene::GameScene(QObject *parent) :
     // set up timer
     levelTimer = new QTimer(this);
     levelTimer->setInterval(1000);
-    connect(levelTimer, SIGNAL(timeout()), SLOT(updateTime()));
+    connect(levelTimer, SIGNAL(timeout()), SLOT(updateLevelTime()));
     // instruction timer
     instructionTimer = new QTimer(this);
     connect(instructionTimer, SIGNAL(timeout()), SLOT(toggleInstructionText()));
@@ -176,9 +178,6 @@ GameScene::GameScene(QObject *parent) :
 
     // Set up animations
     timeFactorAnimation = new QPropertyAnimation(this, "timeFactor");
-
-    // load settings
-    setGameMode((GameMode)settings.value("gameMode", ModeClassic).toInt());
     qDebug() << "Highest level is" << m_level;
 
     setGameState(GameStarted);
@@ -192,10 +191,15 @@ GameScene::GameScene(QObject *parent) :
     // Start level and start timers
     //    startLevel(level());
 
-    connect(&timer, SIGNAL(timeout()), SLOT(advance()));
-    timer.start(10);
+    connect(&advanceTimer, SIGNAL(timeout()), SLOT(advance()));
+    advanceTimer.start(10);
     time.start();
     qDebug() << "Timers started!";
+
+
+
+    // load settings
+    setGameMode((GameMode)settings.value("gameMode", ModeClassic).toInt());
 }
 
 QString GameScene::adjustPath(const QString &path)
@@ -233,6 +237,7 @@ bool GameScene::isDemo() {
 }
 
 void GameScene::resized() {
+    qDebug() << "GameScene::resized(): called";
     //menuBackgroundRect->setRect(toFp(0), toFp(0), toFp(100), toFp(100));
     mainMenu->setProperty("width", width());
     mainMenu->setProperty("height", height());
@@ -243,7 +248,7 @@ void GameScene::resized() {
     QPixmap backgroundPixmap(":/images/background.png");
     QPixmap scaledBackgroundPixmap;
     // check the ratio of the pixmap against the ratio of our scene
-    if(backgroundPixmap.width() / backgroundPixmap.height() > width() / height()) {
+    if((qreal)backgroundPixmap.width() / (qreal)backgroundPixmap.height() > (qreal)width() / (qreal)height()) {
         scaledBackgroundPixmap = backgroundPixmap.scaledToHeight(height());
     } else {
         scaledBackgroundPixmap = backgroundPixmap.scaledToWidth(width());
@@ -257,9 +262,10 @@ void GameScene::resized() {
     QFont instructionFont = instructionText->font();
     instructionFont.setPixelSize((int)toFp(instructionTextFontSize,true));
     instructionText->setFont(instructionFont);
+    nResizes++;
 }
 
-void GameScene::updateTime() {
+void GameScene::updateLevelTime() {
     setLevelTime(levelTime() - 1);
     if(levelTime() < 1) {
         pauseGame();
@@ -291,73 +297,36 @@ void GameScene::continueGame() {
     if(gameState() == GameOver) {
         setLevel(m_level);
     }
-    setGameState(GameRunning);
-    if(gameMode() == ModeClassic && level() == 1) {
-        toggleInstructionText();
-    } else if(gameMode() == ModeParty && level() == 7) {
-        toggleInstructionText();
-    } else if(gameMode() == ModeParty && level() == 14) {
-        toggleInstructionText();
-    }
 
-#ifdef Q_WS_MAEMO_5
-    // TODO: Reimplement dashboard button hiding in QML
-#endif
 
     // start timer
     levelTimer->start();
     // start the main timer as well (start using CPU again)
-    timer.start();
-    qDebug() << "Game started";
+    advanceTimer.start();
+    qDebug() << "Game continued";
 }
 
 void GameScene::pauseGame() {
+    qDebug() << "Game paused";
     bool wasGameRunning = false;
-    if(gameState() == GameInstructionPause) {
-        toggleInstructionText(); // Make sure we hide all text and everything if we just got paused.
-    }
     if(gameState() == GameRunning) {
         menuTime.restart(); // start the timer that will avoid clicking on the quit button after level up or failed
         wasGameRunning = true;
-        setGameState(GamePaused);
-        // show main menu
-        mainMenu->show();
-        mainMenu->setProperty("state", "paused");
     }
-    if(gameState() != GameStarted) {
-
-    }
-    if(gameState() == GameOver) {
-        // show main menu
-        mainMenu->show();
-    }
-    instructionTimer->stop();
-
-#ifndef OS_IS_HARMATTAN
-    //    exitButton->show();
-#endif
-
-#ifdef Q_WS_MAEMO_5
-    dashboardButton->show();
-#endif
     // pause timer
     levelTimer->stop();
-    qDebug() << "Game paused";
     // Stop the timer to save CPU power (hopefully this won't lock up anything else)
-    timer.stop();
+    advanceTimer.stop();
     // end animation
 }
 
 void GameScene::gameOver() {
     setGameState(GameOver);
-    pauseGame();
-
-    qDebug() << "Game over";
 }
 
 void GameScene::retryGame() {
     setLevel(m_level);
-    continueGame();
+    setGameState(GameRunning);
 }
 
 void GameScene::exitGame() {
@@ -375,8 +344,21 @@ void GameScene::minimizeToDashboard() {
 }
 
 void GameScene::setGameState(GameState gameState) {
+    qDebug() << "Game state set " << gameState;
     this->m_gameState = gameState;
     if(gameState == GameStarted) {
+        pauseGame();
+    }
+    if(gameState == GamePaused) {
+        pauseGame();
+    }
+    if(gameState == GameOver) {
+        pauseGame();
+    }
+    if(gameState == GameRunning) {
+        continueGame();
+    }
+    if(gameState == GameInstructionPause) {
         pauseGame();
     }
     emit gameStateChanged(gameState);
@@ -384,7 +366,6 @@ void GameScene::setGameState(GameState gameState) {
 
 void GameScene::setLevel(int level) {
     m_level = level;
-    emit levelChanged(level);
     qDebug() << "Starting level" << level;
 
     lastSpecialSpawnTime = 0;
@@ -393,14 +374,8 @@ void GameScene::setLevel(int level) {
     foreach(QGraphicsItem *item, items()) {
         if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
             removeItem(particle);
+            delete particle; // Delete the particle completely. Should (hopefully) not be referenced anywhere else.
         }
-    }
-
-
-    // Start instructions if on level 1
-    if((gameMode() == ModeClassic && level == 1) || (gameMode() == ModeParty && (level == 1 || level == 7 || level == 14))) {
-        instructionTimer->setInterval(500);
-        instructionNumber = 1; // if there are instructions, start with the first one
     }
 
     if(gameMode() == ModeClassic && level == 1) {
@@ -408,8 +383,7 @@ void GameScene::setLevel(int level) {
         setRemainingPositiveCharges(20);
         setRemainingNegativeCharges(20);
 
-        // reset time
-        setLevelTime(50);
+        setLevelTime(27);
     } else if(gameMode() == ModeClassic) {
         setLevelTime(baseTime + (int)(timeIncrement * level));
         setRemainingPositiveCharges(baseChargeNum + (int)(incrementChargeNum * level));
@@ -435,11 +409,18 @@ void GameScene::setLevel(int level) {
     addItem(player);
     player->setCharge(playerCharge * (1 + levelChargeFactor * pow((double)level,2)));
     player->setParticleType(Particle::ParticlePlayer);
-    player->setPosition(QVector2D(gameRectF().width() / 2,gameRectF().height() / 2));
+    if(gameMode() == ModeClassic && level == 1) {
+        player->setPosition(QVector2D(gameRectF().width() * 0.9,gameRectF().height() * 0.9));
+    } else {
+        player->setPosition(QVector2D(gameRectF().width() / 2,gameRectF().height() / 2));
+    }
     player->setScale(playerScale * globalScale);
 
     // add enemies
     addEnemies();
+
+    // Notify everyone about the level change
+    emit levelChanged(level);
 }
 
 void GameScene::enableSlowMotion(int time)
@@ -728,91 +709,105 @@ void GameScene::setGameMode(GameScene::GameMode gameMode)
     setHighestLevel(level());
 }
 
-void GameScene::toggleInstructionText() {
-    qDebug() << "Showing instructions";
-    instructionTimer->start();
-    if(gameState() == GameInstructionPause) {
-        qDebug() << "Showing pause";
-        setGameState(GameRunning);
-        instructionText->hide();
-        levelTimer->start();
-        instructionTimer->setInterval(8000);
-    } else  {
-        qDebug() << "Showing running" << m_level << instructionNumber;
-        instructionTime.restart();
-        levelTimer->stop();
-        setGameState(GameInstructionPause);
-        instructionText->show();
-        instructionTimer->setInterval(10000);
-        if(gameMode() == ModeClassic) {
-            if(m_level == 1) {
-                switch(instructionNumber) {
-                case 1:
-                    instructionText->setHtml(tr("<center><p>Welcome!</p><p>You are the green charge.<br>Avoid hitting the purple charges,<br>they are deadly to the green one.<br>Try to move the green charge by placing<br>other charges anywhere on the map.</p></center>"));
-                    break;
-                case 2:
-                    instructionText->setHtml(tr("<center>You can also select blue charges<br>by clicking on the blue button to the right.<br>The red charges push away the green one,<br>while the blue charges attract it.</center>"));
-                    break;
-                case 3:
-                    instructionText->setHtml(tr("<center>The time is shown in the lower right corner.<br>When the time runs out,<br/>you will move on to the next quantum state!<br/>You might call them levels if you like.</center>"));
-                    setLevelTime(5);
-                    break;
-                default:
-                    instructionText->setHtml("");
-                    instructionTimer->stop();
-                    toggleInstructionText();
-                    break;
-                }
+void GameScene::setViewMode(ViewMode arg)
+{
+    settings.setValue("viewMode", arg);
+    if (m_viewMode != arg) {
+        if(parent() != 0) { // Make sure we know about our GameView parent
+            if(arg == ViewFullScreen ) {
+                ((GameView*)parent())->showFullScreen();
+            } else {
+                ((GameView*)parent())->showNormal();
             }
-        } else if (gameMode() == ModeParty) {
-            if(m_level == 1) {
-                switch(instructionNumber) {
-                case 1:
-                    instructionText->setHtml(tr("<center><p>Welcome to party mode!</p><p>New particles awaits you. Collide with the yellow particles to repel all enemies.</p></center>"));
-                    break;
-                default:
-                    instructionText->setHtml("");
-                    instructionTimer->stop();
-                    toggleInstructionText();
-                    break;
-                }
-            } else if(level() == 7) {
-                switch(instructionNumber) {
-                case 1:
-                    instructionText->setHtml(tr("<center><p>The clocks are ticking.</p><p>Let's make everybody slow down.</p></center>"));
-                    break;
-                default:
-                    instructionText->setHtml("");
-                    instructionTimer->stop();
-                    toggleInstructionText();
-                    break;
-                }
-
-            } else if(level() == 14) {
-                switch(instructionNumber) {
-                case 1:
-                    instructionText->setHtml(tr("<center><p>Teleport away!</p><p>Wouldn't it be nice if we could just go to a different place?</p><p>Hint: Use the button to the right.</p></center>"));
-                    break;
-                default:
-                    instructionText->setHtml("");
-                    instructionTimer->stop();
-                    toggleInstructionText();
-                    break;
-                }
-
-            }
-            instructionNumber++;
         }
+        m_viewMode = arg;
+        emit viewModeChanged(arg);
     }
+}
+
+void GameScene::toggleInstructionText() {
+    qDebug() << "Showing old instructions called";
+    setGameState(GameInstructionPause);
+    pauseGame();
+//    instructionTimer->start();
+//    if(gameState() == GameInstructionPause) {
+//        qDebug() << "Showing pause";
+//        setGameState(GameRunning);
+//        instructionText->hide();
+//        levelTimer->start();
+//        instructionTimer->setInterval(8000);
+//    } else  {
+//        qDebug() << "Showing running" << m_level << instructionNumber;
+//        instructionTime.restart();
+//        levelTimer->stop();
+//        setGameState(GameInstructionPause);
+//        instructionText->show();
+//        instructionTimer->setInterval(10000);
+//        if(gameMode() == ModeClassic) {
+//            if(m_level == 1) {
+//                switch(instructionNumber) {
+//                case 1:
+//                    instructionText->setHtml(tr("<center><p>Welcome!</p><p>You are the green charge.<br>Avoid hitting the purple charges,<br>they are dangerous.<br>You can move the green charge by placing<br>other charges anywhere on the screen.</p></center>"));
+//                    break;
+//                case 2:
+//                    instructionText->setHtml(tr("<center>You can also select blue charges<br>by clicking on the blue button to the right.<br>The red charges push away the green one,<br>while the blue charges attract it.</center>"));
+//                    break;
+//                case 3:
+//                    instructionText->setHtml(tr("<center>The time is shown in the lower right corner.<br>When the time runs out,<br/>you will move on to the next quantum state!<br/>You might call them levels if you like.</center>"));
+//                    setLevelTime(5);
+//                    break;
+//                default:
+//                    instructionText->setHtml("");
+//                    instructionTimer->stop();
+//                    toggleInstructionText();
+//                    break;
+//                }
+//            }
+//        } else if (gameMode() == ModeParty) {
+//            if(m_level == 1) {
+//                switch(instructionNumber) {
+//                case 1:
+//                    instructionText->setHtml(tr("<center><p>Welcome to party mode!</p><p>New particles awaits you. Collide with the yellow particles to repel all enemies.</p></center>"));
+//                    break;
+//                default:
+//                    instructionText->setHtml("");
+//                    instructionTimer->stop();
+//                    toggleInstructionText();
+//                    break;
+//                }
+//            } else if(level() == 7) {
+//                switch(instructionNumber) {
+//                case 1:
+//                    instructionText->setHtml(tr("<center><p>The clocks are ticking.</p><p>Let's make everybody slow down.</p></center>"));
+//                    break;
+//                default:
+//                    instructionText->setHtml("");
+//                    instructionTimer->stop();
+//                    toggleInstructionText();
+//                    break;
+//                }
+
+//            } else if(level() == 14) {
+//                switch(instructionNumber) {
+//                case 1:
+//                    instructionText->setHtml(tr("<center><p>Teleport away!</p><p>Wouldn't it be nice if we could just go to a different place?</p><p>Hint: Use the button to the right.</p></center>"));
+//                    break;
+//                default:
+//                    instructionText->setHtml("");
+//                    instructionTimer->stop();
+//                    toggleInstructionText();
+//                    break;
+//                }
+
+//            }
+//        }
+//        instructionNumber++;
+//    }
 }
 
 void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     //Create particles
-    if(gameState() == GameInstructionPause) {
-        if(instructionTime.elapsed() > 500) {
-            toggleInstructionText();
-        }
-    } else if(gameState() == GameRunning){
+    if(gameState() == GameRunning){
         if(fromFp(event->scenePos().x()) < gameRectF().right()) {
             QVector2D clickPosition = QVector2D(fromFp(event->scenePos().x()),fromFp(event->scenePos().y()));
             if(selectedType() == ParticlePositive || selectedType() == ParticleNegative) {

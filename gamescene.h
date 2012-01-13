@@ -7,17 +7,22 @@
 #include <QTimer>
 #include <QTime>
 
+const QString NANOPARTICLES_VERSION = QString("1.99.3");
+
 class Particle;
+class GameView;
 
 class GameScene : public QGraphicsScene
 {
     Q_OBJECT
+    Q_PROPERTY(QString version READ version NOTIFY versionChanged)
     Q_PROPERTY(int highestLevel READ highestLevel WRITE setHighestLevel NOTIFY highestLevelChanged)
     Q_PROPERTY(int level READ level WRITE setLevel NOTIFY levelChanged)
     Q_PROPERTY(double timeFactor READ timeFactor WRITE setTimeFactor)
     Q_PROPERTY(int levelTime READ levelTime WRITE setLevelTime NOTIFY levelTimeChanged)
     Q_PROPERTY(GameState gameState READ gameState WRITE setGameState NOTIFY gameStateChanged)
     Q_PROPERTY(GameMode gameMode READ gameMode WRITE setGameMode NOTIFY gameModeChanged)
+    Q_PROPERTY(ViewMode viewMode READ viewMode WRITE setViewMode NOTIFY viewModeChanged)
     Q_PROPERTY(int remainingPositiveCharges READ remainingPositiveCharges WRITE setRemainingPositiveCharges NOTIFY remainingPositiveChargesChanged)
     Q_PROPERTY(int remainingNegativeCharges READ remainingNegativeCharges WRITE setRemainingNegativeCharges NOTIFY remainingNegativeChargesChanged)
     Q_PROPERTY(int remainingSpecialCharges READ remainingSpecialCharges NOTIFY remainingSpecialChargesChanged)
@@ -26,8 +31,9 @@ class GameScene : public QGraphicsScene
     Q_ENUMS(GameMode)
     Q_ENUMS(GameState)
     Q_ENUMS(Selection)
+    Q_ENUMS(ViewMode)
 public:
-    explicit GameScene(QObject *parent = 0);
+    explicit GameScene(GameView *view = 0);
 
     /*!
       Defines the state of the game
@@ -41,6 +47,7 @@ public:
     };
     enum Selection { ParticleNegative, ParticlePositive, ParticleSpecial };
     enum GameMode { ModeClassic, ModeParty };
+    enum ViewMode { ViewNormal, ViewFullScreen };
 
     //Time variables
     int currentTime;
@@ -138,6 +145,16 @@ public:
         return m_selectedType;
     }
 
+    QString version() const
+    {
+        return NANOPARTICLES_VERSION;
+    }
+
+    ViewMode viewMode() const
+    {
+        return m_viewMode;
+    }
+
 signals:
     void highestLevelChanged(int);
     void levelChanged(int);
@@ -153,6 +170,10 @@ signals:
 
     void selectedTypeChanged(Selection arg);
 
+    void versionChanged(QString arg);
+
+    void viewModeChanged(ViewMode arg);
+
 public slots:
     void enableSlowMotion(int time);
     void disableSlowMotion();
@@ -161,7 +182,7 @@ public slots:
     void pauseGame();
     void retryGame();
     void exitGame();
-    void updateTime();
+    void updateLevelTime();
     void gameOver();
     void toggleInstructionText();
     void minimizeToDashboard();
@@ -197,6 +218,7 @@ public slots:
             emit selectedTypeChanged(arg);
         }
     }
+    void setViewMode(ViewMode arg);
 
 private:
     void addEnemies();
@@ -209,10 +231,10 @@ private:
     float m_dt; // time difference in seconds
     double m_timeFactor;
 
-    QTimer timer;
+    QTimer advanceTimer;
 
     bool firstStep;
-    bool firstResize;
+    int nResizes;
 
     QGraphicsTextItem *timerText;
     QGraphicsTextItem *levelText;
@@ -241,10 +263,13 @@ private:
     QList<int> *m_specialParticles;
     int m_remainingSpecialCharges;
     Selection m_selectedType;
+    QString m_version;
+    ViewMode m_viewMode;
 };
 Q_DECLARE_METATYPE(GameScene::GameMode)
 Q_DECLARE_METATYPE(GameScene::GameState)
 Q_DECLARE_METATYPE(GameScene::Selection)
+Q_DECLARE_METATYPE(GameScene::ViewMode)
 
 
 #endif // GAMESCENE_H

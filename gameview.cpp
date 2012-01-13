@@ -13,7 +13,8 @@ GameView::GameView() :
     QGraphicsView()
 {
     qDebug() << "Setting scene";
-    setScene(&gameScene);
+    gameScene = new GameScene(this);
+    setScene(gameScene);
     qDebug() << "Scene set";
 //#ifndef Q_OS_ANDROID
     setRenderHint(QPainter::HighQualityAntialiasing,true);
@@ -34,6 +35,7 @@ GameView::GameView() :
 #endif
     setInteractive(true);
     setFrameShape(QFrame::NoFrame);
+
     qDebug() << "View setup done";
 
 #ifdef Q_WS_MAEMO_5
@@ -57,12 +59,12 @@ void GameView::changeEvent(QEvent *event) {
 }
 
 void GameView::resizeEvent(QResizeEvent *event) {
-    qDebug() << "resize";
     Q_UNUSED(event)
+    qDebug() << "GameView::resizeEvent(): called";
     scene()->setSceneRect(0,0,width(),height());
     GameScene* gameScene = (GameScene*)scene();
     gameScene->resized();
-    qDebug() << "resized";
+    qDebug() << "GameView::resizeEvent(): finished";
 }
 
 // MAEMO DBUS FOR LOCK EVENT

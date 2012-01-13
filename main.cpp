@@ -23,9 +23,6 @@ int main(int argc, char *argv[])
     // Register all QML mapped C++ classes
     qmlRegisterType<GameScene>("Nanoparticles", 1, 0, "GameScene");
 
-//#ifdef Q_WS_S60
-//    QApplication::setGraphicsSystem("openvg");
-//#endif
     qDebug() << "Starting app now with no OpenGL...";
     QApplication a(argc, argv);
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
@@ -79,6 +76,8 @@ int main(int argc, char *argv[])
 #endif
     //#endif
     qDebug() << "setViewport";
+    QSettings settings;
+    int viewMode = settings.value("viewMode", 0).toInt();
 
 #if defined(Q_WS_S60)
     qDebug() << "Is Symbian!";
@@ -89,18 +88,31 @@ int main(int argc, char *argv[])
 #elif defined(OS_IS_HARMATTAN)
     qDebug() << "Is MeeGo!";
     view.showFullScreen();
-#elif defined(OS_IS_DESKTOP_LINUX)
-    qDebug() << "Is Destkop Linux";
-    view.show();
 #elif defined(Q_OS_ANDROID)
     qDebug() << "Is Android!";
     view.showFullScreen();
+#elif defined(OS_IS_DESKTOP_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_WIN)
+
+#if defined(OS_IS_DESKTOP_LINUX)
+    qDebug() << "Is Destkop Linux";
 #elif defined(Q_OS_MAC)
     qDebug() << "Is Mac!";
-    view.showFullScreen();
+#elif defined(Q_OS_WIN)
+    qDebug() << "Is Windows!";
+#endif
+
+    if(viewMode == GameScene::ViewNormal) {
+        view.showNormal();
+    } else {
+        view.showFullScreen();
+    }
 #else
     qDebug() << "Is some unknown OS!";
-    view.show();
+    if(viewMode == 0) {
+        view.showNormal();
+    } else {
+        view.showFullScreen();
+    }
 #endif
 
     return a.exec();

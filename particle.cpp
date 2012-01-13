@@ -13,7 +13,7 @@
 const qreal dechargeRate = 0.2;
 const qreal springConstant = 75.0;
 const qreal minimumCharge = 2.5;
-const qreal edgeBounceDampParty = 0.25;
+const qreal edgeBounceDampPartyEnemy = 0.25;
 // friction
 const qreal dampingFactor = 0.18; // a scaling of the damping force
 const qreal dampingFactorParty = 0.4; // a scaling of the damping force
@@ -222,11 +222,12 @@ void Particle::advance(int step) {
 
     // restrain edges
     qreal edgeBounceDamp = 0.0;
-    if(gameScene()->gameMode() == GameScene::ModeClassic) {
+    if(gameScene()->gameMode() == GameScene::ModeParty && particleType() == ParticleEnemy) {
+        edgeBounceDamp = edgeBounceDampPartyEnemy;
+    } else {
         edgeBounceDamp = 1.0;
-    } else if(gameScene()->gameMode() == GameScene::ModeParty) {
-        edgeBounceDamp = edgeBounceDampParty;
     }
+
     double minx = gameScene()->gameRectF().left() + size().width() * scale() / 2;
     if(position().x() < minx) {
         setPosition(QVector2D(minx,position().y()));

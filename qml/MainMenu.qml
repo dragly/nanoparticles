@@ -5,12 +5,15 @@ import Nanoparticles 1.0
 Item {
 
     property int level
+    property int levelTime
     property int gameMode
     property int gameState
     property int remainingNegativeCharges
     property int remainingPositiveCharges
     property int remainingSpecialCharges
     property int selectedType
+    property int viewMode
+    property bool instructionShown
     // The contextGameScene object is passed to this QML object through the GameScene initialization in C++
     // We then set it to our internal property gameScene
     property GameScene gameScene
@@ -20,13 +23,69 @@ Item {
     width: 800
     height: 600
     state: "initial"
+    viewMode: gameScene.viewMode
     level: gameScene.level
+    levelTime: gameScene.levelTime
     gameMode: gameScene.gameMode
     gameState: gameScene.gameState
     selectedType: gameScene.selectedType
     remainingPositiveCharges: gameScene.remainingPositiveCharges
     remainingNegativeCharges: gameScene.remainingNegativeCharges
     remainingSpecialCharges: gameScene.remainingSpecialCharges
+
+    function prepareInstructions() {
+        gameScene.gameState = GameScene.GameInstructionPause
+        instructionText.opacity = 1
+        instructionText.clickable = false
+        instructionClickableTimer.start()
+    }
+
+    onLevelTimeChanged: {
+        if(gameState == GameScene.GameRunning) {
+            console.log("Level time changed")
+            // Check if we should issue instructions
+            if(gameMode == GameScene.ModeClassic) {
+                if(level == 1) {
+                    var t1 = 25;
+                    var t2 = 17;
+                    var t3 = 10;
+                    if(levelTime == t1 || levelTime == t2 || levelTime == t3) {
+                        prepareInstructions()
+                        if(levelTime == t1) {
+                            instructionText.text = "<center><p>Welcome!</p><p>You are the green charge.<br>Avoid hitting the purple charges,<br>they are dangerous.<br>You can move the green charge by placing<br>other charges anywhere on the screen.</p></center>"
+                        } else if(levelTime == t2) {
+                            instructionText.text = "<center>You can also select blue charges<br>by clicking on the blue button to the right.<br>The red charges push away the green one,<br>while the blue charges attract it.</center>"
+                        } else if(levelTime == t3) {
+                            instructionText.text = "<center>The time is shown in the lower right corner.<br>When the time runs out,<br/>you will move on to the next quantum state!<br/><br/>You might call them levels if you like.</center>"
+                        }
+                    }
+                }
+            } else if(gameMode == GameScene.ModeParty) {
+                if(!instructionShown) {
+                    var l1 = 1;
+                    var l2 = 7;
+                    var l3 = 14;
+                    prepareInstructions()
+                    switch(level) {
+                    case l1:
+                        instructionText.text = "<center><center><p>Welcome to party mode!</p><p>New particles await you.</p><p>Collide with the yellow particles<br/>to repel all enemies.</p></center>"
+                        break;
+                    case l2:
+                        instructionText.text = "<center><p>The clocks are ticking.</p><p>Let's make everybody slow down.</p></center>"
+                        break;
+                    case l3:
+                        instructionText.text = "<center><p>Teleport away!</p><p>Wouldn't it be nice if we could just go to a different place?</p><p>Hint: Use the button to the right.</p></center>"
+                        break;
+                    }
+                }
+                instructionShown = true
+            }
+        }
+    }
+
+    onLevelChanged: {
+        instructionShown = false
+    }
 
     onSelectedTypeChanged: {
         positiveCharges.selected = false
@@ -42,6 +101,7 @@ Item {
     }
 
     onGameStateChanged: {
+        console.log("Game state changed")
         if(gameState == GameScene.GameStarted) {
             statusText.text = "Nanoparticles"
             state = "paused"
@@ -55,11 +115,10 @@ Item {
             statusText.text = "Level failed"
             state = "paused"
         } else if(gameState == GameScene.GameRunning) {
+            console.log("Game running")
             state = "running"
-            console.log("Game runninga")
         }
     }
-
 
     states: [
         State {
@@ -128,6 +187,30 @@ Item {
         }
     }
 
+    InstructionText {
+        id: instructionText
+        anchors.fill: parent
+        opacity: 0
+        z: 10000
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                if(instructionText.clickable) {
+                    gameScene.gameState = GameScene.GameRunning
+                    instructionText.opacity = 0
+                }
+            }
+        }
+    }
+    Timer {
+        id: instructionClickableTimer
+        interval: 500
+        repeat: false
+        onTriggered: {
+            instructionText.clickable = true
+        }
+    }
+
     Item {
         id: menuBack
         anchors.fill: parent
@@ -149,7 +232,6 @@ Item {
             text: "Level " + level
             font.family: "NovaSquare"
             font.pixelSize: parent.height * 0.07
-            onTextChanged: bounceAround.start()
         }
 
         Text {
@@ -191,7 +273,10 @@ Item {
         Timer {
             id: continueTimer
             interval: 500; running: false; repeat: false
-            onTriggered: gameScene.continueGame()
+            onTriggered: {
+                console.log("MainMenu.qml: Set game state to running")
+                gameScene.gameState = GameScene.GameRunning
+            }
         }
 
         ImageButton {
@@ -274,6 +359,28 @@ Item {
         }
 
         ImageButton {
+            id: fullScreen
+            anchors {
+                left: parent.left
+                top: parent.top
+                leftMargin: parent.width * 0.02
+                topMargin: parent.width * 0.02
+            }
+            width: parent.width * 0.1
+            height: parent.width * 0.1
+            onClicked: {
+                if(gameScene.viewMode == GameScene.ViewNormal) {
+                    gameScene.viewMode = GameScene.ViewFullScreen
+                } else {
+                    gameScene.viewMode = GameScene.ViewNormal
+                }
+            }
+            source: "qrc:/images/button-dashboard.png"
+            anchors.horizontalCenterOffset: 53
+            anchors.verticalCenterOffset: 56
+        }
+
+        ImageButton {
             id: exit
             anchors {
                 right: parent.right
@@ -332,6 +439,7 @@ Item {
         opacity: 0
         z: 2
         anchors.fill: parent
+        version: gameScene.version
     }
 
     Rectangle {
@@ -355,7 +463,7 @@ Item {
         width: parent.width * 0.1
         height: parent.width * 0.1
         onClicked: {
-            gameScene.pauseGame()
+            gameScene.gameState = GameScene.GamePaused
         }
         source: "qrc:/images/button-pause.png"
 
@@ -421,7 +529,7 @@ Item {
             rightMargin: parent.width * 0.03
             bottomMargin: parent.width * 0.04
         }
-        text: gameScene.levelTime
+        text: levelTime
         color: "white"
         font.pixelSize: parent.width * 0.07
         font.family: "NovaSquare"
