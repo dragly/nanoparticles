@@ -16,7 +16,6 @@
     // Enhanced version (2.0)
     - Add copyright/version window.
     - New enemy particles (megacharges)
-    - Instructions for party mode
     - Make it possible to place particles that are sticky after level 15 (or something)
 
     // Demo version (2.1)
@@ -60,19 +59,8 @@ const qreal slowMotionTimeFactor = 0.3;
 const int partyDisintegrationTime = 10000;
 const int partyDisintegrationEffectTime = 2000;
 
-// z values
-const int zInGameMenu = 91;
-const int zInGameMenuNumbers = 92;
-const int zInGameBackground = 90;
-const int zMainMenu = 101;
-const int zMainMenuBackground = 100;
-
-// in game gui
-const qreal instructionTextFontSize = 7;
-
 GameScene::GameScene(GameView *parent) :
-    QGraphicsScene(parent),
-    nResizes(0)
+    QGraphicsScene(parent)
 {
     qRegisterMetaType<GameScene::GameMode>("GameMode");
     qRegisterMetaType<GameScene::GameState>("GameState");
@@ -104,23 +92,6 @@ GameScene::GameScene(GameView *parent) :
 
     setSceneRect(0, 0, 800, 480); // just for init, should be chosen by the platform
     setItemIndexMethod(QGraphicsScene::NoIndex);
-
-    // timer text (level time left)
-    QFont font;
-#ifndef OS_IS_ANDROID
-    font.setFamily("NovaSquare");
-#endif
-    // instruction text
-    instructionText = addText("",font);
-    instructionText->setDefaultTextColor(QColor(250,250,250,220));
-    instructionText->setZValue(zMainMenu);
-    instructionText->hide();
-    // end add in-game menu
-
-    //    menuBackgroundRect = addRect(0,0,1,1,QPen(Qt::black),QBrush(Qt::black));
-    //    menuBackgroundBlur.setBlurRadius(toFp(2));
-    //    menuBackgroundRect->setGraphicsEffect(&menuBackgroundBlur);
-
 
 #ifdef Q_WS_MAEMO_5
     dashboardButton = new Button();
@@ -171,10 +142,6 @@ GameScene::GameScene(GameView *parent) :
     levelTimer = new QTimer(this);
     levelTimer->setInterval(1000);
     connect(levelTimer, SIGNAL(timeout()), SLOT(updateLevelTime()));
-    // instruction timer
-    instructionTimer = new QTimer(this);
-    connect(instructionTimer, SIGNAL(timeout()), SLOT(toggleInstructionText()));
-    // end set up timers
 
     // Set up animations
     timeFactorAnimation = new QPropertyAnimation(this, "timeFactor");
@@ -242,9 +209,6 @@ void GameScene::resized() {
     mainMenu->setProperty("width", width());
     mainMenu->setProperty("height", height());
 
-    instructionText->setPos(toFp(5),toFp(5));
-    instructionText->setTextWidth(toFp(gameWidth));
-
     QPixmap backgroundPixmap(":/images/background.png");
     QPixmap scaledBackgroundPixmap;
     // check the ratio of the pixmap against the ratio of our scene
@@ -257,18 +221,12 @@ void GameScene::resized() {
     delete backgroundImage;
     backgroundImage = addPixmap(scaledBackgroundPixmap);
     backgroundImage->setZValue(-1000);
-
-    // Reisze gui font
-    QFont instructionFont = instructionText->font();
-    instructionFont.setPixelSize((int)toFp(instructionTextFontSize,true));
-    instructionText->setFont(instructionFont);
-    nResizes++;
 }
 
 void GameScene::updateLevelTime() {
     setLevelTime(levelTime() - 1);
     if(levelTime() < 1) {
-        pauseGame();
+        setGameState(GamePaused);
         if(isDemo() && m_level >= 8) {
 
         } else {
@@ -341,6 +299,20 @@ void GameScene::minimizeToDashboard() {
 #else
     qDebug() << "This function is not implemented on anything but Maemo5.";
 #endif
+}
+
+void GameScene::levelUp()
+{
+    if(level() < highestLevel()) {
+        setLevel(level() + 1);
+    }
+}
+
+void GameScene::levelDown()
+{
+    if(level() > 1) {
+        setLevel(level() - 1);
+    }
 }
 
 void GameScene::setGameState(GameState gameState) {
@@ -698,15 +670,16 @@ double GameScene::fromFp(double number, bool useSmallest) const {
 
 void GameScene::setGameMode(GameScene::GameMode gameMode)
 {
+    qDebug() << "Game mode changed to " << gameMode;
     m_gameMode = gameMode;
     settings.setValue("gameMode", gameMode);
-    emit gameModeChanged(gameMode);
     if(gameMode == GameScene::ModeClassic) {
         setLevel(settings.value("highestLevel", 1).toInt());
     } else {
         setLevel(settings.value("highestLevelParty", 1).toInt());
     }
     setHighestLevel(level());
+    emit gameModeChanged(gameMode);
 }
 
 void GameScene::setViewMode(ViewMode arg)
@@ -723,86 +696,6 @@ void GameScene::setViewMode(ViewMode arg)
         m_viewMode = arg;
         emit viewModeChanged(arg);
     }
-}
-
-void GameScene::toggleInstructionText() {
-    qDebug() << "Showing old instructions called";
-    setGameState(GameInstructionPause);
-    pauseGame();
-//    instructionTimer->start();
-//    if(gameState() == GameInstructionPause) {
-//        qDebug() << "Showing pause";
-//        setGameState(GameRunning);
-//        instructionText->hide();
-//        levelTimer->start();
-//        instructionTimer->setInterval(8000);
-//    } else  {
-//        qDebug() << "Showing running" << m_level << instructionNumber;
-//        instructionTime.restart();
-//        levelTimer->stop();
-//        setGameState(GameInstructionPause);
-//        instructionText->show();
-//        instructionTimer->setInterval(10000);
-//        if(gameMode() == ModeClassic) {
-//            if(m_level == 1) {
-//                switch(instructionNumber) {
-//                case 1:
-//                    instructionText->setHtml(tr("<center><p>Welcome!</p><p>You are the green charge.<br>Avoid hitting the purple charges,<br>they are dangerous.<br>You can move the green charge by placing<br>other charges anywhere on the screen.</p></center>"));
-//                    break;
-//                case 2:
-//                    instructionText->setHtml(tr("<center>You can also select blue charges<br>by clicking on the blue button to the right.<br>The red charges push away the green one,<br>while the blue charges attract it.</center>"));
-//                    break;
-//                case 3:
-//                    instructionText->setHtml(tr("<center>The time is shown in the lower right corner.<br>When the time runs out,<br/>you will move on to the next quantum state!<br/>You might call them levels if you like.</center>"));
-//                    setLevelTime(5);
-//                    break;
-//                default:
-//                    instructionText->setHtml("");
-//                    instructionTimer->stop();
-//                    toggleInstructionText();
-//                    break;
-//                }
-//            }
-//        } else if (gameMode() == ModeParty) {
-//            if(m_level == 1) {
-//                switch(instructionNumber) {
-//                case 1:
-//                    instructionText->setHtml(tr("<center><p>Welcome to party mode!</p><p>New particles awaits you. Collide with the yellow particles to repel all enemies.</p></center>"));
-//                    break;
-//                default:
-//                    instructionText->setHtml("");
-//                    instructionTimer->stop();
-//                    toggleInstructionText();
-//                    break;
-//                }
-//            } else if(level() == 7) {
-//                switch(instructionNumber) {
-//                case 1:
-//                    instructionText->setHtml(tr("<center><p>The clocks are ticking.</p><p>Let's make everybody slow down.</p></center>"));
-//                    break;
-//                default:
-//                    instructionText->setHtml("");
-//                    instructionTimer->stop();
-//                    toggleInstructionText();
-//                    break;
-//                }
-
-//            } else if(level() == 14) {
-//                switch(instructionNumber) {
-//                case 1:
-//                    instructionText->setHtml(tr("<center><p>Teleport away!</p><p>Wouldn't it be nice if we could just go to a different place?</p><p>Hint: Use the button to the right.</p></center>"));
-//                    break;
-//                default:
-//                    instructionText->setHtml("");
-//                    instructionTimer->stop();
-//                    toggleInstructionText();
-//                    break;
-//                }
-
-//            }
-//        }
-//        instructionNumber++;
-//    }
 }
 
 void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {

@@ -87,8 +87,6 @@ public:
     QTime time;
     int m_levelTime;
     QTimer *levelTimer;
-    QTimer *instructionTimer;
-    QTime instructionTime;
     QTime menuTime;
 
     GameMode gameMode() { return m_gameMode; }
@@ -184,8 +182,9 @@ public slots:
     void exitGame();
     void updateLevelTime();
     void gameOver();
-    void toggleInstructionText();
     void minimizeToDashboard();
+    void levelUp();
+    void levelDown();
 
     void setRemainingNegativeCharges(int arg)
     {
@@ -225,7 +224,6 @@ private:
     int m_highestLevel;
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     int m_level;
-    int instructionNumber;
     GameState m_gameState;
     GameMode m_gameMode;
     float m_dt; // time difference in seconds
@@ -234,11 +232,9 @@ private:
     QTimer advanceTimer;
 
     bool firstStep;
-    int nResizes;
 
     QGraphicsTextItem *timerText;
     QGraphicsTextItem *levelText;
-    QGraphicsTextItem *instructionText;
     QGraphicsTextItem *menuTitleText;
     QGraphicsTextItem *remainingPositiveChargesText;
     QGraphicsTextItem *remainingNegativeChargesText;

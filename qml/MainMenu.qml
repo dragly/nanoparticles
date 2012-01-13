@@ -65,21 +65,31 @@ Item {
                     var l1 = 1;
                     var l2 = 7;
                     var l3 = 14;
-                    prepareInstructions()
-                    switch(level) {
-                    case l1:
-                        instructionText.text = "<center><center><p>Welcome to party mode!</p><p>New particles await you.</p><p>Collide with the yellow particles<br/>to repel all enemies.</p></center>"
-                        break;
-                    case l2:
-                        instructionText.text = "<center><p>The clocks are ticking.</p><p>Let's make everybody slow down.</p></center>"
-                        break;
-                    case l3:
-                        instructionText.text = "<center><p>Teleport away!</p><p>Wouldn't it be nice if we could just go to a different place?</p><p>Hint: Use the button to the right.</p></center>"
-                        break;
+                    if(level == l1 || level == l2 || level == l3) {
+                        prepareInstructions()
+                        switch(level) {
+                        case l1:
+                            instructionText.text = "<center><center><p>Welcome to party mode!</p><p>New particles await you.</p><p>Collide with the yellow particles<br/>to repel all enemies.</p></center>"
+                            break;
+                        case l2:
+                            instructionText.text = "<center><p>The clocks are ticking.</p><p>Let's make everybody slow down.</p></center>"
+                            break;
+                        case l3:
+                            instructionText.text = "<center><p>Teleport away!</p><p>Wouldn't it be nice if we could just go to a different place?</p><p>Hint: Use the button to the right.</p></center>"
+                            break;
+                        }
                     }
                 }
                 instructionShown = true
             }
+        }
+    }
+
+    onGameModeChanged: {
+        if(gameMode == GameScene.ModeParty) {
+            spinner.state = "party"
+        } else {
+            spinner.state = "classic"
         }
     }
 
@@ -176,16 +186,6 @@ Item {
             }
         }
     ]
-
-    onGameModeChanged: {
-        if(gameMode == GameScene.ModeClassic) {
-            spinner.state = "classic"
-            specialCharges.visible = false
-        } else {
-            spinner.state = "party"
-            specialCharges.visible = true
-        }
-    }
 
     InstructionText {
         id: instructionText
@@ -291,6 +291,7 @@ Item {
             height: parent.width * 0.22
             onClicked: {
                 continueTimer.start()
+                root.state = "running" // get rid of the menues while the counter is counting down
             }
         }
 
@@ -327,7 +328,7 @@ Item {
             width: parent.width * 0.1
             height: parent.width * 0.1
             onClicked: {
-                gameScene.level = gameScene.level + 1
+                gameScene.levelUp()
             }
             source: "qrc:/images/button-levelup.png"
             anchors.horizontalCenterOffset: 53
@@ -349,7 +350,7 @@ Item {
             height: parent.width * 0.1
 
             onClicked: {
-                gameScene.level = gameScene.level - 1
+                gameScene.levelDown()
             }
             source: "qrc:/images/button-leveldown.png"
             opacity: gameScene.level > 1
@@ -516,6 +517,7 @@ Item {
         width: parent.width * 0.1
         height: parent.width * 0.1
         selected: false
+        visible: (gameScene.gameMode == GameScene.ModeParty) // only visible in party mode
         onClicked: {
             gameScene.selectedType = GameScene.ParticleSpecial
         }
