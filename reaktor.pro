@@ -10,12 +10,15 @@ QT       += opengl
 maemo5 {
     CONFIG += qdbus
 }
-
+macx {
+    message(Mac)
+}
 android {
+    message(Android)
     DEFINES += OS_IS_ANDROID
 }
-
-unix:!symbian:!maemo5:!android {} { # harmattan (to become a keyword of its own)
+harmattan { # harmattan (to become a keyword of its own)
+    message(Harmattan)
     DEFINES += OS_IS_HARMATTAN
 }
 
