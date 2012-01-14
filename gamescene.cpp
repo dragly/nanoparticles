@@ -90,7 +90,7 @@ GameScene::GameScene(GameView *parent) :
     enemyImage = QImage(":/images/particle-enemy.png");
     slowMotionImage = QImage(":/images/particle-slow-motion.png");
 
-    setSceneRect(0, 0, 800, 480); // just for init, should be chosen by the platform
+    setSceneRect(0, 0, 854, 480); // just for init, should be chosen by the platform
     setItemIndexMethod(QGraphicsScene::NoIndex);
 
 #ifdef Q_WS_MAEMO_5

@@ -25,8 +25,6 @@ maemo5 {
     DEFINES += OS_IS_HARMATTAN
 } else:macx {
     message(Detected OS: Mac OS X)
-    #DEFINES += NO_OPENGL
-    #QT       -= opengl
 } else:symbian {
     message(Detected OS: Symbian)
     TARGET = Nanoparticles
@@ -57,11 +55,6 @@ HEADERS  += \
     gameobject.h \
     utils.h
 
-FORMS    +=
-
-#CONFIG += mobility
-#MOBILITY =
-
 folder_01.source = qml
 folder_01.target =
 DEPLOYMENTFOLDERS = folder_01
@@ -84,6 +77,25 @@ symbian {
 } else:macx {
     ICON = nanoparticles.icns
 }
+
+maemo5 {
+    desktopfile.files = nanoparticles-maemo.desktop
+    desktopfile.path = /usr/share/applications/hildon
+    INSTALLS += desktopfile
+    icon.files = nanoparticles.png
+    icon.path = /usr/share/icons/hicolor/64x64/apps
+    INSTALLS += icon
+}
+
+contains(MEEGO_EDITION,harmattan) {
+    desktopfile.files = nanoparticles.desktop
+    desktopfile.path = /usr/share/applications
+    INSTALLS += desktopfile
+    icon.files = nanoparticles.png
+    icon.path = /usr/share/icons/hicolor/80x80/apps
+    INSTALLS += icon
+}
+
 
 RESOURCES += \
     resources.qrc
@@ -159,19 +171,5 @@ OTHER_FILES += \
 include(deployment.pri)
 qtcAddDeployment()
 
-#maemo5 {
-#    desktopfile.files = $${TARGET}.desktop
-#    desktopfile.path = /usr/share/applications/hildon
-#    INSTALLS += desktopfile
-#}
-
-#maemo5 {
-#    icon.files = nanoparticles.png
-#    icon.path = /usr/share/icons/hicolor/64x64/apps
-#    INSTALLS += icon
-#}
-
 message(Current defines:)
 message($$DEFINES)
-
-

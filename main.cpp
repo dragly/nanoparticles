@@ -76,8 +76,6 @@ int main(int argc, char *argv[])
 #endif
     //#endif
     qDebug() << "setViewport";
-    QSettings settings;
-    int viewMode = settings.value("viewMode", 0).toInt();
 
 #if defined(Q_WS_S60)
     qDebug() << "Is Symbian!";
@@ -100,7 +98,8 @@ int main(int argc, char *argv[])
 #elif defined(Q_OS_WIN)
     qDebug() << "Is Windows!";
 #endif
-
+    QSettings settings;
+    int viewMode = settings.value("viewMode", 0).toInt();
     if(viewMode == GameScene::ViewNormal) {
         view.showNormal();
     } else {
