@@ -1,4 +1,6 @@
-import QtQuick 1.0
+//import QtQuick 1.0
+// must be Qt 4.7 for Maemo
+import Qt 4.7
 import Nanoparticles 1.0
 
 
@@ -471,16 +473,15 @@ Item {
             gameScene.gameState = GameScene.GamePaused
         }
         source: "qrc:/images/button-pause.png"
-
     }
 
     ImageButton {
         id: positiveCharges
         anchors {
             right: parent.right
-            top: parent.top
+            top: pause.bottom
             rightMargin: parent.width * 0.02
-            topMargin: parent.height * 0.25
+            topMargin: parent.height * 0.01
         }
         width: parent.width * 0.1
         height: parent.width * 0.1
@@ -498,7 +499,7 @@ Item {
             right: parent.right
             top: positiveCharges.bottom
             rightMargin: parent.width * 0.02
-            topMargin: parent.height * 0.02
+            topMargin: parent.height * 0.01
         }
         width: parent.width * 0.1
         height: parent.width * 0.1
@@ -516,7 +517,7 @@ Item {
             right: parent.right
             top: negativeCharges.bottom
             rightMargin: parent.width * 0.02
-            topMargin: parent.height * 0.02
+            topMargin: parent.height * 0.01
         }
         width: parent.width * 0.1
         height: parent.width * 0.1
@@ -533,7 +534,7 @@ Item {
             right: parent.right
             bottom: parent.bottom
             rightMargin: parent.width * 0.03
-            bottomMargin: parent.width * 0.04
+            bottomMargin: parent.width * 0.01
         }
         text: levelTime
         color: "white"

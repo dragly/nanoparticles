@@ -17,6 +17,7 @@ maemo5 {
     CONFIG += qdbus
 } else:harmattan { # harmattan (to become a keyword of its own)
     message(Harmattan)
+    DEFINES += OS_IS_HARMATTAN
 } else:android {
     message(Detected OS: Android)
     DEFINES += OS_IS_ANDROID
@@ -25,8 +26,6 @@ maemo5 {
     DEFINES += OS_IS_HARMATTAN
 } else:macx {
     message(Detected OS: Mac OS X)
-    #DEFINES += NO_OPENGL
-    #QT       -= opengl
 } else:symbian {
     message(Detected OS: Symbian)
     TARGET = Nanoparticles
@@ -57,11 +56,6 @@ HEADERS  += \
     gameobject.h \
     utils.h
 
-FORMS    +=
-
-#CONFIG += mobility
-#MOBILITY =
-
 folder_01.source = qml
 folder_01.target =
 DEPLOYMENTFOLDERS = folder_01
@@ -84,11 +78,14 @@ symbian {
 } else:macx {
     ICON = nanoparticles.icns
 }
+# Maemo 5 and Harmattan are defined in deployment.pri
 
 RESOURCES += \
     resources.qrc
 
 OTHER_FILES += \
+    nanoparticles-maemo.desktop \
+    nanoparticles.desktop \
     LICENSE-font-NovaSquare.txt \
     AboutDialog.qml \
     qtc_packaging/debian_fremantle/rules \
@@ -159,19 +156,5 @@ OTHER_FILES += \
 include(deployment.pri)
 qtcAddDeployment()
 
-#maemo5 {
-#    desktopfile.files = $${TARGET}.desktop
-#    desktopfile.path = /usr/share/applications/hildon
-#    INSTALLS += desktopfile
-#}
-
-#maemo5 {
-#    icon.files = nanoparticles.png
-#    icon.path = /usr/share/icons/hicolor/64x64/apps
-#    INSTALLS += icon
-#}
-
 message(Current defines:)
 message($$DEFINES)
-
-
