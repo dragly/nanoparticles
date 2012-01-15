@@ -94,11 +94,7 @@ GameScene::GameScene(GameView *parent) :
     setItemIndexMethod(QGraphicsScene::NoIndex);
 
 #ifdef Q_WS_MAEMO_5
-    dashboardButton = new Button();
-    prepareButton(dashboardButton);
-    dashboardButton->setPosition(dashboardButtonPosition);
-    dashboardButton->setImage(":/images/button-dashboard.png");
-    dashboardButton->setScale(14);
+    // TODO: Tell mainMenu to hide/view dashboardbutton
 #endif
 
     // Background image
@@ -149,9 +145,6 @@ GameScene::GameScene(GameView *parent) :
 
     setGameState(GameStarted);
 
-#ifdef Q_WS_MAEMO_5
-    connect(dashboardButton, SIGNAL(clicked()), SLOT(minimizeToDashboard()));
-#endif
     // just init all in the resize() function
     resized();
 
@@ -582,8 +575,8 @@ void GameScene::checkAddSpecialParticle() {
                      particle->particleType() == Particle::ParticleRepellent ||
                      particle->particleType() == Particle::ParticleTransfer)
                     ||
-                    (timeSinceCreation > partyDisintegrationEffectTime &&
-                     particle->particleType() == Particle::ParticleGlowing)
+                    ((timeSinceCreation > partyDisintegrationEffectTime &&
+                     particle->particleType() == Particle::ParticleGlowing))
                     ) {
                 if(particle->particleType() == Particle::ParticleSimple) {
                     if(particle->charge() > 0) {

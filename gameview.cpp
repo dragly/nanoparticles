@@ -75,7 +75,7 @@ void GameView::screenChange(const QDBusMessage &message)
     QString state = message.arguments().at(0).toString();
     if (!state.isEmpty()) {
         if (state == MCE_DISPLAY_OFF_STRING)
-            gameScene.pauseGame();
+            gameScene->setGameState(GameScene::GamePaused);
     }
 }
 #endif

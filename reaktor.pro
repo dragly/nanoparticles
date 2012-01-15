@@ -17,6 +17,7 @@ maemo5 {
     CONFIG += qdbus
 } else:harmattan { # harmattan (to become a keyword of its own)
     message(Harmattan)
+    DEFINES += OS_IS_HARMATTAN
 } else:android {
     message(Detected OS: Android)
     DEFINES += OS_IS_ANDROID
@@ -77,30 +78,14 @@ symbian {
 } else:macx {
     ICON = nanoparticles.icns
 }
-
-maemo5 {
-    desktopfile.files = nanoparticles-maemo.desktop
-    desktopfile.path = /usr/share/applications/hildon
-    INSTALLS += desktopfile
-    icon.files = nanoparticles.png
-    icon.path = /usr/share/icons/hicolor/64x64/apps
-    INSTALLS += icon
-}
-
-contains(MEEGO_EDITION,harmattan) {
-    desktopfile.files = nanoparticles.desktop
-    desktopfile.path = /usr/share/applications
-    INSTALLS += desktopfile
-    icon.files = nanoparticles.png
-    icon.path = /usr/share/icons/hicolor/80x80/apps
-    INSTALLS += icon
-}
-
+# Maemo 5 and Harmattan are defined in deployment.pri
 
 RESOURCES += \
     resources.qrc
 
 OTHER_FILES += \
+    nanoparticles-maemo.desktop \
+    nanoparticles.desktop \
     LICENSE-font-NovaSquare.txt \
     AboutDialog.qml \
     qtc_packaging/debian_fremantle/rules \

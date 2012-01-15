@@ -4,8 +4,8 @@ Version=1.0
 Type=Application
 Terminal=false
 Name=Nanoparticles
-Exec=invoker --type=e --single-instance /opt/nanoparticles/bin/nanoparticles
-Icon=/usr/share/icons/hicolor/80x80/apps/nanoparticles.png
+Exec=/opt/nanoparticles/bin/nanoparticles
+Icon=/usr/share/icons/hicolor/64x64/apps/nanoparticles.png
 X-Window-Icon=nanoparticles
 X-HildonDesk-ShowInToolbar=true
 X-Osso-Type=application/x-executable

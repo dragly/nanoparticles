@@ -23,7 +23,6 @@ int main(int argc, char *argv[])
     // Register all QML mapped C++ classes
     qmlRegisterType<GameScene>("Nanoparticles", 1, 0, "GameScene");
 
-    qDebug() << "Starting app now with no OpenGL...";
     QApplication a(argc, argv);
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
