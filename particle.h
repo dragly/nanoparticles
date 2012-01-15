@@ -55,17 +55,10 @@ public:
 
     bool matchParticles(Particle *particle1, Particle *particle2, ParticleType type1, ParticleType type2);
     bool hasCollidedWithPlayer;
-    int createdTime() {
-        return m_createdTime;
-    }
-    void setCreatedTime(int createdTime) {
-        m_createdTime = createdTime;
-    }
-    void setDueTime(int dueTime) {
-        originalDueTime = dueTime;
+    void setDueTime(double dueTime) {
         m_dueTime = dueTime;
     }
-    int dueTime() {
+    double dueTime() {
         return m_dueTime;
     }
 
@@ -80,13 +73,12 @@ private:
     QImage neutralImage;
     int m_particleType;
     qreal _mass;
-    bool _electroSticky;
     bool _sticky;
+    bool _electroSticky;
     qreal originalCharge;
-    int m_createdTime;
-    int m_dueTime;
-    int originalDueTime;
-    int originalScale;
+    double m_dueTime;
+    double originalDueTime;
+    double originalScale;
 
 };
 

@@ -25,20 +25,20 @@ const qreal forceByLengthFactor = 0.9;
 const qreal repellentCharge = -500;
 const qreal repellentDechargeRate = 200;
 
-// due time
-const int simpleDueTime = 10;
-
 // scaling
 const qreal globalScale = 2.5;
 const qreal playerScale = 1.3;
 const qreal enemyScale = 1.35;
-const qreal simpleScale = 1.2;
+const qreal simpleScale = 1.25;
 const qreal slowMotionScale = 2.0;
 const qreal repellentScale = 1.1;
+const qreal glowingScale = 1.1;
+const qreal transferScale = 1.1;
 
 // party mode settings
-const int partyDisintegrationTime = 10000;
-const int partyDisintegrationGlowingTime = 2000;
+const qreal partyDisintegrationSimpleTime = 10.0;
+const qreal partyDisintegrationGlowingTime = 2.0;
+const qreal partyDisintegrationSpecialTime = 20.0;
 
 Particle::Particle(GameScene *gameScene) :
     GameObject(gameScene) ,
@@ -49,7 +49,7 @@ Particle::Particle(GameScene *gameScene) :
     _mass(particleMass),
     _electroSticky(false),
     hasCollidedWithPlayer(false),
-    m_createdTime(0)
+    m_dueTime(0)
 {
 }
 
@@ -106,15 +106,26 @@ void Particle::advance(int step) {
     }
     setPosition(nextPosition); // we calculated our next position in the last timestep, now, lets use it
     float dt = gameScene()->dt();
-    // Special charges
-    if(particleType() == ParticleRepellent) {
-        if(charge() < 0) {
-            setCharge(charge() + dt * repellentDechargeRate);
+    // Party mode stuff
+    if(gameScene()->gameMode() == GameScene::ModeParty) {
+        // Special charges
+        if(particleType() == ParticleRepellent) {
+            if(charge() < 0) {
+                setCharge(charge() + dt * repellentDechargeRate);
+            }
         }
-    }
-    // scale by due time
-    if(dueTime() != -1) {
-        setScale(originalScale * (double) dueTime / (double) originalDueTime);
+        // scale by due time
+        setDueTime(dueTime() - dt);
+        if(dueTime() > 0) {
+            setScale(originalScale * dueTime() / originalDueTime);
+        }
+        // Shake watches on slow motion
+        if(particleType() == ParticleSlowMotion) {
+            qDebug() << gameScene()->isSlowMotionEnabled();
+            if(gameScene()->isSlowMotionEnabled()) {
+                setRotation(rotation() + 360 * dt);
+            }
+        }
     }
     // Calculate forces
     QVector2D F;
@@ -181,7 +192,6 @@ void Particle::advance(int step) {
                                     qreal yvel = (7 + ran0() * 3) * sin(2*M_PI * i / nEffectParticles);
                                     particleEffect->setPosition(QVector2D(xpos,ypos));
                                     particleEffect->setVelocity(QVector2D(xvel,yvel));
-                                    particleEffect->setScale(3);
                                     particleEffect->setMass(10);
                                     particleEffect->setCharge(0);
                                     particleEffect->setParticleType(ParticleGlowing);
@@ -284,12 +294,13 @@ QRectF Particle::boundingRect() const {
 void Particle::setParticleType(int particleType)
 {
     m_particleType = particleType;
-    if(gameScene->gameMode() == GameScene::ModeParty) {
-        if(particleType == ParticleSimple ||
-                particleType == ParticleSlowMotion ||
-                particleType == ParticleRepellent ||
-                particleType == ParticleTransfer) {
-            setDueTime(partyDisintegrationTime);
+    if(gameScene()->gameMode() == GameScene::ModeParty) {
+        if(particleType == ParticleSimple) {
+            setDueTime(partyDisintegrationSimpleTime);
+        } else if (particleType == ParticleSlowMotion ||
+                   particleType == ParticleRepellent ||
+                   particleType == ParticleTransfer) {
+            setDueTime(partyDisintegrationSpecialTime);
         } else if(particleType == ParticleGlowing) {
             setDueTime(partyDisintegrationGlowingTime);
         } else {
@@ -298,10 +309,33 @@ void Particle::setParticleType(int particleType)
     } else {
         setDueTime(-1);
     }
-    if(particleType == ParticlePlayer) {
-        setScale(playerScale * globalScale);
-        originalScale = playerScale * globalScale;
-    } else if(particleType == ParticleEnemy) {
-        setScale(enemyScale * globalScale);
+    originalDueTime = dueTime();
+    // Scaling
+    // TODO: Make this a bit prettier by using an array or something
+    qreal myScale = 1.0;
+    switch(particleType) {
+    case ParticlePlayer:
+        myScale = playerScale;
+        break;
+    case ParticleEnemy:
+        myScale = enemyScale;
+        break;
+    case ParticleSimple:
+        myScale = simpleScale;
+        break;
+    case ParticleSlowMotion:
+        myScale = slowMotionScale;
+        break;
+    case ParticleRepellent:
+        myScale = repellentScale;
+        break;
+    case ParticleGlowing:
+        myScale = glowingScale;
+        break;
+    case ParticleTransfer:
+        myScale = transferScale;
+        break;
     }
+    setScale(myScale * globalScale);
+    originalScale = scale();
 }

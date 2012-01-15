@@ -77,7 +77,7 @@ Item {
                             instructionText.text = "<center><p>The clocks are ticking.</p><p>Let's make everybody slow down.</p></center>"
                             break;
                         case l3:
-                            instructionText.text = "<center><p>Teleport away!</p><p>Wouldn't it be nice if we could just go to a different place?</p><p>Hint: Use the button to the right.</p></center>"
+                            instructionText.text = "<center><p>Teleport away!</p><p>Wouldn't it be nice if we could<br/>go to a different place?</p><p>Hint: Use the button to the right.</p></center>"
                             break;
                         }
                     }
@@ -321,6 +321,7 @@ Item {
             }
             onClicked: {
                 retryTimer.start()
+                root.state = "running" // get rid of the menues while the counter is counting down
             }
         }
 
@@ -522,7 +523,7 @@ Item {
         width: parent.width * 0.1
         height: parent.width * 0.1
         selected: false
-        visible: (gameScene.gameMode == GameScene.ModeParty) // only visible in party mode
+        visible: (gameScene.gameMode == GameScene.ModeParty && level >= 14) // only visible in party mode above level 14
         onClicked: {
             gameScene.selectedType = GameScene.ParticleSpecial
         }
