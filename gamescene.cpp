@@ -25,13 +25,6 @@
     - Draw using FullViewPortUpdate - does it give any performance improvements?
     - Use health bar instead immediate death.
 */
-// scaling
-const qreal globalScale = 2.5;
-const qreal playerScale = 1.3;
-const qreal enemyScale = 1.35;
-const qreal simpleScale = 1.2;
-const qreal slowMotionScale = 2.0;
-const qreal repellentScale = 1.1;
 
 // charges
 const qreal enemyCharge = -7.8;
@@ -54,10 +47,6 @@ const int baseTimeParty = 30;
 const qreal timeIncrementParty = 2;
 const qreal normalTimeFactor = 1.0;
 const qreal slowMotionTimeFactor = 0.3;
-
-// party mode settings
-const int partyDisintegrationTime = 10000;
-const int partyDisintegrationEffectTime = 2000;
 
 GameScene::GameScene(GameView *parent) :
     QGraphicsScene(parent)
@@ -553,27 +542,8 @@ void GameScene::advance() {
 }
 
 void GameScene::checkAddSpecialParticle() {
-    int dueTime = partyDisintegrationTime;
     foreach(QGraphicsItem *item, items()) {
         if(Particle* particle = qgraphicsitem_cast<Particle*>(item)) {
-            qreal timeDiff = currentTime - particle->createdTime();
-            // Scale all
-            if(particle->particleType() == Particle::ParticleSimple) {
-                particle->setScale(globalScale * simpleScale * (dueTime - timeDiff) / dueTime);
-            }
-            if(particle->particleType() == Particle::ParticleSlowMotion) {
-                particle->setScale(globalScale * slowMotionScale * (dueTime - timeDiff) / dueTime);
-            }
-            if(particle->particleType() == Particle::ParticleRepellent) {
-                particle->setScale(globalScale * repellentScale * (dueTime - timeDiff) / dueTime);
-            }
-            if(particle->particleType() == Particle::ParticleTransfer) {
-                particle->setScale(globalScale * slowMotionScale * (dueTime - timeDiff) / dueTime);
-            }
-            if(particle->particleType() == Particle::ParticleGlowing) {
-                int dueEffectTime = partyDisintegrationEffectTime;
-                particle->setScale(globalScale * repellentScale * (dueEffectTime - timeDiff) / dueEffectTime);
-            }
             // Remove overdue charges
             int timeSinceCreation = currentTime - particle->createdTime();
             if(timeSinceCreation > partyDisintegrationTime &&
@@ -582,7 +552,7 @@ void GameScene::checkAddSpecialParticle() {
                      particle->particleType() == Particle::ParticleRepellent ||
                      particle->particleType() == Particle::ParticleTransfer)
                     ||
-                    (timeSinceCreation > partyDisintegrationEffectTime &&
+                    (timeSinceCreation > partyDisintegrationGlowingTime &&
                      particle->particleType() == Particle::ParticleGlowing)
                     ) {
                 if(particle->particleType() == Particle::ParticleSimple) {

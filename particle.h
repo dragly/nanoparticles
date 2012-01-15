@@ -33,8 +33,8 @@ public:
     void setVelocity(QVector2D velocity) {this->_velocity = velocity;}
     QVector2D velocity() {return _velocity;}
 
-    int particleType() {return _particleType; }
-    void setParticleType(int particleType) { this->_particleType = particleType; }
+    int particleType() {return m_particleType; }
+    void setParticleType(int particleType);
 
     bool sticky() {return _sticky;}
     void setSticky(bool sticky) {
@@ -61,6 +61,13 @@ public:
     void setCreatedTime(int createdTime) {
         m_createdTime = createdTime;
     }
+    void setDueTime(int dueTime) {
+        originalDueTime = dueTime;
+        m_dueTime = dueTime;
+    }
+    int dueTime() {
+        return m_dueTime;
+    }
 
 protected:
     void advance(int step);
@@ -71,12 +78,15 @@ private:
     QImage negativeImage;
     QImage positiveImage;
     QImage neutralImage;
-    int _particleType;
+    int m_particleType;
     qreal _mass;
     bool _electroSticky;
     bool _sticky;
     qreal originalCharge;
     int m_createdTime;
+    int m_dueTime;
+    int originalDueTime;
+    int originalScale;
 
 };
 

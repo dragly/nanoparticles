@@ -7,8 +7,8 @@
 QT       += core gui declarative
 QT       += opengl
 android {
-    DEFINES += NO_OPENGL
-    QT       -= opengl
+#    DEFINES += NO_OPENGL
+#    QT       -= opengl
 }
 TARGET = nanoparticles
 

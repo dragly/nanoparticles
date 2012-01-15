@@ -25,18 +25,32 @@ const qreal forceByLengthFactor = 0.9;
 const qreal repellentCharge = -500;
 const qreal repellentDechargeRate = 200;
 
+// due time
+const int simpleDueTime = 10;
+
+// scaling
+const qreal globalScale = 2.5;
+const qreal playerScale = 1.3;
+const qreal enemyScale = 1.35;
+const qreal simpleScale = 1.2;
+const qreal slowMotionScale = 2.0;
+const qreal repellentScale = 1.1;
+
+// party mode settings
+const int partyDisintegrationTime = 10000;
+const int partyDisintegrationGlowingTime = 2000;
+
 Particle::Particle(GameScene *gameScene) :
     GameObject(gameScene) ,
     m_charge(0),
     _velocity(0,0),
     _sticky(false),
-    _particleType(ParticleSimple),
+    m_particleType(ParticleSimple),
     _mass(particleMass),
     _electroSticky(false),
     hasCollidedWithPlayer(false),
     m_createdTime(0)
 {
-    setCreatedTime(gameScene->currentTime);
 }
 
 void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
@@ -97,6 +111,10 @@ void Particle::advance(int step) {
         if(charge() < 0) {
             setCharge(charge() + dt * repellentDechargeRate);
         }
+    }
+    // scale by due time
+    if(dueTime() != -1) {
+        setScale(originalScale * (double) dueTime / (double) originalDueTime);
     }
     // Calculate forces
     QVector2D F;
@@ -259,7 +277,31 @@ bool Particle::matchParticles(Particle* particle1, Particle* particle2, Particle
     }
 }
 
-
 QRectF Particle::boundingRect() const {
     return realsize(false);
+}
+
+void Particle::setParticleType(int particleType)
+{
+    m_particleType = particleType;
+    if(gameScene->gameMode() == GameScene::ModeParty) {
+        if(particleType == ParticleSimple ||
+                particleType == ParticleSlowMotion ||
+                particleType == ParticleRepellent ||
+                particleType == ParticleTransfer) {
+            setDueTime(partyDisintegrationTime);
+        } else if(particleType == ParticleGlowing) {
+            setDueTime(partyDisintegrationGlowingTime);
+        } else {
+            setDueTime(-1);
+        }
+    } else {
+        setDueTime(-1);
+    }
+    if(particleType == ParticlePlayer) {
+        setScale(playerScale * globalScale);
+        originalScale = playerScale * globalScale;
+    } else if(particleType == ParticleEnemy) {
+        setScale(enemyScale * globalScale);
+    }
 }
