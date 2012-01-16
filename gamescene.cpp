@@ -83,10 +83,6 @@ GameScene::GameScene(GameView *parent) :
     setSceneRect(0, 0, 854, 480); // just for init, should be chosen by the platform
     setItemIndexMethod(QGraphicsScene::NoIndex);
 
-#ifdef Q_WS_MAEMO_5
-    // TODO: Tell mainMenu to hide/view dashboardbutton
-#endif
-
     // Background image
     QPixmap backgroundPixmap(":/images/background.png");
     backgroundImage = this->addPixmap(backgroundPixmap);
@@ -146,7 +142,12 @@ GameScene::GameScene(GameView *parent) :
     time.start();
     qDebug() << "Timers started!";
 
-
+    // dashboard button
+#if (defined(Q_OS_LINUX) || defined(Q_OS_WIN32) || defined(Q_OS_MAC) || defined(Q_WS_MAEMO_5)) && !defined OS_IS_HARMATTAN
+    qDebug() << "Show dashboard button";
+#else
+    qDebug() << "Don't show dashboard button";
+#endif
 
     // load settings
     setGameMode((GameMode)settings.value("gameMode", ModeClassic).toInt());
@@ -276,13 +277,7 @@ void GameScene::exitGame() {
 }
 
 void GameScene::minimizeToDashboard() {
-#ifdef Q_WS_MAEMO_5
-    QDBusConnection connection = QDBusConnection::sessionBus();
-    QDBusMessage message = QDBusMessage::createSignal("/","com.nokia.hildon_desktop","exit_app_view");
-    connection.send(message);
-#else
-    qDebug() << "This function is not implemented on anything but Maemo5.";
-#endif
+
 }
 
 void GameScene::levelUp()
@@ -297,6 +292,23 @@ void GameScene::levelDown()
     if(level() > 1) {
         setLevel(level() - 1);
     }
+}
+
+void GameScene::clickedDashboardButton()
+{
+#if defined Q_WS_MAEMO_5
+    QDBusConnection connection = QDBusConnection::sessionBus();
+    QDBusMessage message = QDBusMessage::createSignal("/","com.nokia.hildon_desktop","exit_app_view");
+    connection.send(message);
+#elif (defined Q_OS_LINUX || defined Q_OS_MAC || defined Q_OS_WIN32) && !defined OS_IS_HARMATTAN
+    if(viewMode() == ViewNormal) {
+        setViewMode(ViewFullScreen);
+    } else {
+        setViewMode(ViewNormal);
+    }
+#else
+    qDebug() << "Dashboard button should not have been shown...";
+#endif
 }
 
 void GameScene::setGameState(GameState gameState) {

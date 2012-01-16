@@ -16,6 +16,7 @@ Item {
     property int selectedType
     property int viewMode
     property bool instructionShown
+    property bool dashboardButtonVisible
     // The contextGameScene object is passed to this QML object through the GameScene initialization in C++
     // We then set it to our internal property gameScene
     property GameScene gameScene
@@ -377,11 +378,7 @@ Item {
             width: parent.width * 0.1
             height: parent.width * 0.1
             onClicked: {
-                if(gameScene.viewMode == GameScene.ViewNormal) {
-                    gameScene.viewMode = GameScene.ViewFullScreen
-                } else {
-                    gameScene.viewMode = GameScene.ViewNormal
-                }
+                gameScene.clickedDashboardButton()
             }
             source: "qrc:/images/button-dashboard.png"
             anchors.horizontalCenterOffset: 53

@@ -201,6 +201,7 @@ public slots:
     void minimizeToDashboard();
     void levelUp();
     void levelDown();
+    void clickedDashboardButton();
 
     void setRemainingNegativeCharges(int arg)
     {
