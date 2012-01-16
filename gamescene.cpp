@@ -54,7 +54,7 @@ GameScene::GameScene(GameView *parent) :
 {
     qRegisterMetaType<GameScene::GameMode>("GameMode");
     qRegisterMetaType<GameScene::GameState>("GameState");
-#ifdef Q_OS_ANDROID
+#ifdef OS_IS_ANDROID
     qDebug() << "Force syncing settings";
     settings.sync();
 #endif
@@ -89,7 +89,7 @@ GameScene::GameScene(GameView *parent) :
 
     // Main menu
     QDeclarativeEngine *engine = new QDeclarativeEngine;
-#ifdef Q_OS_ANDROID
+#ifdef OS_IS_ANDROID
     qDebug() << "Setting base URL for Android to /";
     engine->setBaseUrl(QUrl::fromLocalFile("/"));
 #endif
@@ -143,7 +143,7 @@ GameScene::GameScene(GameView *parent) :
     qDebug() << "Timers started!";
 
     // dashboard button
-#if (defined(Q_OS_LINUX) || defined(Q_OS_WIN32) || defined(Q_OS_MAC) || defined(Q_WS_MAEMO_5)) && !defined OS_IS_HARMATTAN
+#if (defined(Q_OS_LINUX) || defined(Q_OS_WIN32) || defined(Q_OS_MAC) || defined(Q_WS_MAEMO_5)) && !defined OS_IS_HARMATTAN && !defined OS_IS_ANDROID
     qDebug() << "Show dashboard button";
 #else
     qDebug() << "Don't show dashboard button";
@@ -229,7 +229,7 @@ void GameScene::updateLevelTime() {
                 settings.setValue("highestLevelParty", level());
             }
         }
-#ifdef Q_OS_ANDROID
+#ifdef OS_IS_ANDROID
         qDebug() << "Force syncing settings";
         settings.sync();
 #endif
@@ -300,7 +300,7 @@ void GameScene::clickedDashboardButton()
     QDBusConnection connection = QDBusConnection::sessionBus();
     QDBusMessage message = QDBusMessage::createSignal("/","com.nokia.hildon_desktop","exit_app_view");
     connection.send(message);
-#elif (defined Q_OS_LINUX || defined Q_OS_MAC || defined Q_OS_WIN32) && !defined OS_IS_HARMATTAN
+#elif (defined Q_OS_LINUX || defined Q_OS_MAC || defined Q_OS_WIN32) && !defined OS_IS_HARMATTAN && !defined OS_IS_ANDROID
     if(viewMode() == ViewNormal) {
         setViewMode(ViewFullScreen);
     } else {

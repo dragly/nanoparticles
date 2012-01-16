@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 #elif defined(OS_IS_HARMATTAN)
     qDebug() << "Is MeeGo!";
     view.showFullScreen();
-#elif defined(Q_OS_ANDROID)
+#elif defined(OS_IS_ANDROID)
     qDebug() << "Is Android!";
     view.showFullScreen();
 #elif defined(OS_IS_DESKTOP_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_WIN)
