@@ -66,7 +66,6 @@ int main(int argc, char *argv[])
 #ifndef NO_OPENGL
     qDebug() << "Using OpenGL";
     QGLWidget *glwidget = new QGLWidget();
-    glwidget->showFullScreen();
     // IMPORTANT: Disabling this makes animations with images sluggish.
     // Disable only if enteriely necessary, and try to find another option to draw smooth animations first
     view.setViewport(glwidget);
