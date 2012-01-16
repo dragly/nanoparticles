@@ -79,6 +79,8 @@ GameScene::GameScene(GameView *parent) :
     glowingImage = QImage(":/images/particle-glowing.png");
     enemyImage = QImage(":/images/particle-enemy.png");
     slowMotionImage = QImage(":/images/particle-slow-motion.png");
+    repellentImage = QImage(":/images/particle-repellent.png");
+    transferImage = QImage(":/images/particle-transfer.png");
 
     setSceneRect(0, 0, 854, 480); // just for init, should be chosen by the platform
     setItemIndexMethod(QGraphicsScene::NoIndex);
@@ -107,6 +109,7 @@ GameScene::GameScene(GameView *parent) :
 #ifdef OS_IS_HARMATTAN
     mainMenu->setProperty("exit.visible", false);
 #endif
+
 
 #ifdef OS_IS_SYMBIAN
     qreal screenWidth = QApplication::desktop()->screenGeometry().width();
@@ -143,10 +146,12 @@ GameScene::GameScene(GameView *parent) :
     qDebug() << "Timers started!";
 
     // dashboard button
-#if (defined(Q_OS_LINUX) || defined(Q_OS_WIN32) || defined(Q_OS_MAC) || defined(Q_WS_MAEMO_5)) && !defined OS_IS_HARMATTAN && !defined OS_IS_ANDROID
+#if (defined(OS_IS_DESKTOP_LINUX) || defined(Q_OS_WIN32) || defined(Q_OS_MAC) || defined(Q_WS_MAEMO_5))
     qDebug() << "Show dashboard button";
+    mainMenu->setProperty("dashboardButtonVisible", true);
 #else
     qDebug() << "Don't show dashboard button";
+    mainMenu->setProperty("dashboardButtonVisible", false);
 #endif
 
     // load settings

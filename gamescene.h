@@ -73,6 +73,8 @@ public:
     QImage playerOverchargedImage;
     QImage glowingImage;
     QImage selectionImage;
+    QImage transferImage;
+    QImage repellentImage;
     QRectF gameRectF();
     double toFp(double number, bool useSmallest = false) const;
     double fromFp(double number, bool useSmallest = false) const;

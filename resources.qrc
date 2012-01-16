@@ -32,5 +32,7 @@
         <file>images/particle-glowing.png</file>
         <file>images/button-special-charge-selected.png</file>
         <file>images/button-special-charge.png</file>
+        <file>images/particle-repellent.png</file>
+        <file>images/particle-transfer.png</file>
     </qresource>
 </RCC>

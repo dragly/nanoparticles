@@ -31,9 +31,9 @@ const qreal playerScale = 1.3;
 const qreal enemyScale = 1.35;
 const qreal simpleScale = 1.25;
 const qreal slowMotionScale = 2.0;
-const qreal repellentScale = 1.1;
+const qreal repellentScale = 1.2;
 const qreal glowingScale = 1.1;
-const qreal transferScale = 1.1;
+const qreal transferScale = 1.2;
 
 // party mode settings
 const qreal partyDisintegrationSimpleTime = 10.0;
@@ -90,11 +90,11 @@ void Particle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     } else if(particleType() == ParticleSlowMotion) {
         painter->drawImage(realsize(),gameScene()->slowMotionImage);
     } else if(particleType() == ParticleRepellent) {
-        painter->drawImage(realsize(),gameScene()->playerOverchargedImage);
+        painter->drawImage(realsize(),gameScene()->repellentImage);
     } else if(particleType() == ParticleGlowing) {
         painter->drawImage(realsize(),gameScene()->glowingImage);
     } else if(particleType() == ParticleTransfer) {
-        painter->drawImage(realsize(),gameScene()->neutralImage);
+        painter->drawImage(realsize(),gameScene()->transferImage);
     }
 }
 
