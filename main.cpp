@@ -91,11 +91,11 @@ int main(int argc, char *argv[])
 #elif defined(OS_IS_DESKTOP_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_WIN)
 
 #if defined(OS_IS_DESKTOP_LINUX)
-    qDebug() << "Is Destkop Linux";
+        qDebug() << "Is Destkop Linux";
 #elif defined(Q_OS_MAC)
-    qDebug() << "Is Mac!";
+        qDebug() << "Is Mac!";
 #elif defined(Q_OS_WIN)
-    qDebug() << "Is Windows!";
+        qDebug() << "Is Windows!";
 #endif
     QSettings settings;
     int viewMode = settings.value("viewMode", 0).toInt();

@@ -23,6 +23,7 @@ Item {
     gameScene: contextGameScene
 
     id: root
+    dashboardButtonVisible: true
     width: 800
     height: 600
     state: "initial"
@@ -377,6 +378,7 @@ Item {
             }
             width: parent.width * 0.1
             height: parent.width * 0.1
+            visible: dashboardButtonVisible
             onClicked: {
                 gameScene.clickedDashboardButton()
             }
