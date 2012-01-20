@@ -72,8 +72,8 @@ private:
     QImage positiveImage;
     QImage neutralImage;
     int m_particleType;
-    qreal _mass;
     bool _sticky;
+    qreal _mass;
     bool _electroSticky;
     qreal originalCharge;
     double m_dueTime;

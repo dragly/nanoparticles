@@ -526,6 +526,8 @@ Item {
         onClicked: {
             gameScene.selectedType = GameScene.ParticleSpecial
         }
+        source: "qrc:/images/button-special-charge.png"
+        selectedSource: "qrc:/images/button-special-charge-selected.png"
     }
 
     Text {

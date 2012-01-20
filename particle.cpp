@@ -42,13 +42,13 @@ const qreal partyDisintegrationSpecialTime = 20.0;
 
 Particle::Particle(GameScene *gameScene) :
     GameObject(gameScene) ,
+    hasCollidedWithPlayer(false),
     m_charge(0),
     _velocity(0,0),
     m_particleType(ParticleSimple),
     _sticky(false),
     _mass(particleMass),
     _electroSticky(false),
-    hasCollidedWithPlayer(false),
     m_dueTime(0)
 {
 }
@@ -121,7 +121,6 @@ void Particle::advance(int step) {
         }
         // Shake watches on slow motion
         if(particleType() == ParticleSlowMotion) {
-            qDebug() << gameScene()->isSlowMotionEnabled();
             if(gameScene()->isSlowMotionEnabled()) {
                 setRotation(rotation() + 360 * dt);
             }

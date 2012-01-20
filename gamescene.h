@@ -7,7 +7,7 @@
 #include <QTimer>
 #include <QTime>
 
-const QString NANOPARTICLES_VERSION = QString("1.99.3");
+const QString NANOPARTICLES_VERSION = QString("2.0.0");
 
 class Particle;
 class GameView;
