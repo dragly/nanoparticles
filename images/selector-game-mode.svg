@@ -16,7 +16,7 @@
    version="1.1"
    inkscape:version="0.48.2 r9819"
    sodipodi:docname="selector-game-mode.svg"
-   inkscape:export-filename="selector-game-mode-spinner.png"
+   inkscape:export-filename="selector-game-mode-top.png"
    inkscape:export-xdpi="192"
    inkscape:export-ydpi="192">
   <defs
@@ -1299,7 +1299,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -1308,7 +1308,7 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(-179.56526,-363.35601)"
-     style="display:inline">
+     style="display:none">
     <path
        sodipodi:type="arc"
        style="opacity:0.81115878;color:#000000;fill:url(#radialGradient4694);fill-opacity:1;fill-rule:nonzero;stroke:none;marker:none;visibility:visible;display:inline;overflow:visible;filter:url(#filter4111-4);enable-background:accumulate"
@@ -1317,7 +1317,7 @@
        sodipodi:cy="432.36218"
        sodipodi:rx="60"
        sodipodi:ry="60"
-       d="m 308.57143,432.36218 c 0,33.13709 -26.86292,60 -60,60 -33.13709,0 -60,-26.86291 -60,-60 0,-33.13708 26.86291,-60 60,-60 33.13708,0 60,26.86292 60,60 z"
+       d="m 308.57143,432.36218 a 60,60 0 1 1 -120,0 60,60 0 1 1 120,0 z"
        transform="matrix(0.90618441,0,0,0.90618441,23.319881,40.562313)" />
     <path
        style="opacity:0.38197428;fill:url(#radialGradient4696);fill-opacity:1;stroke:none;filter:url(#filter3813)"
@@ -1331,7 +1331,7 @@
      inkscape:groupmode="layer"
      id="layer3"
      inkscape:label="spinner"
-     style="display:inline"
+     style="display:none"
      transform="translate(9.0061666,9.0061566)">
     <path
        sodipodi:type="arc"
@@ -1390,7 +1390,7 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="top"
-     style="opacity:0.99111167;display:none"
+     style="opacity:0.99111173;display:inline"
      transform="translate(9.0061666,9.0061566)">
     <path
        inkscape:connector-curvature="0"
