@@ -66,7 +66,6 @@ int main(int argc, char *argv[])
 #ifndef NO_OPENGL
     qDebug() << "Using OpenGL";
     QGLWidget *glwidget = new QGLWidget();
-    glwidget->showFullScreen();
     // IMPORTANT: Disabling this makes animations with images sluggish.
     // Disable only if enteriely necessary, and try to find another option to draw smooth animations first
     view.setViewport(glwidget);
@@ -85,18 +84,24 @@ int main(int argc, char *argv[])
 #elif defined(OS_IS_HARMATTAN)
     qDebug() << "Is MeeGo!";
     view.showFullScreen();
-#elif defined(Q_OS_ANDROID)
+#elif defined(OS_IS_ANDROID)
     qDebug() << "Is Android!";
-    view.showFullScreen();
+
+    #if defined NO_OPENGL
+        view.showFullScreen();
+    #else
+        view.showNormal();
+    #endif
+
 #elif defined(OS_IS_DESKTOP_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_WIN)
 
-#if defined(OS_IS_DESKTOP_LINUX)
+    #if defined(OS_IS_DESKTOP_LINUX)
         qDebug() << "Is Destkop Linux";
-#elif defined(Q_OS_MAC)
+    #elif defined(Q_OS_MAC)
         qDebug() << "Is Mac!";
-#elif defined(Q_OS_WIN)
+    #elif defined(Q_OS_WIN)
         qDebug() << "Is Windows!";
-#endif
+    #endif
     QSettings settings;
     int viewMode = settings.value("viewMode", 0).toInt();
     if(viewMode == GameScene::ViewNormal) {
