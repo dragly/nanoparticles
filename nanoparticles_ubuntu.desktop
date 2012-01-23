@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Terminal=false
+Name=Nanoparticles
+Exec=/opt/nanoparticles/bin/nanoparticles
+Icon=/usr/share/icons/hicolor/scalable/apps/nanoparticles.png
+Categories=Game;ArcadeGame;

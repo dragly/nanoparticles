@@ -34,6 +34,11 @@ maemo5 {
 } else:unix {
     message(Detected OS: Desktop Linux)
     DEFINES += OS_IS_DESKTOP_LINUX
+    desktopfile.files = $${TARGET}_ubuntu.desktop
+    desktopfile.path = /usr/share/applications
+    icon.files = $${TARGET}.png
+    icon.path = /usr/share/icons/hicolor/scalable/apps
+    INSTALLS += icon desktopfile
 } else {
     message(Detected OS: Unknown)
 }
@@ -84,7 +89,7 @@ RESOURCES += \
     resources.qrc
 
 OTHER_FILES += \
-    nanoparticles-maemo.desktop \
+    nanoparticles_harmattan.desktop \
     nanoparticles.desktop \
     LICENSE-font-NovaSquare.txt \
     AboutDialog.qml \
@@ -100,6 +105,12 @@ OTHER_FILES += \
     qtc_packaging/debian_harmattan/control \
     qtc_packaging/debian_harmattan/compat \
     qtc_packaging/debian_harmattan/changelog \
+    qtc_packaging/debian_ubuntu/rules \
+    qtc_packaging/debian_ubuntu/README \
+    qtc_packaging/debian_ubuntu/copyright \
+    qtc_packaging/debian_ubuntu/control \
+    qtc_packaging/debian_ubuntu/compat \
+    qtc_packaging/debian_ubuntu/changelog \
     android/AndroidManifest.xml \
     android/src/eu/licentia/necessitas/mobile/QtSensors.java \
     android/src/eu/licentia/necessitas/mobile/QtMediaPlayer.java \

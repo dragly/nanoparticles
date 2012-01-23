@@ -95,7 +95,7 @@ symbian {
             }
             target = $$replace(target, \\\\, /)
             sourcePathSegments = $$split(source, /)
-            targetFullPath = $$target/$$last(sourcePathSegments)
+            targetFullPath = $$target$$last(sourcePathSegments)
             !isEqual(source,$$targetFullPath) {
                 !isEmpty(copyCommand):copyCommand += &&
                 copyCommand += $(MKDIR) \"$$target\"

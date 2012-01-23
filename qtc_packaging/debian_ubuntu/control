@@ -1,0 +1,13 @@
+Source: nanoparticles
+Section: games
+Priority: extra
+Maintainer: Svenn-Arne Dragly <s@dragly.com>
+Build-Depends: debhelper (>= 7.0.50~), libqt4-dev, qt4-qmake, libqt4-opengl-dev
+Standards-Version: 3.9.1
+Homepage: http://dragly.org/source/nanoparticles
+
+Package: nanoparticles
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Let the world of physics enter your mobile.
+ You are the green charge. Move it by attracting or repelling it with blue and red charges respectively. Avoid crashing with the purple charges.
