@@ -1,0 +1,17 @@
+Building a package for Ubuntu
+-
+Make sure that you have the following in the deployment file (to avoid errors about copying qml directory)
+
+targetFullPath = $$target$$last(sourcePathSegments)
+
+Move to source directory and create package.
+
+debuild -I.git -Iandroid -Iimages/promotional
+
+Install and test package. If all is OK, make source package:
+
+debuild -I.git -Iandroid -Iimages/promotional -S
+
+Upload using dput
+
+dput ppa:<yourppa>/nanoparticles ../nanoparticles_2.0.0_source.changes
