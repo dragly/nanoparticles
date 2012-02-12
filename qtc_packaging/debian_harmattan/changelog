@@ -1,3 +1,16 @@
+nanoparticles (2.0.0) unstable; urgency=low
+
+  * Finalized changes and fixed bugs for 2.0 version.
+
+ -- Svenn-Arne <s@dragly.com>  Tue, 17 Jan 2012 16:14:32 +0100
+
+nanoparticles (1.99.1) unstable; urgency=low
+  * Added party mode.
+  * This release is the v2 beta.
+  * Lots of UI fixes.
+
+ -- Svenn-Arne <s@dragly.com>  Fri, 13 Jan 2012 20:28:27 +0100
+
 nanoparticles (1.0.1) unstable; urgency=low
 
   * Small changes to about screen and timer usage.

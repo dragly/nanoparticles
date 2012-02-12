@@ -6,51 +6,69 @@
 
 QT       += core gui declarative
 QT       += opengl
+android {
+#    DEFINES += NO_OPENGL
+#    QT       -= opengl
+}
+TARGET = nanoparticles
 
 maemo5 {
+    message(Detected OS: Maemo5)
     CONFIG += qdbus
-}
-
-android {
-    DEFINES += OS_IS_ANDROID
-}
-
-unix:!symbian:!maemo5:!android {} { # harmattan (to become a keyword of its own)
+} else:harmattan { # harmattan (to become a keyword of its own)
+    message(Harmattan)
     DEFINES += OS_IS_HARMATTAN
+} else:android {
+    message(Detected OS: Android)
+    DEFINES += OS_IS_ANDROID
+} else:contains(MEEGO_EDITION,harmattan) { # harmattan (to become a keyword of its own)
+    message(Detected OS: Harmattan)
+    DEFINES += OS_IS_HARMATTAN
+} else:macx {
+    message(Detected OS: Mac OS X)
+} else:symbian {
+    message(Detected OS: Symbian)
+    TARGET = Nanoparticles
+} else:win32 {
+    message(Detected OS: Windows)
+} else:unix {
+    message(Detected OS: Desktop Linux)
+    DEFINES += OS_IS_DESKTOP_LINUX
+    desktopfile.files = $${TARGET}_ubuntu.desktop
+    desktopfile.path = /usr/share/applications
+    icon.files = $${TARGET}.png
+    icon.path = /usr/share/icons/hicolor/scalable/apps
+    INSTALLS += icon desktopfile
+} else {
+    message(Detected OS: Unknown)
 }
 
-symbian {
-    TARGET = Nanoparticles
-}
-!symbian {
-    TARGET = nanoparticles
-}
-VERSION = 1.0.1
+message(Target: $$TARGET)
+
+VERSION = 2.0.0
 TEMPLATE = app
 
 SOURCES += main.cpp \
     particle.cpp \
     gamescene.cpp \
     gameview.cpp \
-    button.cpp \
     gameobject.cpp
 
 HEADERS  += \
     particle.h \
     gamescene.h \
     gameview.h \
-    button.h \
-    gameobject.h
-
-FORMS    +=
-
-#CONFIG += mobility
-#MOBILITY =
+    gameobject.h \
+    utils.h
 
 folder_01.source = qml
 folder_01.target =
 DEPLOYMENTFOLDERS = folder_01
 
+# Additional import path used to resolve QML modules in Creator's code model
+QML_IMPORT_PATH =
+
+# Icon settings
 symbian {
     ICON = nanoparticles.svg
 
@@ -62,12 +80,17 @@ symbian {
     #TARGET.CAPABILITY += ReadUserData WriteUserData UserEnvironment NetworkServices # added to avoid crash
     # cone.lib, eikcore.lib and avkon.lib Symbian libraries
     LIBS += -lcone -leikcore -lavkon
+} else:macx {
+    ICON = nanoparticles.icns
 }
+# Maemo 5 and Harmattan are defined in deployment.pri
 
 RESOURCES += \
     resources.qrc
 
 OTHER_FILES += \
+    nanoparticles_harmattan.desktop \
+    nanoparticles.desktop \
     LICENSE-font-NovaSquare.txt \
     AboutDialog.qml \
     qtc_packaging/debian_fremantle/rules \
@@ -82,6 +105,12 @@ OTHER_FILES += \
     qtc_packaging/debian_harmattan/control \
     qtc_packaging/debian_harmattan/compat \
     qtc_packaging/debian_harmattan/changelog \
+    qtc_packaging/debian_ubuntu/rules \
+    qtc_packaging/debian_ubuntu/README \
+    qtc_packaging/debian_ubuntu/copyright \
+    qtc_packaging/debian_ubuntu/control \
+    qtc_packaging/debian_ubuntu/compat \
+    qtc_packaging/debian_ubuntu/changelog \
     android/AndroidManifest.xml \
     android/src/eu/licentia/necessitas/mobile/QtSensors.java \
     android/src/eu/licentia/necessitas/mobile/QtMediaPlayer.java \
@@ -100,20 +129,43 @@ OTHER_FILES += \
     android/res/drawable-mdpi/icon.png \
     android/res/drawable-hdpi/icon.png \
     android/res/values/strings.xml \
-    android/res/values/libs.xml
+    android/res/values/libs.xml \
+    android/src/org/kde/necessitas/ministro/IMinistro.aidl \
+    android/src/org/kde/necessitas/ministro/IMinistroCallback.aidl \
+    android/src/org/kde/necessitas/origo/QtApplication.java \
+    android/src/org/kde/necessitas/origo/QtActivity.java \
+    android/res/values-nb/strings.xml \
+    android/res/layout/splash.xml \
+    android/res/values/strings.xml \
+    android/res/values/libs.xml \
+    android/res/values-fa/strings.xml \
+    android/res/values-rs/strings.xml \
+    android/res/values-pt-rBR/strings.xml \
+    android/res/values-el/strings.xml \
+    android/res/values-ja/strings.xml \
+    android/res/values-it/strings.xml \
+    android/res/values-es/strings.xml \
+    android/res/values-zh-rTW/strings.xml \
+    android/res/drawable-hdpi/icon.png \
+    android/res/drawable/logo.png \
+    android/res/drawable/icon.png \
+    android/res/values-de/strings.xml \
+    android/res/values-nl/strings.xml \
+    android/res/values-ms/strings.xml \
+    android/res/values-ru/strings.xml \
+    android/res/values-ro/strings.xml \
+    android/res/values-zh-rCN/strings.xml \
+    android/res/drawable-ldpi/icon.png \
+    android/res/values-fr/strings.xml \
+    android/res/drawable-mdpi/icon.png \
+    android/res/values-id/strings.xml \
+    android/res/values-pl/strings.xml \
+    android/res/values-et/strings.xml \
+    android/AndroidManifest.xml
 
 # Please do not modify the following two lines. Required for deployment.
 include(deployment.pri)
 qtcAddDeployment()
 
-#maemo5 {
-#    desktopfile.files = $${TARGET}.desktop
-#    desktopfile.path = /usr/share/applications/hildon
-#    INSTALLS += desktopfile
-#}
-
-#maemo5 {
-#    icon.files = nanoparticles.png
-#    icon.path = /usr/share/icons/hicolor/64x64/apps
-#    INSTALLS += icon
-#}
+message(Current defines:)
+message($$DEFINES)

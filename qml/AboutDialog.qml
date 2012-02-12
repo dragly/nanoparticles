@@ -1,9 +1,10 @@
 //import QtQuick 1.0
 // must be Qt 4.7 for Maemo
 import Qt 4.7
+import Nanoparticles 1.0
 
 Rectangle {
-
+    property string version
     id: root
     width: 400
     height: 300
@@ -32,7 +33,7 @@ Rectangle {
         Text {
             id: text1
             color: "#ffffff"
-            text: "Nanoparticles v1.0.1"
+            text: "Nanoparticles " + version
             anchors.left: parent.left
             anchors.top: parent.top
             font.pixelSize: 0.09 * root.height
@@ -58,10 +59,10 @@ Rectangle {
         anchors.top: parent.top
 
         id: image1
-        width: 0.12 * parent.width
-        height: 0.12 * parent.width
-        anchors.rightMargin: 0.02 * root.height
-        anchors.topMargin: 0.02 * root.height
+        width: 0.1 * root.width
+        height: 0.1 * root.width
+        anchors.rightMargin: 0.02 * root.width
+        anchors.topMargin: 0.02 * root.width
         source: "qrc:/images/button-exit.png"
         MouseArea {
             anchors.fill: parent

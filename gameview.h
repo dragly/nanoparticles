@@ -25,7 +25,7 @@ protected:
     void changeEvent(QEvent *event);
 
 private:
-    GameScene gameScene;
+    GameScene *gameScene;
 #ifdef Q_WS_MAEMO_5
     QDBusInterface* dBusInterface;
 #endif

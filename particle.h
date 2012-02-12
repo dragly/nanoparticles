@@ -8,10 +8,17 @@
 class Particle : public GameObject
 {
 public:
-    Particle();
+    Particle(GameScene *gameScene);
 
     enum { Type = UserType + 1 };
-    enum { ParticleSimple, ParticlePlayer, ParticleEnemy };
+    enum ParticleType { ParticleSimple,
+                        ParticlePlayer,
+                        ParticleEnemy,
+                        ParticleSlowMotion,
+                        ParticleRepellent,
+                        ParticleGlowing,
+                        ParticleTransfer
+                      };
 
     int type() const
     {
@@ -21,12 +28,13 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                     QWidget *widget);
-    void setCharge(float charge) {this->charge = charge; originalCharge = charge;}
+    double charge() {return m_charge; }
+    void setCharge(float charge) {this->m_charge = charge; originalCharge = charge;}
     void setVelocity(QVector2D velocity) {this->_velocity = velocity;}
     QVector2D velocity() {return _velocity;}
 
-    int particleType() {return _particleType; }
-    void setParticleType(int particleType) { this->_particleType = particleType; }
+    int particleType() {return m_particleType; }
+    void setParticleType(int particleType);
 
     bool sticky() {return _sticky;}
     void setSticky(bool sticky) {
@@ -45,20 +53,32 @@ public:
 
     QRectF boundingRect() const;
 
+    bool matchParticles(Particle *particle1, Particle *particle2, ParticleType type1, ParticleType type2);
+    bool hasCollidedWithPlayer;
+    void setDueTime(double dueTime) {
+        m_dueTime = dueTime;
+    }
+    double dueTime() {
+        return m_dueTime;
+    }
+
 protected:
     void advance(int step);
 
 private:
-    double charge;
+    double m_charge;
     QVector2D _velocity;
     QImage negativeImage;
     QImage positiveImage;
     QImage neutralImage;
-    int _particleType;
+    int m_particleType;
+    bool _sticky;
     qreal _mass;
     bool _electroSticky;
-    bool _sticky;
     qreal originalCharge;
+    double m_dueTime;
+    double originalDueTime;
+    double originalScale;
 
 };
 

@@ -1,0 +1,12 @@
+nanoparticles (2.0.0-5) oneiric; urgency=low
+
+  * Upgraded with new features.
+  * New Party mode.
+
+ -- Svenn-Arne Dragly <s@dragly.com>  Sun, 22 Jan 2012 23:42:19 +0200
+
+nanoparticles (1.0.1) unstable; urgency=low
+
+  * Initial release for Ubuntu 
+
+ -- Svenn-Arne Dragly <s@dragly.com>  Tue, 11 Oct 2011 00:31:23 +0200
