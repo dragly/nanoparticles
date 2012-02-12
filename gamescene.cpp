@@ -50,7 +50,10 @@ const qreal slowMotionTimeFactor = 0.2;
 
 GameScene::GameScene(GameView *parent) :
     QGraphicsScene(parent),
-    m_isSlowMotionEnabled(false)
+    m_selectedType(ParticlePositive),
+    m_isSlowMotionEnabled(false),
+    frameNumber(0),
+    dtSum(0)
 {
     qRegisterMetaType<GameScene::GameMode>("GameMode");
     qRegisterMetaType<GameScene::GameState>("GameState");
@@ -384,7 +387,9 @@ void GameScene::setLevel(int level) {
 
     // add player
     player = new Particle(this);
+#ifndef BENCHMARK
     addItem(player);
+#endif
     player->setCharge(playerCharge * (1 + levelChargeFactor * pow((double)level,2)));
     player->setParticleType(Particle::ParticlePlayer);
     if(gameMode() == ModeClassic && level == 1) {
@@ -543,12 +548,25 @@ void GameScene::advance() {
         } else {
             m_dt = timeFactor() * (currentTime - lastFrameTime) / 1000.0;
         }
+        double realDt = m_dt;
+        if(m_dt > 0.01) {
+            m_dt = 0.01;
+        }
 
         if(gameMode() == ModeParty) {
             checkAddSpecialParticle();
         }
         QGraphicsScene::advance();
+#ifdef BENCHMARK
+        dtSum += realDt;
+        if(frameNumber == 99) {
+            qDebug() << "FPS: " << frameNumber / dtSum;
+            dtSum = 0;
+            frameNumber = 0;
+        }
+        frameNumber++;
         lastFrameTime = currentTime;
+#endif
     }
 }
 

@@ -6,6 +6,9 @@
 
 QT       += core gui declarative
 QT       += opengl
+
+#DEFINES += BENCHMARK
+
 android {
 #    DEFINES += NO_OPENGL
 #    QT       -= opengl

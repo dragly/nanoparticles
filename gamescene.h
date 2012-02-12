@@ -52,9 +52,6 @@ public:
     enum ViewMode { ViewNormal, ViewFullScreen };
 
     //Time variables
-    int currentTime;
-    int lastFrameTime;
-    int lastSpecialSpawnTime;
     double timeFactor() {
         return m_timeFactor;
     }
@@ -298,6 +295,13 @@ private:
     ViewMode m_viewMode;
     bool m_levelUpgrade;
     bool m_isSlowMotionEnabled;
+
+    //Time variables
+    int currentTime;
+    int lastFrameTime;
+    int lastSpecialSpawnTime;
+    int frameNumber;
+    double dtSum;
 };
 Q_DECLARE_METATYPE(GameScene::GameMode)
 Q_DECLARE_METATYPE(GameScene::GameState)
