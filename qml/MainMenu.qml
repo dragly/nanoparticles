@@ -73,7 +73,7 @@ Item {
                         prepareInstructions()
                         switch(level) {
                         case l1:
-                            instructionText.text = "<center><center><p>Welcome to party mode!</p><p>New particles await you.</p><p>Collide with the yellow particles<br/>to repel all enemies.</p></center>"
+                            instructionText.text = "<center><center><p>Welcome to party mode!</p><p>New particles await you.</p><p>Collide with the light blue particles<br/>to repel all enemies.</p></center>"
                             break;
                         case l2:
                             instructionText.text = "<center><p>The clocks are ticking.</p><p>Let's make everybody slow down.</p></center>"
