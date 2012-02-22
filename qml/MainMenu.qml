@@ -22,8 +22,8 @@ Item {
     property bool isDemo: gameScene.isDemo()
     property int maxDemoLevel: 10
 
-    property string buyGameImage: platform == GameScene.DesktopLinux ? "qrc:/images/available-android-market.png" : "qrc:/images/available-nokia-store.png"
-    property string buyGameUrl: platform == GameScene.DesktopLinux ? "https://market.android.com/details?id=org.dragly.nanoparticles" : "http://store.ovi.com/content/128233"
+    property string buyGameImage: platform == GameScene.Android ? "qrc:/images/available-android-market.png" : "qrc:/images/available-nokia-store.png"
+    property string buyGameUrl: platform == GameScene.Android ? "https://market.android.com/details?id=org.dragly.nanoparticles" : "http://store.ovi.com/content/128233"
 
     // The contextGameScene object is passed to this QML object through the GameScene initialization in C++
     // We then set it to our internal property gameScene
