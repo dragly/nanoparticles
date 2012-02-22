@@ -34,5 +34,7 @@
         <file>images/button-special-charge.png</file>
         <file>images/particle-repellent.png</file>
         <file>images/particle-transfer.png</file>
+        <file>images/available-nokia-store.png</file>
+        <file>images/available-android-market.png</file>
     </qresource>
 </RCC>

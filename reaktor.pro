@@ -4,16 +4,22 @@
 #
 #-------------------------------------------------
 
+#DEFINES += BENCHMARK
+
 QT       += core gui declarative
 QT       += opengl
 
-#DEFINES += BENCHMARK
+# To build demo, set this to true and change package name to nanoparticles-demo for Maemo and Meego
+ISDEMO = true
 
-android {
-#    DEFINES += NO_OPENGL
-#    QT       -= opengl
+contains(ISDEMO, true) {
+    message(Is demo)
+    DEFINES += IS_DEMO
+    TARGET = nanoparticles-demo
+} else {
+    message(Is not demo)
+    TARGET = nanoparticles
 }
-TARGET = nanoparticles
 
 maemo5 {
     message(Detected OS: Maemo5)
@@ -31,7 +37,11 @@ maemo5 {
     message(Detected OS: Mac OS X)
 } else:symbian {
     message(Detected OS: Symbian)
-    TARGET = Nanoparticles
+    contains(ISDEMO, true) {
+        TARGET = Nanoparticles-demo
+    } else {
+        TARGET = Nanoparticles
+    }
 } else:win32 {
     message(Detected OS: Windows)
 } else:unix {

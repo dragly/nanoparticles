@@ -30,10 +30,12 @@ class GameScene : public QGraphicsScene
     Q_PROPERTY(Selection selectedType READ selectedType WRITE setSelectedType NOTIFY selectedTypeChanged)
     Q_PROPERTY(bool levelUpgrade READ levelUpgrade WRITE setLevelUpgrade NOTIFY levelUpgradeChanged)
     Q_PROPERTY(bool isSlowMotionEnabled READ isSlowMotionEnabled WRITE setSlowMotionEnabled NOTIFY slowMotionEnabledChanged)
+    Q_PROPERTY(Platform platform READ platform)
     Q_ENUMS(GameMode)
     Q_ENUMS(GameState)
     Q_ENUMS(Selection)
     Q_ENUMS(ViewMode)
+    Q_ENUMS(Platform)
 public:
     explicit GameScene(GameView *view = 0);
 
@@ -50,6 +52,15 @@ public:
     enum Selection { ParticleNegative, ParticlePositive, ParticleSpecial };
     enum GameMode { ModeClassic, ModeParty };
     enum ViewMode { ViewNormal, ViewFullScreen };
+    enum Platform {
+        Maemo,
+        Harmattan,
+        Symbian,
+        Android,
+        MacOSX,
+        DesktopLinux,
+        Windows
+    };
 
     //Time variables
     double timeFactor() {
@@ -78,10 +89,24 @@ public:
     void resized();
     void setGameState(GameState gameState);
     GameState gameState() {return m_gameState;}
+    Platform platform() {
+#ifdef OS_IS_HARMATTAN
+        return Harmattan;
+#elif defined(OS_IS_ANDROID)
+        return Android;
+#elif defined(Q_WS_MAEMO_5)
+        return Maemo;
+#elif defined(OS_IS_SYMBIAN)
+        return Symbian;
+#elif defined(OS_IS_DESKTOP_LINUX)
+        return DesktopLinux;
+#endif
+    }
 
     QString adjustPath(const QString &path);
 
-    bool isDemo();
+    Q_INVOKABLE bool isDemo();
+
 
     void showGameMenu();
 
@@ -101,7 +126,7 @@ public:
         return m_highestLevel;
     }
 
-    void setLevel(int level);
+
     int level() {
         return m_level;
     }
@@ -201,6 +226,7 @@ public slots:
     void levelUp();
     void levelDown();
     void clickedDashboardButton();
+    void setLevel(int level);
 
     void setRemainingNegativeCharges(int arg)
     {

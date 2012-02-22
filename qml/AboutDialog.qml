@@ -33,16 +33,30 @@ Rectangle {
         Text {
             id: text1
             color: "#ffffff"
-            text: "Nanoparticles " + version
+
+
+            text: mainMenu.isDemo ? "Nanoparticles Demo " + version + "\nDownload full version:" : "Nanoparticles " + version
             anchors.left: parent.left
             anchors.top: parent.top
             font.pixelSize: 0.09 * root.height
             wrapMode: Text.NoWrap
         }
 
+        ImageButton {
+            id: nokiaStoreImage
+            anchors.top: text1.bottom
+            width: parent.width * 0.4
+            height: width * 68 / 180 // keep aspect ratio
+            onClicked: {
+                Qt.openUrlExternally(mainMenu.buyGameUrl)
+            }
+            source: mainMenu.buyGameImage
+            visible: mainMenu.isDemo
+        }
+
         Text {
             id: text2
-            anchors.top: text1.bottom
+            anchors.top: mainMenu.isDemo ? nokiaStoreImage.bottom : text1.bottom
             color: "#ffffff"
             text: "Physics based game by dragly.<br><br><b>How do I play this game?</b><br>You control the green charge. Avoid hitting the purple charges by placing blue and red charges on the map. The blue charges attract the green charge, while the red repel it.<br>In the lower right corner you see the time left. When the time runs out, you have completed the level.<br><i>Hint:</i> Use the blue charges with caution. Whenever the green charge bumps into one of the other charges, it gets stronger. The stronger it gets, the harder it is to control.<br><br><b>Are the physics behind this game real?</b><br>To a very good approximation they imitate the physics of real world particles. Behind it all is the Euler-Cromer method, Coulomb's law and a good dose of Newtonian physics. However, some adjustments have been made for the sake of entertainment.<br><br><i>Do not use this game as a simulator in safety-critical systems.</i><br>(CERN scientists, I'm looking at you...)<br><br><b>Legal info</b><br>This application is licensed under the GPL license v3 or newer.<br><br>Please visit <a href='http://dragly.org/source/nanoparticles'>dragly.org</a> for more information.<br><br>The font used in this application is named Nova Square and created by Wojciech Kalinowski &lt;wmk69@o2.pl&gt;, with no affiliation with the application itself.<br>The font is licensed under the SIL Open Font License 1.1."
             anchors.left: parent.left

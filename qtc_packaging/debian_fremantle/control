@@ -1,4 +1,4 @@
-Source: nanoparticles
+Source: nanoparticles-demo
 Section: user/hidden
 Priority: optional
 Maintainer: Svenn-Arne <s@dragly.com>
@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= 5), libqt4-dev
 Standards-Version: 3.7.3
 Homepage: http://dragly.org/source/nanoparticles
 
-Package: nanoparticles
+Package: nanoparticles-demo
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Let the world of physics enter your mobile.

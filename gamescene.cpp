@@ -13,15 +13,8 @@
 #endif
 
 /* TODO.
-    // Enhanced version (2.0)
-    - Add copyright/version window.
-    - New enemy particles (megacharges)
-    - Make it possible to place particles that are sticky after level 15 (or something)
-
-    // Demo version (2.1)
-    - Add link to Ovi Store when demo is over.
-
     // To be tested (2.5)
+    - Make it possible to place particles that are sticky after level 15 (or something)
     - Draw using FullViewPortUpdate - does it give any performance improvements?
     - Use health bar instead immediate death.
 */
@@ -188,7 +181,7 @@ bool GameScene::isDemo() {
     // should use the define check everywhere instead of letting crackers
     // easily modify this variable in memory. But hey, this is an open source game.
     // They could just have rebuilt the source if they wanted to :)
-#ifdef ISDEMO
+#ifdef IS_DEMO
     return true;
 #else
     return false;
@@ -220,11 +213,7 @@ void GameScene::updateLevelTime() {
     if(levelTime() < 1) {
         setLevelUpgrade(true);
         setGameState(GamePaused);
-        if(isDemo() && m_level >= 8) {
-
-        } else {
-            setLevel(m_level + 1);
-        }
+        setLevel(m_level + 1);
         if(highestLevel() < level()) {
             setHighestLevel(level());
         }

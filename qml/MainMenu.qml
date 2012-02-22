@@ -10,6 +10,7 @@ Item {
     property int levelTime
     property int gameMode
     property int gameState
+    property int platform
     property int remainingNegativeCharges
     property int remainingPositiveCharges
     property int remainingSpecialCharges
@@ -17,12 +18,19 @@ Item {
     property int viewMode
     property bool instructionShown
     property bool dashboardButtonVisible
+
+    property bool isDemo: gameScene.isDemo()
+    property int maxDemoLevel: 10
+
+    property string buyGameImage: platform == GameScene.DesktopLinux ? "qrc:/images/available-android-market.png" : "qrc:/images/available-nokia-store.png"
+    property string buyGameUrl: platform == GameScene.DesktopLinux ? "https://market.android.com/details?id=org.dragly.nanoparticles" : "http://store.ovi.com/content/128233"
+
     // The contextGameScene object is passed to this QML object through the GameScene initialization in C++
     // We then set it to our internal property gameScene
     property GameScene gameScene
     gameScene: contextGameScene
 
-    id: root
+    id: mainMenu
     dashboardButtonVisible: true
     width: 800
     height: 600
@@ -36,6 +44,8 @@ Item {
     remainingPositiveCharges: gameScene.remainingPositiveCharges
     remainingNegativeCharges: gameScene.remainingNegativeCharges
     remainingSpecialCharges: gameScene.remainingSpecialCharges
+
+    platform: gameScene.platform
 
     function prepareInstructions() {
         gameScene.gameState = GameScene.GameInstructionPause
@@ -117,7 +127,12 @@ Item {
     onGameStateChanged: {
         console.log("Game state changed")
         if(gameState == GameScene.GameStarted) {
-            statusText.text = "Nanoparticles"
+            if(isDemo) {
+                statusText.text = "Nanoparticles Demo"
+            } else {
+                statusText.text = "Nanoparticles"
+            }
+
             state = "paused"
             console.log("Game starteda")
         } else if(gameState == GameScene.GamePaused) {
@@ -252,7 +267,7 @@ Item {
             color: "white"
             text: ""
             font.family: "NovaSquare"
-            font.pixelSize: root.height * 0.1
+            font.pixelSize: mainMenu.height * 0.1
         }
 
         SelectorSpinner {
@@ -299,7 +314,7 @@ Item {
             height: parent.width * 0.22
             onClicked: {
                 continueTimer.start()
-                root.state = "running" // get rid of the menues while the counter is counting down
+                mainMenu.state = "running" // get rid of the menues while the counter is counting down
             }
         }
 
@@ -323,7 +338,7 @@ Item {
             }
             onClicked: {
                 retryTimer.start()
-                root.state = "running" // get rid of the menues while the counter is counting down
+                mainMenu.state = "running" // get rid of the menues while the counter is counting down
             }
         }
 
@@ -401,8 +416,6 @@ Item {
                 gameScene.exitGame()
             }
             source: "qrc:/images/button-exit.png"
-            anchors.horizontalCenterOffset: 53
-            anchors.verticalCenterOffset: 56
         }
 
         ImageButton {
@@ -427,14 +440,14 @@ Item {
             NumberAnimation {
                 target: levelText
                 property: "anchors.topMargin"
-                to: root.height * 0.06
+                to: mainMenu.height * 0.06
                 duration: 100
                 easing.type: Easing.InCubic
             }
             NumberAnimation {
                 target: levelText
                 property: "anchors.topMargin"
-                to: root.height * 0.1
+                to: mainMenu.height * 0.1
                 duration: 300
                 easing.type: Easing.OutCubic
             }
@@ -455,7 +468,7 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        width: root.width * 0.16
+        width: mainMenu.width * 0.16
         z: -1000
     }
 
@@ -542,6 +555,11 @@ Item {
         color: "white"
         font.pixelSize: parent.width * 0.07
         font.family: "NovaSquare"
+    }
+
+    DemoInformation {
+        anchors.fill: parent
+        opacity: isDemo && level > maxDemoLevel
     }
 
     onRemainingNegativeChargesChanged: {
