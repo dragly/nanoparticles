@@ -45,7 +45,7 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             font.pixelSize: demoInfoRoot.height / 18
             color: "white"
-            text: "You can buy the full version of Nanoparticles in Nokia Store. The full version includes an unlimited amount of levels, new particles and many hours of fun!"
+            text: "You can buy the full version of Nanoparticles in " + mainMenu.buyGameStoreName + ". The full version includes an unlimited amount of levels, new particles and many hours of fun!"
             wrapMode: Text.WordWrap
         }
         ImageButton {

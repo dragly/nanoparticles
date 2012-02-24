@@ -7,10 +7,15 @@
 #DEFINES += BENCHMARK
 
 QT       += core gui declarative
+
+# To test on non-OpenGL devices, switch the commenting on the next two lines. For testing on non-OpenGL
+# Android devices, remember to remove the QtOpenGL dependency in the Projects settings.
 QT       += opengl
+#DEFINES += NO_OPENGL
 
 # To build demo, set this to true and change package name to nanoparticles-demo for Maemo and Meego
-ISDEMO = true
+ISDEMO = false
+
 
 contains(ISDEMO, true) {
     message(Is demo)
@@ -174,7 +179,8 @@ OTHER_FILES += \
     android/res/values-id/strings.xml \
     android/res/values-pl/strings.xml \
     android/res/values-et/strings.xml \
-    android/AndroidManifest.xml
+    android/AndroidManifest.xml \
+    android/version.xml
 
 # Please do not modify the following two lines. Required for deployment.
 include(deployment.pri)
@@ -182,3 +188,4 @@ qtcAddDeployment()
 
 message(Current defines:)
 message($$DEFINES)
+
