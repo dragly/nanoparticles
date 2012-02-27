@@ -14,8 +14,8 @@ QT       += opengl
 #DEFINES += NO_OPENGL
 
 # To build demo, set this to true and change package name to nanoparticles-demo for Maemo and Meego
+# Change to org.dragly.nanoparticlesdemo for Android
 ISDEMO = false
-
 
 contains(ISDEMO, true) {
     message(Is demo)
@@ -63,7 +63,7 @@ maemo5 {
 
 message(Target: $$TARGET)
 
-VERSION = 2.0.0
+VERSION = 2.0.1
 TEMPLATE = app
 
 SOURCES += main.cpp \

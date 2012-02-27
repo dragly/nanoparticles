@@ -43,8 +43,13 @@ const qreal slowMotionTimeFactor = 0.2;
 
 GameScene::GameScene(GameView *parent) :
     QGraphicsScene(parent),
+    m_gameState(GameRunning),
+    m_dt(0),
+    firstStep(true),
     m_selectedType(ParticlePositive),
     m_isSlowMotionEnabled(false),
+    currentTime(0),
+    lastFrameTime(0),
     frameNumber(0),
     dtSum(0)
 {
@@ -59,9 +64,6 @@ GameScene::GameScene(GameView *parent) :
     } else {
         qDebug() << "This is the full version";
     }
-    m_gameState = GameRunning;
-    m_dt = 0;
-    firstStep = true;
 
     setSelectedType(ParticlePositive);
 
@@ -537,7 +539,6 @@ void GameScene::advance() {
         } else {
             m_dt = timeFactor() * (currentTime - lastFrameTime) / 1000.0;
         }
-        double realDt = m_dt;
         if(m_dt > 0.01) {
             m_dt = 0.01;
         }
@@ -545,7 +546,6 @@ void GameScene::advance() {
         if(gameMode() == ModeParty) {
             checkAddSpecialParticle();
         }
-        QGraphicsScene::advance();
 #ifdef BENCHMARK
         dtSum += realDt;
         if(frameNumber == 99) {
@@ -554,8 +554,9 @@ void GameScene::advance() {
             frameNumber = 0;
         }
         frameNumber++;
-        lastFrameTime = currentTime;
 #endif
+        QGraphicsScene::advance();
+        lastFrameTime = currentTime;
     }
 }
 

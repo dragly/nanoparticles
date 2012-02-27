@@ -1,3 +1,9 @@
+nanoparticles-demo (2.0.1) unstable; urgency=low
+
+  * Fixed time bug causing crash on first level.
+
+ -- Svenn-Arne <s@dragly.com>  Mon, 27 Feb 2012 10:30:32 +0100
+
 nanoparticles (2.0.0-5) oneiric; urgency=low
 
   * Upgraded with new features.
