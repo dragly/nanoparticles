@@ -15,7 +15,7 @@ QT       += opengl
 
 # To build demo, set this to true and change package name to nanoparticles-demo for Maemo and Meego
 # Change to org.dragly.nanoparticlesdemo for Android
-ISDEMO = false
+ISDEMO = true
 
 contains(ISDEMO, true) {
     message(Is demo)
@@ -43,7 +43,8 @@ maemo5 {
 } else:symbian {
     message(Detected OS: Symbian)
     contains(ISDEMO, true) {
-        TARGET = Nanoparticles-demo
+        TARGET = NanoparticlesDemo
+        DEPLOYMENT.display_name = Nanoparticles Demo
     } else {
         TARGET = Nanoparticles
     }
@@ -89,8 +90,11 @@ QML_IMPORT_PATH =
 # Icon settings
 symbian {
     ICON = nanoparticles.svg
-
-    TARGET.UID3 = 0x200420AD
+    contains(ISDEMO, true) {
+        TARGET.UID3 = 0x200420AE
+    } else {
+        TARGET.UID3 = 0x200420AD
+    }
     #TARGET.UID3 = 0xE4365487
     # TARGET.CAPABILITY += 
     TARGET.EPOCSTACKSIZE = 0x14000
