@@ -14,7 +14,7 @@ QT       += opengl
 #DEFINES += NO_OPENGL
 
 # To build demo, set this to true and change package name to nanoparticles-demo for Maemo and Meego
-ISDEMO = false
+ISDEMO = true
 
 
 contains(ISDEMO, true) {
@@ -43,7 +43,7 @@ maemo5 {
 } else:symbian {
     message(Detected OS: Symbian)
     contains(ISDEMO, true) {
-        TARGET = Nanoparticles-demo
+        TARGET = Nanoparticles Demo
     } else {
         TARGET = Nanoparticles
     }
