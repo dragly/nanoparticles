@@ -15,6 +15,7 @@
 #include <aknappui.h>
 #endif
 // internal (all)
+#include "gameapplication.h"
 #include "gamescene.h"
 #include "gameview.h"
 
@@ -22,9 +23,13 @@ int main(int argc, char *argv[])
 {
     // Register all QML mapped C++ classes
     qmlRegisterType<GameScene>("Nanoparticles", 1, 0, "GameScene");
-
-    QApplication a(argc, argv);
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
+
+    GameApplication gameApplication(argc, argv);
+
+    qDebug() << "Starting view";
+    GameView view;
+    gameApplication.setGameView(&view);
 
     qDebug() << "Enabling settings";
     QCoreApplication::setOrganizationName("Dragly");
@@ -42,9 +47,6 @@ int main(int argc, char *argv[])
     );
 #endif
     qDebug() << "landscape loaded";
-
-    qDebug() << "Starting view";
-    GameView view;
 
 #if QT_VERSION > 0x040702
     // Qt < 4.7.2 does not yet have the Qt::WA_*Orientation attributes
@@ -118,5 +120,5 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    return a.exec();
+    return gameApplication.exec();
 }

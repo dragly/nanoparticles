@@ -12,6 +12,7 @@ class GameView : public QGraphicsView
     Q_OBJECT
 public:
     explicit GameView();
+    void pauseGame();
 
 signals:
 
@@ -25,7 +26,7 @@ protected:
     void changeEvent(QEvent *event);
 
 private:
-    GameScene *gameScene;
+    GameScene *m_gameScene;
 #ifdef Q_WS_MAEMO_5
     QDBusInterface* dBusInterface;
 #endif

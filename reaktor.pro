@@ -71,14 +71,16 @@ SOURCES += main.cpp \
     particle.cpp \
     gamescene.cpp \
     gameview.cpp \
-    gameobject.cpp
+    gameobject.cpp \
+    gameapplication.cpp
 
 HEADERS  += \
     particle.h \
     gamescene.h \
     gameview.h \
     gameobject.h \
-    utils.h
+    utils.h \
+    gameapplication.h
 
 folder_01.source = qml
 folder_01.target =
