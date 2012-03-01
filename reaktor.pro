@@ -15,7 +15,7 @@ QT       += opengl
 
 # To build demo, set this to true and change package name to nanoparticles-demo for Maemo and Meego
 # Change to org.dragly.nanoparticlesdemo and the name of the app for Android
-ISDEMO = false
+ISDEMO = true
 
 contains(ISDEMO, true) {
     message(Is demo)
@@ -94,10 +94,11 @@ symbian {
     ICON = nanoparticles.svg
     contains(ISDEMO, true) {
         TARGET.UID3 = 0x200420AE
+        #TARGET.UID3 = 0xE4365488
     } else {
         TARGET.UID3 = 0x200420AD
+        #TARGET.UID3 = 0xE4365487
     }
-    #TARGET.UID3 = 0xE4365487
     # TARGET.CAPABILITY += 
     TARGET.EPOCSTACKSIZE = 0x14000
     TARGET.EPOCHEAPSIZE = 0x020000 0x800000

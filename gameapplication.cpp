@@ -1,6 +1,6 @@
 #include "gameapplication.h"
 #ifdef Q_OS_SYMBIAN
-GameApplication::symbianEventFilter( const QSymbianEvent* symbianEvent ) {
+bool GameApplication::symbianEventFilter( const QSymbianEvent* symbianEvent ) {
     const TWsEvent *event = symbianEvent->windowServerEvent();
 
     if( !event ) {
