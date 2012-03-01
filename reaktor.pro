@@ -6,7 +6,7 @@
 
 #DEFINES += BENCHMARK
 
-QT       += core gui declarative
+QT       += core declarative
 
 # To test on non-OpenGL devices, switch the commenting on the next two lines. For testing on non-OpenGL
 # Android devices, remember to remove the QtOpenGL dependency in the Projects settings.
@@ -14,8 +14,8 @@ QT       += opengl
 #DEFINES += NO_OPENGL
 
 # To build demo, set this to true and change package name to nanoparticles-demo for Maemo and Meego
-# Change to org.dragly.nanoparticlesdemo for Android
-ISDEMO = true
+# Change to org.dragly.nanoparticlesdemo and the name of the app for Android
+ISDEMO = false
 
 contains(ISDEMO, true) {
     message(Is demo)
