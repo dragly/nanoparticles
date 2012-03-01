@@ -53,7 +53,7 @@ void GameView::changeEvent(QEvent *event) {
     qDebug() << "Some event happened" << event->type();
     if(event->type()==QEvent::ActivationChange) {
         if(!isActiveWindow()) {
-            gameScene->setGameState(GameScene::GamePaused);
+            m_gameScene->setGameState(GameScene::GamePaused);
         }
     }
 #else
@@ -81,7 +81,7 @@ void GameView::screenChange(const QDBusMessage &message)
     QString state = message.arguments().at(0).toString();
     if (!state.isEmpty()) {
         if (state == MCE_DISPLAY_OFF_STRING)
-            gameScene->setGameState(GameScene::GamePaused);
+            m_gameScene->setGameState(GameScene::GamePaused);
     }
 }
 #endif
