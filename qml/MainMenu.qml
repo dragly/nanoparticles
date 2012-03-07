@@ -110,6 +110,13 @@ Item {
 
     onLevelChanged: {
         instructionShown = false
+        if(isDemo) {
+            if(level > maxDemoLevel) {
+                demoInformation.visible = true
+            } else {
+                demoInformation.visible = false
+            }
+        }
     }
 
     onSelectedTypeChanged: {
@@ -559,8 +566,8 @@ Item {
     }
 
     DemoInformation {
+        id: demoInformation
         anchors.fill: parent
-        opacity: isDemo && level > maxDemoLevel
     }
 
     onRemainingNegativeChargesChanged: {

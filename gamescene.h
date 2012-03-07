@@ -30,7 +30,7 @@ class GameScene : public QGraphicsScene
     Q_PROPERTY(Selection selectedType READ selectedType WRITE setSelectedType NOTIFY selectedTypeChanged)
     Q_PROPERTY(bool levelUpgrade READ levelUpgrade WRITE setLevelUpgrade NOTIFY levelUpgradeChanged)
     Q_PROPERTY(bool isSlowMotionEnabled READ isSlowMotionEnabled WRITE setSlowMotionEnabled NOTIFY slowMotionEnabledChanged)
-    Q_PROPERTY(Platform platform READ platform)
+    Q_PROPERTY(Platform platform READ platform NOTIFY platformChanged)
     Q_ENUMS(GameMode)
     Q_ENUMS(GameState)
     Q_ENUMS(Selection)
@@ -212,6 +212,8 @@ signals:
 
     void slowMotionEnabledChanged(bool arg);
 
+    void platformChanged(Platform arg);
+
 public slots:
     void enableSlowMotion(int time);
     void disableSlowMotion();
@@ -328,6 +330,7 @@ private:
     int lastSpecialSpawnTime;
     int frameNumber;
     double dtSum;
+    Platform m_platform;
 };
 Q_DECLARE_METATYPE(GameScene::GameMode)
 Q_DECLARE_METATYPE(GameScene::GameState)

@@ -7,12 +7,6 @@ Rectangle {
     height: 100
     color: "black"
     opacity: 0.9
-    Behavior on opacity {
-        NumberAnimation {
-            duration: 500
-            easing.type: Easing.InOutCubic
-        }
-    }
 
     ImageButton {
         anchors {
