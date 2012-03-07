@@ -96,7 +96,7 @@ public:
         return Android;
 #elif defined(Q_WS_MAEMO_5)
         return Maemo;
-#elif defined(OS_IS_SYMBIAN)
+#elif defined(Q_OS_SYMBIAN)
         return Symbian;
 #elif defined(OS_IS_DESKTOP_LINUX)
         return DesktopLinux;

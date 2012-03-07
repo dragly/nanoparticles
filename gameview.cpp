@@ -13,8 +13,9 @@ GameView::GameView() :
     QGraphicsView()
 {
     qDebug() << "Setting scene";
-    gameScene = new GameScene(this);
-    setScene(gameScene);
+    m_gameScene = new GameScene(this);
+    setScene(m_gameScene);
+//    m_gameScene->setSceneRect(0,0,width(),height());
     qDebug() << "Scene set";
 //#ifndef Q_OS_ANDROID
     setRenderHint(QPainter::HighQualityAntialiasing,true);
@@ -52,19 +53,24 @@ void GameView::changeEvent(QEvent *event) {
     qDebug() << "Some event happened" << event->type();
     if(event->type()==QEvent::ActivationChange) {
         if(!isActiveWindow()) {
-            gameScene->setGameState(GameScene::GamePaused);
+            m_gameScene->setGameState(GameScene::GamePaused);
         }
     }
+#else
+    Q_UNUSED(event);
 #endif
 }
 
 void GameView::resizeEvent(QResizeEvent *event) {
     Q_UNUSED(event)
     qDebug() << "GameView::resizeEvent(): called";
-    scene()->setSceneRect(0,0,width(),height());
-    GameScene* gameScene = (GameScene*)scene();
-    gameScene->resized();
+    m_gameScene->setSceneRect(0,0,width(),height());
+    m_gameScene->resized();
     qDebug() << "GameView::resizeEvent(): finished";
+}
+
+void GameView::pauseGame() {
+    m_gameScene->setGameState(GameScene::GamePaused);
 }
 
 // MAEMO DBUS FOR LOCK EVENT
@@ -75,7 +81,7 @@ void GameView::screenChange(const QDBusMessage &message)
     QString state = message.arguments().at(0).toString();
     if (!state.isEmpty()) {
         if (state == MCE_DISPLAY_OFF_STRING)
-            gameScene->setGameState(GameScene::GamePaused);
+            m_gameScene->setGameState(GameScene::GamePaused);
     }
 }
 #endif

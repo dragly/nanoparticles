@@ -33,8 +33,8 @@ Item {
 
     id: mainMenu
     dashboardButtonVisible: true
-    width: 800
-    height: 600
+    width: 854
+    height: 480 // TODO: Make platform specific somehow...
     state: "initial"
     viewMode: gameScene.viewMode
     level: gameScene.level

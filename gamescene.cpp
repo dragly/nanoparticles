@@ -80,7 +80,7 @@ GameScene::GameScene(GameView *parent) :
     repellentImage = QImage(":/images/particle-repellent.png");
     transferImage = QImage(":/images/particle-transfer.png");
 
-    setSceneRect(0, 0, 854, 480); // just for init, should be chosen by the platform
+    setSceneRect(0, 0, 854, 480); // TODO: just for init, should be chosen by the platform
     setItemIndexMethod(QGraphicsScene::NoIndex);
 
     // Background image
@@ -250,10 +250,8 @@ void GameScene::continueGame() {
 
 void GameScene::pauseGame() {
     qDebug() << "Game paused";
-    bool wasGameRunning = false;
     if(gameState() == GameRunning) {
         menuTime.restart(); // start the timer that will avoid clicking on the quit button after level up or failed
-        wasGameRunning = true;
     }
     // pause timer
     levelTimer->stop();

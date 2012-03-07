@@ -71,14 +71,16 @@ SOURCES += main.cpp \
     particle.cpp \
     gamescene.cpp \
     gameview.cpp \
-    gameobject.cpp
+    gameobject.cpp \
+    gameapplication.cpp
 
 HEADERS  += \
     particle.h \
     gamescene.h \
     gameview.h \
     gameobject.h \
-    utils.h
+    utils.h \
+    gameapplication.h
 
 folder_01.source = qml
 folder_01.target =
@@ -92,10 +94,11 @@ symbian {
     ICON = nanoparticles.svg
     contains(ISDEMO, true) {
         TARGET.UID3 = 0x200420AE
+        #TARGET.UID3 = 0xE4365488
     } else {
         TARGET.UID3 = 0x200420AD
+        #TARGET.UID3 = 0xE4365487
     }
-    #TARGET.UID3 = 0xE4365487
     # TARGET.CAPABILITY += 
     TARGET.EPOCSTACKSIZE = 0x14000
     TARGET.EPOCHEAPSIZE = 0x020000 0x800000
