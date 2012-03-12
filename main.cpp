@@ -25,16 +25,16 @@ int main(int argc, char *argv[])
     qmlRegisterType<GameScene>("Nanoparticles", 1, 0, "GameScene");
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
+    qDebug() << "Enabling settings";
+    QCoreApplication::setOrganizationName("Dragly");
+    QCoreApplication::setOrganizationDomain("dragly.org");
+    QCoreApplication::setApplicationName("Nanoparticles");
+
     GameApplication gameApplication(argc, argv);
 
     qDebug() << "Starting view";
     GameView view;
     gameApplication.setGameView(&view);
-
-    qDebug() << "Enabling settings";
-    QCoreApplication::setOrganizationName("Dragly");
-    QCoreApplication::setOrganizationDomain("dragly.org");
-    QCoreApplication::setApplicationName("Nanoparticles");
 
     // Symbian specific code
 #ifdef Q_OS_SYMBIAN

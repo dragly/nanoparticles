@@ -64,7 +64,8 @@ maemo5 {
 
 message(Target: $$TARGET)
 
-VERSION = 2.0.1
+# Version number must also be updated in gamescene.h
+VERSION = 2.0.2
 TEMPLATE = app
 
 SOURCES += main.cpp \

@@ -7,7 +7,7 @@
 #include <QTimer>
 #include <QTime>
 
-const QString NANOPARTICLES_VERSION = QString("2.0.1");
+const QString NANOPARTICLES_VERSION = QString("2.0.2");
 
 class Particle;
 class GameView;
@@ -281,9 +281,9 @@ public slots:
 
 private:
     void addEnemies();
-    int m_highestLevel;
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     int m_level;
+    int m_highestLevel;
     GameState m_gameState;
     GameMode m_gameMode;
     float m_dt; // time difference in seconds

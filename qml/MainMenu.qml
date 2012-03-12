@@ -568,6 +568,7 @@ Item {
     DemoInformation {
         id: demoInformation
         anchors.fill: parent
+        visible: false
     }
 
     onRemainingNegativeChargesChanged: {

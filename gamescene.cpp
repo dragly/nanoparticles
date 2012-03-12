@@ -43,6 +43,8 @@ const qreal slowMotionTimeFactor = 0.2;
 
 GameScene::GameScene(GameView *parent) :
     QGraphicsScene(parent),
+    m_level(1),
+    m_highestLevel(1),
     m_gameState(GameRunning),
     m_dt(0),
     firstStep(true),
