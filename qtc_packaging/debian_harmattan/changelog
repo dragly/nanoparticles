@@ -3,13 +3,13 @@ nanoparticles (2.0.2) unstable; urgency=low
 
  -- Svenn-Arne <s@dragly.com>  Mon, 12 Mar 2012 20:10:40 +0100
 
-nanoparticles (2.0.1) unstable; urgency=low
+nanoparticles-demo (2.0.1) unstable; urgency=low
 
   * Fixed time bug causing crash on first level.
 
  -- Svenn-Arne <s@dragly.com>  Mon, 27 Feb 2012 10:30:32 +0100
 
-nanoparticles (2.0.0) unstable; urgency=low
+nanoparticles-demo (2.0.0) unstable; urgency=low
 
   * Finalized changes and fixed bugs for 2.0 version.
 
@@ -22,13 +22,13 @@ nanoparticles (1.99.1) unstable; urgency=low
 
  -- Svenn-Arne <s@dragly.com>  Fri, 13 Jan 2012 20:28:27 +0100
 
-nanoparticles (1.0.1) unstable; urgency=low
+nanoparticles-demo (1.0.1) unstable; urgency=low
 
   * Small changes to about screen and timer usage.
 
  -- Svenn-Arne <s@dragly.com>  Fri, 9 Sep 2011 01:30:00 +0200
 
-nanoparticles (1.0.1) unstable; urgency=low
+nanoparticles-demo (1.0.1) unstable; urgency=low
 
   * Initial Release.
 
