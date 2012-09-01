@@ -92,11 +92,10 @@ GameScene::GameScene(GameView *parent) :
     // Main menu
     QDeclarativeEngine *engine = new QDeclarativeEngine;
 #ifdef OS_IS_ANDROID
-    qDebug() << "Setting base URL for Android to /";
-    engine->setBaseUrl(QUrl::fromLocalFile("/"));
-#endif
+    QDeclarativeComponent mainMenuComponent(engine, QUrl(adjustPath("assets:/qml/MainMenu.qml")));
+#else
     QDeclarativeComponent mainMenuComponent(engine, QUrl::fromLocalFile(adjustPath("qml/MainMenu.qml")));
-
+#endif
     engine->rootContext()->setContextProperty("contextGameScene", this);
     mainMenu = qobject_cast<QGraphicsObject *>(mainMenuComponent.create());
     qDebug() << "Component errors:\n" << mainMenuComponent.errors();
