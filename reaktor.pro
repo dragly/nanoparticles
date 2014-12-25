@@ -189,7 +189,8 @@ OTHER_FILES += \
     android/res/values-pl/strings.xml \
     android/res/values-et/strings.xml \
     android/AndroidManifest.xml \
-    android/version.xml
+    android/version.xml \
+    android/src/org/dragly/nanoparticles/NanoparticlesActivity.java
 
 # Please do not modify the following two lines. Required for deployment.
 include(deployment.pri)
