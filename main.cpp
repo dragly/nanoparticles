@@ -36,34 +36,21 @@ int main(int argc, char *argv[])
     GameView view;
     gameApplication.setGameView(&view);
 
-    // Symbian specific code
-#ifdef Q_OS_SYMBIAN
-    CAknAppUi* appUi = dynamic_cast<CAknAppUi*> (CEikonEnv::Static()->AppUi());
-    TRAPD(error,
-          if (appUi) {
-        // Lock application orientation into landscape
-        appUi->SetOrientationL(CAknAppUi::EAppUiOrientationLandscape);
-    }
-    );
-#endif
-
     // Font loading
-#ifndef Q_OS_ANDROID
     qDebug() << "Starting database";
-    QFontDatabase database;
-    if(!database.addApplicationFont(":/fonts/novasquare/NovaSquare.ttf")) {
+    if(!QFontDatabase::addApplicationFont(":/fonts/novasquare/NovaSquare.ttf")) {
         qWarning() << "Could not load Nova font!";
     }
     qDebug() << "font loaded";
-#endif
+    gameApplication.setFont(QFont("Nova Square"));
 
 //#if defined(Q_WS_MAEMO_5) || defined(Q_OS_LINUX)
 #ifndef NO_OPENGL
     qDebug() << "Using OpenGL";
-    QGLWidget *glwidget = new QGLWidget();
+    QGLWidget glwidget;
     // IMPORTANT: Disabling this makes animations with images sluggish.
     // Disable only if enteriely necessary, and try to find another option to draw smooth animations first
-    view.setViewport(glwidget);
+    view.setViewport(&glwidget);
 #else
     qDebug() << "Not using OpenGL";
 #endif

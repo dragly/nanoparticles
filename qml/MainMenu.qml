@@ -602,5 +602,4 @@ Item {
             specialCharges.selectedSource = "qrc:/images/button-special-charge-selected.png"
         }
     }
-
 }
