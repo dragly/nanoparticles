@@ -91,11 +91,11 @@ GameScene::GameScene(GameView *parent) :
 
     // Main menu
     QDeclarativeEngine *engine = new QDeclarativeEngine;
-#ifdef OS_IS_ANDROID
-    QDeclarativeComponent mainMenuComponent(engine, QUrl(adjustPath("assets:/qml/MainMenu.qml")));
-#else
-    QDeclarativeComponent mainMenuComponent(engine, QUrl::fromLocalFile(adjustPath("qml/MainMenu.qml")));
-#endif
+//#ifdef OS_IS_ANDROID
+//    QDeclarativeComponent mainMenuComponent(engine, QUrl(adjustPath("assets:/qml/MainMenu.qml")));
+//#else
+    QDeclarativeComponent mainMenuComponent(engine, QUrl("qrc:/qml/MainMenu.qml"));
+//#endif
     engine->rootContext()->setContextProperty("contextGameScene", this);
     mainMenu = qobject_cast<QGraphicsObject *>(mainMenuComponent.create());
     qDebug() << "Component errors:\n" << mainMenuComponent.errors();
@@ -159,22 +159,28 @@ GameScene::GameScene(GameView *parent) :
 
 QString GameScene::adjustPath(const QString &path)
 {
-#ifdef Q_OS_ANDROID
-    return path;
-#endif
-#ifdef Q_OS_UNIX
-#ifdef Q_OS_MAC
+#if defined(Q_OS_IOS)
     if (!QDir::isAbsolutePath(path))
-        return QCoreApplication::applicationDirPath()
-                + QLatin1String("/../Resources/") + path;
-#else
-    QString pathInInstallDir;
-    const QString applicationDirPath = QCoreApplication::applicationDirPath();
-    pathInInstallDir = QString::fromAscii("%1/../%2").arg(applicationDirPath, path);
-
+        return QString::fromLatin1("%1/%2")
+                .arg(QCoreApplication::applicationDirPath(), path);
+#elif defined(Q_OS_MAC)
+    if (!QDir::isAbsolutePath(path))
+        return QString::fromLatin1("%1/../Resources/%2")
+                .arg(QCoreApplication::applicationDirPath(), path);
+#elif defined(Q_OS_BLACKBERRY)
+    if (!QDir::isAbsolutePath(path))
+        return QString::fromLatin1("app/native/%1").arg(path);
+#elif !defined(Q_OS_ANDROID)
+    QString pathInInstallDir =
+            QString::fromLatin1("%1/../%2").arg(QCoreApplication::applicationDirPath(), path);
     if (QFileInfo(pathInInstallDir).exists())
         return pathInInstallDir;
-#endif
+    pathInInstallDir =
+            QString::fromLatin1("%1/%2").arg(QCoreApplication::applicationDirPath(), path);
+    if (QFileInfo(pathInInstallDir).exists())
+        return pathInInstallDir;
+#elif defined(Q_OS_ANDROID_NO_SDK)
+    return QLatin1String("/data/user/qt/") + path;
 #endif
     return path;
 }

@@ -1,6 +1,6 @@
-//import QtQuick 1.0
+import QtQuick 1.0
 // must be Qt 4.7 for Maemo
-import Qt 4.7
+//import Qt 4.7
 import Nanoparticles 1.0
 
 

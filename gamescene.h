@@ -3,6 +3,7 @@
 
 #include <QGraphicsScene>
 #include <QtGui>
+#include <QGraphicsObject>
 
 #include <QTimer>
 #include <QTime>

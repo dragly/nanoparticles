@@ -6,7 +6,7 @@
 
 #DEFINES += BENCHMARK
 
-QT       += core declarative
+QT       += core quick declarative
 
 # To test on non-OpenGL devices, switch the commenting on the next two lines. For testing on non-OpenGL
 # Android devices, remember to remove the QtOpenGL dependency in the Projects settings.
@@ -112,7 +112,8 @@ symbian {
 # Maemo 5 and Harmattan are defined in deployment.pri
 
 RESOURCES += \
-    resources.qrc
+    resources.qrc \
+    qml.qrc
 
 OTHER_FILES += \
     nanoparticles_harmattan.desktop \

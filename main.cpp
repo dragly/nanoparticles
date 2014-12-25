@@ -46,13 +46,6 @@ int main(int argc, char *argv[])
     }
     );
 #endif
-    qDebug() << "landscape loaded";
-
-#if QT_VERSION > 0x040702
-    // Qt < 4.7.2 does not yet have the Qt::WA_*Orientation attributes
-    view.setAttribute(Qt::WA_LockLandscapeOrientation, true);
-#endif // QT_VERSION < 0x040702
-    qDebug() << "landscape loaded second run";
 
     // Font loading
 #ifndef Q_OS_ANDROID
@@ -88,13 +81,7 @@ int main(int argc, char *argv[])
     view.showFullScreen();
 #elif defined(OS_IS_ANDROID)
     qDebug() << "Is Android!";
-
-    #if defined NO_OPENGL
-        view.showFullScreen();
-    #else
-        view.showNormal();
-    #endif
-
+    view.showFullScreen();
 #elif defined(OS_IS_DESKTOP_LINUX) || defined(Q_OS_MAC) || defined(Q_OS_WIN)
 
     #if defined(OS_IS_DESKTOP_LINUX)

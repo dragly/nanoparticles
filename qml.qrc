@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/AboutDialog.qml</file>
+        <file>qml/ChargeButton.qml</file>
+        <file>qml/DemoInformation.qml</file>
+        <file>qml/ImageButton.qml</file>
+        <file>qml/InstructionText.qml</file>
+        <file>qml/MainMenu.qml</file>
+        <file>qml/SelectorSpinner.qml</file>
+        <file>qml/TestQml.qml</file>
+    </qresource>
+</RCC>
