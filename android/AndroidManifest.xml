@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<manifest package="org.dragly.nanoparticles" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="2.1" android:versionCode="7" android:installLocation="auto">
-    <application android:hardwareAccelerated="true" android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="@string/app_name" android:icon="@drawable/icon">
-        <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|locale|fontScale|keyboard|keyboardHidden|navigation" android:name="org.dragly.nanoparticles.NanoparticlesActivity" android:label="@string/app_name" android:screenOrientation="sensorLandscape" android:launchMode="singleTop" android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen">
+<manifest package="org.dragly.nanoparticles" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="2.2" android:versionCode="7" android:installLocation="auto">
+    <application android:hardwareAccelerated="true" android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="-- %%INSERT_APP_NAME%% --" android:icon="@drawable/icon">
+        <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|locale|fontScale|keyboard|keyboardHidden|navigation" android:name="org.qtproject.qt5.android.bindings.QtActivity" android:label="-- %%INSERT_APP_NAME%% --" android:screenOrientation="sensorLandscape" android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -32,6 +32,14 @@
             <meta-data android:name="android.app.splash_screen_drawable" android:resource="@drawable/logo"/>
             -->
             <!-- Splash screen -->
+
+            <!-- Background running -->
+            <!-- Warning: changing this value to true may cause unexpected crashes if the
+                          application still try to draw after
+                          "applicationStateChanged(Qt::ApplicationSuspended)"
+                          signal is sent! -->
+            <meta-data android:name="android.app.background_running" android:value="false"/>
+            <!-- Background running -->
         </activity>
     </application>
     <uses-sdk android:minSdkVersion="9" android:targetSdkVersion="14"/>

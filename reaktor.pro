@@ -194,7 +194,6 @@ OTHER_FILES += \
 
 # Please do not modify the following two lines. Required for deployment.
 include(deployment.pri)
-qtcAddDeployment()
 
 message(Current defines:)
 message($$DEFINES)
