@@ -747,8 +747,6 @@ void GameScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             QGraphicsScene::mousePressEvent(event);
         }
     } else {
-        if(menuTime.elapsed() > 500) { // make sure we don't let the user hit any buttons before the timer has run out
-            QGraphicsScene::mousePressEvent(event);
-        }
+        QGraphicsScene::mousePressEvent(event);
     }
 }
